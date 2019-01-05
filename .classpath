@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="deps/jython.jar"/>
+	<classpathentry kind="lib" path="deps/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="deps/mina.jar"/>
+	<classpathentry kind="lib" path="deps/mysql.jar"/>
+	<classpathentry kind="lib" path="deps/poi.jar"/>
+	<classpathentry kind="lib" path="deps/slf4j-nop.jar"/>
+	<classpathentry kind="lib" path="deps/slf4j.jar"/>
+	<classpathentry kind="lib" path="deps/xstream.jar"/>
+	<classpathentry kind="lib" path="deps/netty.jar"/>
+	<classpathentry kind="lib" path="deps/gson-2.2.4.jar"/>
+	<classpathentry kind="lib" path="deps/Web Server.jar"/>
+	<classpathentry kind="lib" path="deps/everythingrs-api.jar"/>
+	<classpathentry kind="lib" path="deps/mchange-commons-java-0.2.8.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="deps/commons-compress-1.17.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
