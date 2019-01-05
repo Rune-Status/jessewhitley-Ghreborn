@@ -1,0 +1,422 @@
+[
+{
+		"region": 12850,
+		"name": "Harmony",
+		"song": 76,
+		"frame": 4344,
+		"button": 16248
+	},
+	{
+		"region": 12851,
+		"name": "Autumn Voyage",
+		"song": 2,
+		"frame": 4304,
+		"button": 16208
+	},
+		{
+		"region": 10307,
+		"name": "Impetuous",
+		"song": 315,
+		"frame": 23929,
+		"button": 93121
+	},
+			{
+		"region": 12086,
+		"name": "Alone",
+		"song": 102,
+		"frame": 23445,
+		"button": 91149
+	},
+		{
+		"region": 11844,
+		"name": "Bane",
+		"song": 430,
+		"frame": 4304,
+		"button": 16208
+	},
+		{
+		"region": 13107,
+		"name": "Arabian 2",
+		"song": 123,
+		"frame": 4292,
+		"button": 16296
+	},
+			{
+		"region": 11347,
+		"name": "Bandos Battalion",
+		"song": 408,
+		"frame": 4344,
+		"button": 16245
+	},
+			{
+		"region": 13108,
+		"name": "Still Night",
+		"song": 111,
+		"frame": 4403,
+		"button": 17051
+	},
+			{
+		"region": 12852,
+		"name": "Expanse",
+		"song": 106,
+		"frame": 4326,
+		"button": 16230
+	},
+				{
+		"region": 12853,
+		"name": "Garden",
+		"song": 125,
+		"frame": 4336,
+		"button": 16240
+	},
+					{
+		"region": 12597,
+		"name": "Spirit",
+		"song": 175,
+		"frame": 4398,
+		"button": 17046
+	},
+				{
+		"region": 12854,
+		"name": "Adventure",
+		"song": 177,
+		"frame": 4287,
+		"button": 16191
+	},
+				{
+		"region": 12598,
+		"name": "The Trade Parade",
+		"song": 496,
+		"frame": 4344,
+		"button": 16240
+	},
+	{
+		"region": 12184,
+		"name": "Cave Background",
+		"song": 325,
+		"frame": 8972,
+		"button": 35012
+	},
+			{
+		"region": 13116,
+		"name": "Scape Sad",
+		"song": 331,
+		"frame": 8977,
+		"button": 35017
+	},
+				{
+		"region": 13372,
+		"name": "Scape Sad",
+		"song": 331,
+		"frame": 8977,
+		"button": 35017
+	},
+			{
+		"region": 13373,
+		"name": "Everlasting Fire",
+		"song": 586,
+		"frame": 18784,
+		"button": 73098
+	},
+			{
+		"region": 13117,
+		"name": "Regal",
+		"song": 329,
+		"frame": 8976,
+		"button": 35016
+	},
+			{
+		"region": 12861,
+		"name": "Nightfall",
+		"song": 127,
+		"frame": 4376,
+		"button": 17024
+	},
+		{
+		"region": 12605,
+		"name": "Expanse",
+		"song": 106,
+		"frame": 4326,
+		"button": 16230
+	},
+			{
+		"region": 12349,
+		"name": "Mage Arena",
+		"song": 13,
+		"frame": 4365,
+		"button": 17013
+	},
+		{
+		"region": 12093,
+		"name": "Pirates of Peril",
+		"song": 334,
+		"frame": 10127,
+		"button": 39143
+	},
+		{
+		"region": 12185,
+		"name": "Cave Background",
+		"song": 325,
+		"frame": 8972,
+		"button": 35012
+	},
+		{
+		"region": 12183,
+		"name": "Cave Background",
+		"song": 325,
+		"frame": 8972,
+		"button": 35012
+	},
+		{
+		"region": 11929,
+		"name": "Cave Background",
+		"song": 325,
+		"frame": 8972,
+		"button": 35012
+	},
+		{
+		"region": 11570,
+		"name": "Emperor",
+		"song": 138,
+		"frame": 4441,
+		"button": 17089
+	},
+		{
+		"region": 11824,
+		"name": "Mudskipper Melody",
+		"song": 515,
+		"frame": 4344,
+		"button": 59189
+	},
+		{
+		"region": 13106,
+		"name": "Arabian",
+		"song": 36,
+		"frame": 4344,
+		"button": 16195
+	},
+			{
+		"region": 0,
+		"name": "Home Sweet Home",
+		"song": 454,
+		"frame": 4344,
+		"button": 16245
+	},
+		{
+		"region": 13105,
+		"name": "Al Kharid",
+		"song": 50,
+		"frame": 4344,
+		"button": 16192
+	},
+			{
+		"region": 11830,
+		"name": "Goblin Village",
+		"song": 313,
+		"frame": 4344,
+		"button": 16245
+	},
+			{
+		"region": 13361,
+		"name": "Al Kharid",
+		"song": 50,
+		"frame": 4344,
+		"button": 16192
+	},
+		{
+		"region": 13362,
+		"name": "Duel Arena",
+		"song": 47,
+		"frame": 4344,
+		"button": 24154
+	},
+		{
+		"region": 12337,
+		"name": "Vision",
+		"song": 85,
+		"frame": 4344,
+		"button": 17070
+	},
+					{
+		"region": 12596,
+		"name": "Greatness",
+		"song": 116,
+		"frame": 4344,
+		"button": 16240
+	},
+					{
+		"region": 13109,
+		"name": "Medieval",
+		"song": 157,
+		"frame": 4344,
+		"button": 16240
+	},
+					{
+		"region": 13110,
+		"name": "Doorways",
+		"song": 56,
+		"frame": 4344,
+		"button": 16240
+	},
+					{
+		"region": 12342,
+		"name": "Forever",
+		"song": 98,
+		"frame": 4344,
+		"button": 16240
+	},
+						{
+		"region": 12341,
+		"name": "Barbarianism",
+		"song": 141,
+		"frame": 4344,
+		"button": 16240
+	},
+						{
+		"region": 12085,
+		"name": "Dwarf Theme",
+		"song": 310,
+		"frame": 4344,
+		"button": 16240
+	},
+	{
+		"region": 11829,
+		"name": "Scape Soft",
+		"song": 54,
+		"frame": 4344,
+		"button": 16240
+	},
+		{
+		"region": 11828,
+		"name": "Fanfare",
+		"song": 72,
+		"frame": 4344,
+		"button": 16240
+	},
+		{
+		"region": 12084,
+		"name": "Workshop",
+		"song": 15,
+		"frame": 4344,
+		"button": 16240
+	},
+		{
+		"region": 12340,
+		"name": "Spooky",
+		"song": 333,
+		"frame": 4344,
+		"button": 16240
+	},
+			{
+		"region": 12339,
+		"name": "Start",
+		"song": 151,
+		"frame": 4344,
+		"button": 16240
+	},
+				{
+		"region": 12338,
+		"name": "Unknown Land",
+		"song": 3,
+		"frame": 4344,
+		"button": 16240
+	},
+					{
+		"region": 12594,
+		"name": "Dream",
+		"song": 327,
+		"frame": 4344,
+		"button": 16240
+	},
+						{
+		"region": 12595,
+		"name": "Flute Salad",
+		"song": 163,
+		"frame": 4344,
+		"button": 16240
+	},
+							{
+		"region": 12083,
+		"name": "Wander",
+		"song": 49,
+		"frame": 4344,
+		"button": 16240
+	},
+	{
+		"region": 12082,
+		"name": "Sea Shanty2",
+		"song": 35,
+		"frame": 4344,
+		"button": 16240
+	},
+	{
+		"region": 12080,
+		"name": "Newbie Melody",
+		"song": 62,
+		"frame": 4344,
+		"button": 16240
+	},
+{
+		"region": 12079,
+		"name": "Newbie Melody",
+		"song": 62,
+		"frame": 4344,
+		"button": 16240
+	},
+{
+		"region": 12336,
+		"name": "Newbie Melody",
+		"song": 62,
+		"frame": 4344,
+		"button": 16240
+	},
+{
+		"region": 12592,
+		"name": "Newbie Melody",
+		"song": 62,
+		"frame": 4344,
+		"button": 16240
+	},
+{
+		"region": 12335,
+		"name": "Newbie Melody",
+		"song": 62,
+		"frame": 4344,
+		"button": 16240
+	},
+	{
+		"region": 12081,
+		"name": "Tomorrow",
+		"song": 105,
+		"frame": 4344,
+		"button": 16240
+	},
+		{
+		"region": 11825,
+		"name": "Attention",
+		"song": 180,
+		"frame": 4344,
+		"button": 16240
+	},
+			{
+		"region": 11826,
+		"name": "Long Way Home",
+		"song": 12,
+		"frame": 4344,
+		"button": 16240
+	},
+				{
+		"region": 11827,
+		"name": "Nightfall",
+		"song": 127,
+		"frame": 4344,
+		"button": 16240
+	},
+	{
+		"region": 11571,
+		"name": "Miles Away",
+		"song": 107,
+		"frame": 4344,
+		"button": 16240
+	}
+]
