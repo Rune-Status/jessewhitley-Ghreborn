@@ -117,13 +117,15 @@ public class SmithingInterface {
 		c.getPA().sendFrame34(1201, 3, 1122, 1); // kiteshield
 		c.getPA().sendFrame34(1319, 4, 1119, 1); // 2h sword
 		c.getPA().sendFrame34(4824, 4, 1122, 15); // nails
-		c.getPA().sendFrame34(-1, 3, 1123, 1);
 		c.getPA().sendFrame126("", 1135);
 		c.getPA().sendFrame126("", 1134);
 		c.getPA().sendFrame126("", 11461);
 		c.getPA().sendFrame126("", 11459);
-		c.getPA().sendFrame126("", 1132);
-		c.getPA().sendFrame126("", 1096);
+		c.getPA().sendFrame34(1275, 3, 1123, 1);
+		c.getPA()
+				.sendFrame126(GetForlvl(90, c) + "Pickaxe" + GetForlvl(90, c), 1096);
+		c.getPA().sendFrame126(twob + "2 Bar" + twob, 1132);
+
 		c.getPA().showInterface(994);
 	}
 
@@ -218,13 +220,14 @@ public class SmithingInterface {
 		c.getPA().sendFrame34(1199, 3, 1122, 1); // kiteshield
 		c.getPA().sendFrame34(1317, 4, 1119, 1); // 2h sword
 		c.getPA().sendFrame34(4823, 4, 1122, 15); // nails
-		c.getPA().sendFrame34(-1, 3, 1123, 1);
 		c.getPA().sendFrame126("", 1135);
 		c.getPA().sendFrame126("", 1134);
 		c.getPA().sendFrame126("", 11461);
 		c.getPA().sendFrame126("", 11459);
-		c.getPA().sendFrame126("", 1132);
-		c.getPA().sendFrame126("", 1096);
+		c.getPA().sendFrame34(1271, 3, 1123, 1);
+		c.getPA()
+				.sendFrame126(GetForlvl(75, c) + "Pickaxe" + GetForlvl(75, c), 1096);
+		c.getPA().sendFrame126(twob + "2 Bar" + twob, 1132);
 		c.getPA().showInterface(994);
 	}
 
@@ -324,8 +327,10 @@ public class SmithingInterface {
 		c.getPA().sendFrame126("", 1134);
 		c.getPA().sendFrame126("", 11461);
 		c.getPA().sendFrame126("", 11459);
-		c.getPA().sendFrame126("", 1132);
-		c.getPA().sendFrame126("", 1096);
+		c.getPA().sendFrame34(1273, 3, 1123, 1);
+		c.getPA()
+		.sendFrame126(GetForlvl(55, c) + "Pickaxe" + GetForlvl(55, c), 1096);
+c.getPA().sendFrame126(twob + "2 Bar" + twob, 1132);
 		c.getPA().showInterface(994);
 	}
 
@@ -427,8 +432,14 @@ public class SmithingInterface {
 		c.getPA().sendFrame34(1193, 3, 1122, 1);
 		c.getPA().sendFrame34(1311, 4, 1119, 1);
 		c.getPA().sendFrame34(1539, 4, 1122, 15);
+		c.getPA().sendFrame34(1269, 3, 1123, 1);
 		c.getPA().sendFrame34(2, 3, 1123, 4);
 		c.getPA().sendFrame34(2370, 4, 1123, 1);
+		c.getPA().sendFrame34(1269, 3, 1123, 1);
+		c.getPA()
+				.sendFrame126(GetForlvl(35, c) + "Pickaxe" + GetForlvl(35, c), 1096);
+		c.getPA().sendFrame126(twob + "2 Bar" + twob, 1132);
+
 		c.getPA().showInterface(994);
 	}
 
@@ -527,11 +538,12 @@ public class SmithingInterface {
 		c.getPA().sendFrame34(1309, 4, 1119, 1);
 		c.getPA().sendFrame34(4820, 4, 1122, 15);
 		c.getPA().sendFrame34(4540, 4, 1121, 1);
-		c.getPA().sendFrame34(-1, 3, 1123, 1);
+		c.getPA().sendFrame34(1267, 3, 1123, 1);
 		c.getPA().sendFrame126("", 1135);
 		c.getPA().sendFrame126("", 1134);
-		c.getPA().sendFrame126("", 1132);
-		c.getPA().sendFrame126("", 1096);
+		c.getPA()
+		.sendFrame126(GetForlvl(20, c) + "Pickaxe" + GetForlvl(20, c), 1096);
+c.getPA().sendFrame126(twob + "2 Bar" + twob, 1132);
 		c.getPA().showInterface(994);
 	}
 
@@ -553,6 +565,7 @@ public class SmithingInterface {
 		c.getPA().sendFrame126(twob + "2 Bars" + twob, 1114);
 		c.getPA().sendFrame126(twob + "2 Bars" + twob, 1089);
 		c.getPA().sendFrame126(twob + "2 Bars" + twob, 8428);
+		c.getPA().sendFrame126(twob + "2 Bar" + twob, 1132);
 		c.getPA().sendFrame126(oneb + "1 Bar" + oneb, 1124);
 		c.getPA().sendFrame126(oneb + "1 Bar" + oneb, 1125);
 		c.getPA().sendFrame126(oneb + "1 Bar" + oneb, 1126);
@@ -604,6 +617,8 @@ public class SmithingInterface {
 		c.getPA().sendFrame126(GetForlvl(1, c) + "Dagger" + GetForlvl(1, c),
 				1094);
 		c.getPA().sendFrame126(GetForlvl(1, c) + "Axe" + GetForlvl(1, c), 1091);
+		c.getPA()
+		.sendFrame126(GetForlvl(5, c) + "Pickaxe" + GetForlvl(5, c), 1096);
 		c.getPA().sendFrame34(1205, 0, 1119, 1);
 		c.getPA().sendFrame34(1351, 0, 1120, 1);
 		c.getPA().sendFrame34(1103, 0, 1121, 1);
@@ -625,13 +640,11 @@ public class SmithingInterface {
 		c.getPA().sendFrame34(1189, 3, 1122, 1);
 		c.getPA().sendFrame34(1307, 4, 1119, 1);
 		c.getPA().sendFrame34(4819, 4, 1122, 15);
-		c.getPA().sendFrame34(-1, 3, 1123, 1);
+		c.getPA().sendFrame34(1265, 3, 1123, 1);
 		c.getPA().sendFrame126("", 1135);
 		c.getPA().sendFrame126("", 1134);
 		c.getPA().sendFrame126("", 11461);
 		c.getPA().sendFrame126("", 11459);
-		c.getPA().sendFrame126("", 1132);
-		c.getPA().sendFrame126("", 1096);
 		c.getPA().showInterface(994);
 	}
 

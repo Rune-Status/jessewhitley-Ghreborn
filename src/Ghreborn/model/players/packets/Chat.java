@@ -17,10 +17,15 @@ public class Chat implements PacketType {
 		c.setChatTextColor(packet.getByteS());
 		c.setChatTextSize((byte) (packet.getLength() - 2));
 		packet.readBytes_reverseA(c.getChatText(), c.getChatTextSize(), 0);
+		if(Misc.textUnpack(c.getChatText(), (packet.getLength() - 2)).contains("Nigger") || Misc.textUnpack(c.getChatText(), (packet.getLength() - 2)).contains("nigger")){
+			c.sendMessage("Watch your language.");
+			return;
+		}
 		if (!c.canUsePackets) {
 			return;
 		}
 		if (!Connection.isMuted(c))
 			c.setChatTextUpdateRequired(true);
 	}
+	
 }

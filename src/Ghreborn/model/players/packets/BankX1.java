@@ -21,12 +21,10 @@ public class BankX1 implements PacketType {
 			c.xRemoveId = packet.getLEShort();
 		}
 		if (c.xInterfaceId == 3900) {
-			c.getShops().buyItem(c.xRemoveId, c.xRemoveSlot, 20);// buy 20
-			c.xRemoveSlot = 0;
-			c.xInterfaceId = 0;
-			c.xRemoveId = 0;
+			c.buyingX = true;
+			c.outStream.createFrame(27);
 			return;
-		}
+			}
 
 		if (packet.getOpcode()  == PART1) {
 			synchronized (c) {

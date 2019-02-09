@@ -1,18 +1,21 @@
 package Ghreborn.model.items;
 
 import Ghreborn.model.content.CrystalChest;
+import Ghreborn.model.content.trails.MasterClue;
 import Ghreborn.model.items.item_combinations.Godswords;
 import Ghreborn.model.minigames.warriors_guild.AnimatedArmour;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.PlayerCannon;
 import Ghreborn.model.players.Rights;
-import Ghreborn.model.players.skills.Firemaking;
 import Ghreborn.model.players.skills.Skill;
+import Ghreborn.model.players.skills.Smelting;
+import Ghreborn.model.players.skills.crafting.BraceletMaking;
 import Ghreborn.model.players.skills.crafting.GemCutting;
 import Ghreborn.model.players.skills.crafting.GlassBlowing;
 import Ghreborn.model.players.skills.crafting.JewelryMaking;
 import Ghreborn.model.players.skills.crafting.LeatherMaking;
 import Ghreborn.model.players.skills.farming.Farming;
+import Ghreborn.model.players.skills.firemake.Firemaking;
 import Ghreborn.model.players.skills.fletching.BowStringing;
 import Ghreborn.model.players.skills.fletching.Fletching;
 import Ghreborn.model.players.skills.fletching.Arrow.Arrow;
@@ -68,8 +71,46 @@ public class UseItem {
 			c.getItems().addItem(995, size * 1000);
 			c.sendMessage("You exchange " + Misc.format(size) + " Platinum tokens for " + Misc.format(c.getItems().getItemAmount(995)) + " Coins.");
 		}
-		
+		ObjectDef def = ObjectDef.getObjectDef(objectID);
+
+		if (def != null) {
+			
+			if (def.name != null && def.name.toLowerCase().contains("bank")) {
+					//ItemDefinition definition = ItemDefinition.forId(itemId);
+					boolean stackable = Item.itemStackable[itemId];
+					if (stackable) {
+						c.getOutStream().createFrame(27);
+						c.unNoteItemId = itemId;
+						c.settingUnnoteAmount = true;
+					} else {
+						c.getPA().noteItems(c, itemId);
+				}
+			}
+		}
 		switch (objectID) {
+		case 16469:
+		case 24009:
+		case 2030: //Allows for ores to be used on the furnace instead of going though the interface.
+			//if (itemId == )
+			if (itemId == 19529) {
+				if (c.getItems().playerHasItem(6571)) {
+					c.getItems().deleteItem(19529, 1);
+					c.getItems().deleteItem(6571, 1);
+					c.getItems().addItem(19496, 1);
+					c.sendMessage("You successfully bind the two parts together into an uncut zenyte.");
+				} else {
+					c.sendMessage("You need an uncut onyx to do this.");
+					return;
+				}
+			} else if(!c.getItems().playerHasItem(11065)) {
+				JewelryMaking.mouldInterface(c);
+			} else if(c.getItems().playerHasItem(11065)) {
+				BraceletMaking.craftBraceletDialogue(c, itemId);
+			}
+			String type = itemId == 438 ? "bronze" : itemId == 436 ? "bronze" : itemId == 440 ? "iron" : itemId == 442 ? "silver" : itemId == 453 ? "steel" : itemId == 444 ? "gold" : itemId == 447 ? "mithril" : itemId == 449 ? "adamant" : itemId == 451 ? "rune" : "";			
+			c.getSmelting().startSmelting(c, type, "ALL", "FURNACE");
+			
+			break;
 		case 2097:
 			c.getSmithingInt().showSmithInterface(itemId);
 			break;
@@ -100,11 +141,40 @@ public class UseItem {
 			return;
 		GameItem gameItemUsed = new GameItem(itemUsed, c.playerItemsN[itemUsedSlot], itemUsedSlot);
 		GameItem gameItemUsedWith = new GameItem(useWith, c.playerItemsN[itemUsedSlot], usedWithSlot);
-		Fletching.resetFletching(c);
-		Arrow.initialize(c, itemUsed, useWith);
+		//Fletching.resetFletching(c);
+		//Arrow.initialize(c, itemUsed, useWith);
 		c.getPA().resetVariables();
+		//End
+		if (itemUsed == 53 || useWith == 53) {
+			int arrow = itemUsed == 53 ? useWith : itemUsed;
+			c.getFletching().fletchArrow(arrow);
+		}
+		if (itemUsed == 19584 || useWith == 19584) {
+			int javelin = itemUsed == 19584 ? useWith : itemUsed;
+			c.getFletching().fletchJavelin(javelin);
+		}
+		if (itemUsed == 52 && useWith == 314 || itemUsed == 314 && useWith == 52) {
+			c.getFletching().fletchHeadlessArrows();
+		}
 		if (itemUsed == 1777 || useWith == 1777) {
-			BowStringing.stringBow(c, itemUsed, useWith);
+			int unstrung = itemUsed == 1777 ? useWith : itemUsed;
+			c.getFletching().fletchUnstrung(unstrung);
+		}
+		if (itemUsed == 9438 || useWith == 9438) {
+			int unstrung = itemUsed == 9438 ? useWith : itemUsed;
+			c.getFletching().fletchUnstrungCross(unstrung);
+		}
+		if (itemUsed == 314 || useWith == 314) {
+			int item = itemUsed == 314 ? useWith : itemUsed;
+			c.getFletching().fletchUnfinishedBolt(item);
+			c.getFletching().fletchDart(item);
+		}
+		if (itemUsed == 1755 || useWith == 1755) {
+			c.getFletching().fletchGem(useWith, itemUsed);
+			GemCutting.cutGem(c, itemUsed, useWith);
+		}
+		if (useWith == 946 || itemUsed == 946) {
+			c.getFletching().combine(useWith, itemUsed);
 		}
 		if (itemUsed == 1775 || useWith == 1775) {
 			if (!c.getItems().playerHasItem(1785)) {
@@ -412,14 +482,6 @@ public class UseItem {
 		if (itemUsed == 1759 || useWith == 1759) {
 			JewelryMaking.stringAmulet(c, itemUsed, useWith);
 		}
-		if (itemUsed == 1755 || useWith == 1755) {
-			GemCutting.cutGem(c, itemUsed, useWith);
-		}
-		if ((useWith == 1511 || itemUsed == 1511) && (useWith == 946 || itemUsed == 946)) {
-			Fletching.normal(c, itemUsed, useWith);
-		} else if (useWith == 946 || itemUsed == 946) {
-			Fletching.others(c, itemUsed, useWith);
-		}
 		if (useWith == 11941) {
 			if (ItemDefinition.forId(itemUsed).isStackable() || ItemDefinition.forId(itemUsed).isNoted()) {
 				c.getLoot().addItemToLootbag(itemUsed, c.getItems().getItemAmount(itemUsed));
@@ -484,8 +546,20 @@ public class UseItem {
 	}
 
 	public static void ItemonNpc(Client c, int itemId, int npcId, int slot) {
+		switch(npcId) {
+		
+		case 7303:
+			MasterClue.exchangeClue(c);
+			break;
+			
+		case 412:
+			break;
+		
+		}
 		switch (itemId) {
-
+		case 4162:
+			
+			break;
 		default:
 			if (c.rights == Rights.OWNER)
 				Misc.println("Player used Item id: " + itemId
@@ -497,6 +571,59 @@ public class UseItem {
 
 	public static boolean combines(int itemA, int itemB, int combinationA, int combinationB) {
 		return (itemA == combinationA && itemB == combinationB) || (itemA == combinationB && itemB == combinationA);
+	}
+
+	public static void unNoteItems(Client c, int itemId, int amount) {
+		ItemDefinition definition = ItemDefinition.forId(itemId);
+		int counterpartId = Server.itemHandler.getCounterpart(itemId);
+		
+		/**
+		 * If a player enters an amount which is greater than the amount of the item they have it will set it to the amount
+		 * they currently have.
+		 */
+		int amountOfNotes = c.getItems().getItemAmount(itemId);
+		if (amount > amountOfNotes) {
+			amount = amountOfNotes;
+		}
+		
+		/**
+		 * Stops if you are trying to unnote an unnotable item
+		 */
+		if (counterpartId == -1) {
+			c.sendMessage("You can only use unnotable items on this bank to un-note them.");
+			return;
+		}
+		/**
+		 * Stops if you do not have the item you are trying to unnote
+		 */
+		if (!c.getItems().playerHasItem(itemId, 1)) {
+			return;
+		}
+		
+		/**
+		 * Preventing from unnoting more items that you have space available
+		 */
+		if (amount > c.getItems().freeSlots()) {
+			amount = c.getItems().freeSlots();
+		}
+		
+		/**
+		 * Stops if you do not have any space available
+		 */
+		if (amount <= 0) {
+			c.sendMessage("You need at least one free slot to do this.");
+			return;
+		}
+		
+		/**
+		 * Deletes the noted item and adds the amount of unnoted items
+		 */
+		c.getItems().deleteItem2(itemId, amount);
+		c.getItems().addItem(counterpartId, amount);
+		c.getDH().sendStatement("You unnote x"+amount+" of " + definition.getName() + ".");
+		c.settingUnnoteAmount = false;
+		c.unNoteItemId = 0;
+		return;
 	}
 
 }

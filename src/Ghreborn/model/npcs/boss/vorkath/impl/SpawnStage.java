@@ -2,6 +2,7 @@ package Ghreborn.model.npcs.boss.vorkath.impl;
 
 import Ghreborn.Server;
 import Ghreborn.event.CycleEventContainer;
+import Ghreborn.model.npcs.boss.vorkath.Stage;
 import Ghreborn.model.npcs.boss.vorkath.Vorkath;
 import Ghreborn.model.npcs.boss.vorkath.VorkathConstants;
 import Ghreborn.model.players.Client;

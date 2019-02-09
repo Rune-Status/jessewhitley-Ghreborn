@@ -1,6 +1,7 @@
 package Ghreborn.model.players;
 
 
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import Ghreborn.Config;
@@ -14,6 +15,9 @@ import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
 import Ghreborn.model.content.CrystalChest;
 import Ghreborn.model.content.Obelisks;
+import Ghreborn.model.content.dialogue.Dialogue;
+import Ghreborn.model.content.dialogue.DialogueManager;
+import Ghreborn.model.content.dialogue.Emotion;
 import Ghreborn.model.content.dialogue.impl.DailyDialogue;
 import Ghreborn.model.content.dialogue.impl.EllisDialogue;
 import Ghreborn.model.content.dialogue.impl.ForesterDialogue;
@@ -29,6 +33,9 @@ import Ghreborn.model.content.dialogue.impl.Lumbridge.HansDialogue;
 import Ghreborn.model.content.dialogue.impl.Lumbridge.Lumbridge_guide_Dialogue;
 import Ghreborn.model.content.dialogue.impl.Lumbridge.Melee_combat_tutorDialogue;
 import Ghreborn.model.content.dialogue.impl.Lumbridge.SheepDialogue;
+import Ghreborn.model.content.dialogue.impl.slayer.DuradelDialogue;
+import Ghreborn.model.content.dialogue.impl.slayer.MazchnaDialogue;
+import Ghreborn.model.content.dialogue.impl.slayer.TuraelDialogue;
 import Ghreborn.model.items.Item2;
 import Ghreborn.model.minigames.raids.Raids;
 import Ghreborn.model.npcs.NPC;
@@ -43,6 +50,7 @@ import Ghreborn.model.objects.SpadeInGround;
 import Ghreborn.model.objects.WildernessDitch;
 import Ghreborn.model.objects.functions.AxeInLog;
 import Ghreborn.model.objects.functions.Ladders;
+import Ghreborn.model.players.skills.Smelting;
 import Ghreborn.model.players.skills.Fishing.Fishing;
 import Ghreborn.model.players.skills.construction.Construction;
 import Ghreborn.model.players.skills.construction.House;
@@ -82,9 +90,9 @@ public class ActionHandler {
 		if (Server.getMultiplayerSessionListener().inAnySession(c)) {
 			return;
 		}
-		if (c.getPlayerAction().checkAction()) {
-			return;
-		}
+		//if (c.getPlayerAction().checkAction()) {
+			//return;
+		//}
 		if (c.isMorphed) {
 			return;
 			}
@@ -92,7 +100,7 @@ public class ActionHandler {
 		c.getPA().resetVariables();
 
 		c.clickObjectType = 0;
-		c.face(c.getClickX(), c.getClickY());
+		c.face(obX, obY);
 		if(c.getRights().isBetween(9, 10)) {
 			c.sendMessage("Object type: " + objectType+" ObjectX:"+obX+" ObjectY"+obY+".");
 	}
@@ -102,7 +110,7 @@ public class ActionHandler {
 			Woodcutting.getInstance().chop(c, objectType, obX, obY);
 			return;
 		}
-		DoorDefinition door = DoorDefinition.forCoordinate(c.getClickX(), c.getClickY(), c.getHeight());
+		DoorDefinition door = DoorDefinition.forCoordinate(obX, obY, c.getHeight());
 		
 		if (door != null && DoorHandler.clickDoor(c, door)) {
 			return;
@@ -110,7 +118,9 @@ public class ActionHandler {
 
 		SingleGates.useSingleGate(c, objectType);
 		DoubleGates.useDoubleGate(c, objectType);
-c.getGnomeAgility().agilityCourse(c, objectType);
+		if (c.getGnomeAgility().gnomeCourse(c, objectType)) {
+			return;
+		}
 Obelisks.get().activate(c, objectType);
 Runecrafting.execute(c, objectType);
 c.getMining().mine(objectType, new Location3D(obX, obY, c.heightLevel));
@@ -125,353 +135,26 @@ if(IntStream.of(HUNTER_OBJECTS).anyMatch(id -> objectType == id)) {
 	}
 }
 
-if (c.getRaids().handleObjectClick(c,objectType)) {
-	return;
-}
-
-if(c.goodDistance(c.getClickX(), c.getClickY(), c.getClickX(), c.getClickY(), 1)) {
-	if (Doors.getSingleton().handleDoor(c.objectId, c.getClickX(), c.getClickY(), c.heightLevel)) {
+if(c.goodDistance(c.getX(), c.getX(), c.getX(), c.getX(), 1)) {
+	if (Doors.getSingleton().handleDoor(c.objectId, c.getX(), c.getX(), c.heightLevel)) {
 	}
 }
-if (ObjectDef.getObjectDef(objectType).getName().toLowerCase().contains("hay")) {
-	c.sendMessage("You search the "	+ObjectDef.getObjectDef(objectType).getName().toLowerCase()+"...");
-	c.animation(832);
-	//player.setStopPacket(true);
-	CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-		@Override
-		public void execute(CycleEventContainer b) {
-			if (Misc.random(99) == 0) {
-				if (Misc.random(1) == 0) {
-					c.getItems().addItem(1733, 1);
-					c.sendMessage("You find a Needle.");
-				} else {
-				}
-			} else {
-				c.sendMessage("You find nothing of interest.");
-			}
-			b.stop();
-		}
-		@Override
-		public void stop() {
-		}
-	}, 2);
-	//this.stop();
-	return;
-}
-if (ObjectDef.getObjectDef(objectType).getName().toLowerCase().equalsIgnoreCase("bank booth") || ObjectDef.getObjectDef(objectType).getName().toLowerCase().equalsIgnoreCase("bank chest") || ObjectDef.getObjectDef(objectType).getName().toLowerCase().equalsIgnoreCase("Counter")){ 
-	c.getPA().openUpBank();
-	return;
-	}
-if(ObjectDef.getObjectDef(objectType).getName().toLowerCase().contains("Ladder")) {
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Climb-up")) {
-		if(obX == 3069 && obY == 10256) { // custom locations
-			c.getPA().movePlayer(3017, 3850, 0);
-			return;
-		}
-		if(obX == 3017 && obY == 10249) { // custom locations
-			c.getPA().movePlayer(3069, 3857, 0);
-			return;
-		}
-
-						if(obX == 3097 && obY == 9867) { // custom locations
-			c.getPA().movePlayer(3096, 3468, 0);
-			return;
-						}
-						if(obX == 1859 && obY == 5244) { // custom locations
-							c.getPA().movePlayer(3081, 3421, c.heightLevel);
-							return;
-		}
-						if(obX == 2906 && obY == 9968) { // custom locations
-							c.getPA().movePlayer(2834, 3542, 0);
-							return;
-						}
-	if(obX == 3207 && obY == 3223) { // custom locations
-			c.getPA().movePlayer(c.absX, c.absY-2, c.heightLevel+1);
-			return;
-		}
-		if(c.getClickY() > 6400) {
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()-6400, c.heightLevel);
-			return;
-		} else {
-			c.getPA().movePlayer(c.absX, c.absY, c.heightLevel+1);
-			return;
-		}
-	}
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Climb-down")) {
-		if(obX == 3017 && obY == 3849) { // custom locations
-			c.getPA().movePlayer(3069, 10257, 0);
-			return;
-		}
-		if(c.getClickY() < 6400 && (c.heightLevel & 3) == 0) {
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()+6400, c.heightLevel);
-			return;
-		} else {
-			c.getPA().movePlayer(c.absX, c.absY, c.heightLevel-1);
-			return;
-		}
-	}
-}
-if(ObjectDef.getObjectDef(objectType).name.equals("Barrier")) {
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Pass")){
-		if(c.getClickX() == 1573) { // custom locations
-			c.getPA().movePlayer(1575, c.absY, 0);
-			return;
-		}
-		if(c.getClickX() == 1575) { // custom locations
-			c.getPA().movePlayer(1573, c.absY, 0);
-			return;
-		}
-		if(c.getClickX() == 1562) { // custom locations
-			c.getPA().movePlayer(1560, c.absY, 0);
-			return;
-		}
-		if(c.getClickX() == 1560) { // custom locations
-			c.getPA().movePlayer(1562, c.absY, 0);
-			return;
-		}
-		if(c.getClickY() == 5089) { // custom locations
-			c.getPA().movePlayer(c.absX, 5087, 0);
-			return;
-		}
-		if(c.getClickY() == 5087) { // custom locations
-			c.getPA().movePlayer(c.absX, 5089, 0);
-			return;
-		}
-	}
-}
-/*if(ObjectDef.getObjectDef(objectType).name.equals("Altar") || ObjectDef.getObjectDef(objectType).name.equals("Chaos altar")) {    
-    if(ObjectDef.getObjectDef(objectType).actions[0].equals("Pray-at") || ObjectDef.getObjectDef(objectType).actions[0].equals("Pray")) {
-    	if(objectType != 6552) {
-    }
-                if(c.playerLevel[5] < c.getPA().getLevelForXP(c.playerXP[5])) {
-                    c.startAnimation(645);
-                    c.playerLevel[5] = c.getPA().getLevelForXP(c.playerXP[5]);
-                    c.sendMessage("You recharge your prayer points.");
-                    c.getPA().refreshSkill(5);
-                } else {
-                    c.sendMessage("You already have full prayer points.");
-                }
-                return;
-    } else {
-        if (c.playerMagicBook == 0) {
-            c.playerMagicBook = 1;
-            c.setSidebarInterface(6, 12855);
-            c.sendMessage("An ancient wisdomin fills your mind.");
-            c.getPA().resetAutocast();
-        } else {
-            c.setSidebarInterface(6, 1151); // modern
-            c.playerMagicBook = 0;
-            c.sendMessage("You feel a drain on your memory.");
-            c.autocastId = -1;
-            c.getPA().resetAutocast();
-    }
-   
-}
-}
-if(ObjectDef.getObjectDef(objectType).name.equals("Ladder")) {
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Climb-up")) {
-		if(obX == 3069 && obY == 10256) { // custom locations
-			c.getPA().movePlayer(3017, 3850, 0);
-			return;
-		}
-		if(obX == 3017 && obY == 10249) { // custom locations
-			c.getPA().movePlayer(3069, 3857, 0);
-			return;
-		}
-
-						if(obX == 3097 && obY == 9867) { // custom locations
-			c.getPA().movePlayer(3096, 3468, 0);
-			return;
-						}
-						if(obX == 1859 && obY == 5244) { // custom locations
-							c.getPA().movePlayer(3081, 3421, c.heightLevel);
-							return;
-		}
-						if(obX == 2906 && obY == 9968) { // custom locations
-							c.getPA().movePlayer(2834, 3542, 0);
-							return;
-						}
-	if(obX == 3207 && obY == 3223) { // custom locations
-			c.getPA().movePlayer(c.absX, c.absY-2, c.heightLevel+1);
-			return;
-		}
-		if(c.getClickY() > 6400) {
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()-6400, c.heightLevel);
-			return;
-		} else {
-			c.getPA().movePlayer(c.absX, c.absY, c.heightLevel+1);
-			return;
-		}
-	}
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Climb-down")) {
-		if(obX == 3017 && obY == 3849) { // custom locations
-			c.getPA().movePlayer(3069, 10257, 0);
-			return;
-		}
-		if(obX == 3069 && obY == 3856) { // custom locations
-			c.getPA().movePlayer(3017, 10248, 0);
-			return;
-		}
-		if(obX == 2833 && obY == 3542) { // custom locations
-			c.getPA().movePlayer(2907, 9968, 0);
-			return;
-		}
-		if(obX == 3207 && obY == 3223) { // custom locations
-			c.getPA().movePlayer(c.absX, c.absY+2, c.heightLevel-1);
-			return;
-		}
-		if(obX == 2820 && obY == 3374){
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()+6400, c.heightLevel);
-			return;
-		}
-		if(c.getClickY() < 6400 && (c.heightLevel & 3) == 0) {
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()+6400, c.heightLevel);
-			return;
-		} else {
-			c.getPA().movePlayer(c.absX, c.absY, c.heightLevel-1);
-			return;
-		}
-	}
-}
-if(ObjectDef.getObjectDef(objectType).name.equals("Cave Entrance") && !ObjectDef.getObjectDef(objectType).name.equals("Entrance")) {
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Enter")) {
-		if(obX == 2797 && obY == 3614) { // custom locations
-			c.getPA().movePlayer(2808, 10002, 0);
-			return;
-		}
-		if(obX == 2622 && obY == 3392) { // custom locations
-			c.getPA().movePlayer(2620, 9797, 0);
-			return;
-		}
-		if(c.getClickY() < 6400) {
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()+6400, c.heightLevel);
-			return;
-	}
-	}
-	}
-if(ObjectDef.getObjectDef(objectType).name.equals("Cave") && !ObjectDef.getObjectDef(objectType).name.equals("Cave Entrance") && !ObjectDef.getObjectDef(objectType).name.equals("Entrance")) {
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Enter")) {
-
-		if(c.getClickY() < 6400) {
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()+6400, c.heightLevel);
-			return;
-	}
-}
-}
-
-if(ObjectDef.getObjectDef(objectType).name.equals("Tunnel")) {
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Enter")) {
-		if(obX == 2809 && obY == 10001) { // custom locations
-			c.getPA().movePlayer(2796, 3615, 0);
-			return;
-		}
-		if(c.getClickY() > 6400) {
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()-6400, c.heightLevel);
-			return;
-	}
-}
-}
-if(ObjectDef.getObjectDef(objectType).name.equals("Mud pile")) {
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Climb-over")) {
-		if(obX == 2621 && obY == 9796) { // custom locations
-			c.getPA().movePlayer(2624, 3391, 0);
-			return;
-		}
-		if(c.getClickY() > 6400) {
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()-6400, c.heightLevel);
-			return;
-	}
-}
-}
-if(ObjectDef.getObjectDef(objectType).name.equals("Stairs")) {
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Climb-up")) {
-		if(c.getClickY() > 6400) {
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()-6400, c.heightLevel);
-			return;
-		} else {
-			c.getPA().movePlayer(c.absX, c.absY, c.heightLevel+1);
-			return;
-		}
-	}
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Climb-down")) {
-		if(c.getClickY() < 6400 && (c.heightLevel & 3) == 0) {
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()+6400, c.heightLevel);
-			return;
-		} else {
-			c.getPA().movePlayer(c.absX, c.absY, c.heightLevel-1);
-			return;
-		}
-	}
-}
-if(ObjectDef.getObjectDef(objectType).name.equals("Entrance")) {
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Climb-down")) {
-		if(obX == 3081 && obY == 3421) { // custom locations
-			c.getPA().movePlayer(1859, 5243, 0);
-			return;
-		}
-}
-}
-if(ObjectDef.getObjectDef(objectType).name.equals("Staircase")) {
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Climb-up")) {
-		if(obX == 3212 && obY == 3473) { // custom locations
-			c.getPA().movePlayer(3213, 3476, 1);
-			return;
-		}
-		if(obX == 3187 && obY == 9833) { // custom locations
-			c.getPA().movePlayer(3188, 3433, 0);
-			return;
-		}
-		if(obX == 2726 && obY == 9775) { // custom locations
-			c.getPA().movePlayer(2723, 3374, 0);
-			return;
-		}
-		if(c.getClickY() > 6400) {
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()-6400, c.heightLevel);
-			return;
-		}else{
-		c.getPA().movePlayer(c.absX, c.absY, c.heightLevel+1);
-		return;
-		}
-	}
-}
-	if(ObjectDef.getObjectDef(objectType).actions[0].equals("Climb-down")) {
-		if(obX == 3212 && obY == 3474) { // custom locations
-			c.getPA().movePlayer(3213, 3472, 0);
-			return;
-		}
-		if(obX == 3189 && obY == 3432) { // custom locations
-			c.getPA().movePlayer(3190, 9833, 0);
-			return;
-		}
-		if(obX == 2723 && obY == 3374) { // custom locations
-			c.getPA().movePlayer(2727, 9774, 0);
-			return;
-		}
-		if(c.getClickY() < 6400 && (c.heightLevel & 3) == 0) {
-			c.getPA().movePlayer(c.getClickX(), c.getClickY()+6400, c.heightLevel);
-			return;
-		} else {
-		c.getPA().movePlayer(c.absX, c.absY, c.heightLevel-1);
+	if(ObjectDef.getObjectDef(c.objectId).getName().equalsIgnoreCase("bank booth") || ObjectDef.getObjectDef(c.objectId).getName().equalsIgnoreCase("bank chest")) {
+		c.getPA().openUpBank();
 		return;
 	}
-}*/
-	if (c.playerCannon != null && (PlayerCannon.CannonPart.isObjCannon(objectType) && objectType != 6)) {
-		if (c.playerCannon.pickUpCannon(objectType, obX, obY)) {
-			PlayerHandler.removeCannon(c.playerCannon);
-			c.playerCannon = null;
-		}
-	} else if (c.playerCannon != null && objectType == 6) {
-		c.playerCannon.fireCannon();
-	} else if (PlayerCannon.CannonPart.isObjCannon(objectType)) {
-		c.sendMessage("This is not your cannon!");
+	if (c.getRaids().handleObjectClick(c,objectType)) {
+		return;
 	}
-	if ((c.getRights().isDeveloper() || c.getRights().isOwner()) && Config.SERVER_DEBUG ) {
-		c.sendMessage("<col=255>[SERVER DEBUG] " + " - FirstClickObject: X: " + c.absX + " Y: " + c.absY
-				+ " Height: " + c.heightLevel + " ObjectID: " + objectType);
-	}
+
 		switch (objectType) {
 		case 16891:
 			CrystalChest.searchChest(c);
+			break;
+		case 31990:
+			if(c.getVorkath().getVorkathInstance() == null) {
+				c.getVorkath().jump();
+			}
 			break;
 		case 10216:
 			Ladders.climbLadder(c,1890, 4406, 1);
@@ -480,22 +163,50 @@ if(ObjectDef.getObjectDef(objectType).name.equals("Staircase")) {
 			Ladders.climbLadder(c,1890, 4406, 0);
 			break;
 		case 11794:
-			if(c.getClickX() == 1644 && c.getClickY() == 2847){
+			if(c.getX() == 1644 && c.getX() == 2847){
 			Ladders.climbLadder(c, 1644, 2847, 1);
 			}
 			break;
+			
 		case 11795:
-			if(c.getClickX() == 1644 && c.getClickY() == 2847){
+			if(c.getX() == 1644 && c.getX() == 2847){
 			Ladders.climbLadder(c, 1644, 2847, 0);
+			}
+			break;
+		case 7235:
+			c.getWallSafe().crack(c);
+			break;
+		case 10068:
+			if(c.objectX == 2214 && c.objectY == 3056){
+			if (c.ZULRAH_CLICKS >= 1) {
+				c.sendMessage("You already have an active instance!");
+				c.getPA().closeAllWindows();
+				return;
+			}
+			if (c.zulrah.getInstancedZulrah() != null) {
+				c.sendMessage("You already have an active instance!");
+				c.getPA().closeAllWindows();
+				return;
+			}
+			if (c.getItems().playerHasItem(12938, 1)) {
+				c.getZulrahEvent().initialize();
+				c.getItems().deleteItem(12938, 1);
+				c.ZULRAH_CLICKS = 1;
+				return;
+			}
+			c.getZulrahEvent().initialize();
+			c.ZULRAH_CLICKS = 1;
 			}
 			break;
 		case 15477:
 		case 15478:
 		case 15479:
-			c.setHouse(House.load(c));
-			House house = c.getHouse();
-			house.setBuildMode(false);
-			house.enter(c);
+			if (c.getHouse() == null) {
+				c.sendMessage("You do not have a house loaded.");
+				return;
+			}
+			c.getHouse().setBuildMode(false);
+			c.getHouse().enter(c);
 			break;
 		case 21731:
 		case 21732:
@@ -508,25 +219,177 @@ if(ObjectDef.getObjectDef(objectType).name.equals("Staircase")) {
 			c.getPA().movePlayer(2649, 9562);
 			break;
 		case 25336:
-			if(c.getClickX() == 1772 && c.getClickY() == 5366){
+			if(c.getX() == 1772 && c.getX() == 5366){
 				c.getPA().movePlayer(1768, 5366, 1);
 			}
 			break;
+		case 98:
+			if(c.getX() == 1630 && c.getY() == 2836){
+			c.getPA().movePlayer(1650, 9264, 0);
+			} else if(c.getX() == 1631 && c.getY() == 2836){
+			c.getPA().movePlayer(1650, 9265, 0);
+			}
+			break;
+		case 2114:
+			if(c.getX() == 3438 && c.getY() == 3538){
+			c.getPA().movePlayer(3433, 3538, 1);
+			} else if(c.getX() == 1631 && c.getY() == 2836){
+			c.getPA().movePlayer(1650, 9265, 0);
+			}
+			break;
+		case 30192:
+			if(c.getX() == 3412 && c.getY() == 9932){
+			c.getPA().movePlayer(3417, 3536, 0);
+			}
+			break;
+
+		case 30191:
+			if(c.getX() == 3417 && c.getY() == 3536){
+			c.getPA().movePlayer(3412, 9932, 3);
+			}
+			break;
+
+		case 2119:
+			if(c.getX() == 3412 && c.getY() == 3540 && c.getHeight() == 1){
+			c.getPA().movePlayer(3417, 3540, 2);
+			} else if(c.getX() == 3412 && c.getY() == 3541 && c.getHeight() == 1){
+			c.getPA().movePlayer(3417, 3541, 2);
+			}
+			break;
+
+		case 2120:
+			if(c.getX() == 3417 && c.getY() == 3540 && c.getHeight() == 2){
+			c.getPA().movePlayer(3412, 3540, 1);
+			} else if(c.getX() == 3417 && c.getY() == 3541 && c.getHeight() == 2){
+			c.getPA().movePlayer(3412, 3541, 1);
+			}
+			break;
+		case 2104:
+			if(c.getX() == 3427 && c.getY() == 3556 && c.getHeight() == 1){
+			c.getPA().movePlayer(3427, 3555, 1);
+			} else if(c.getX() == 3427 && c.getY() == 3555 && c.getHeight() == 1){
+			c.getPA().movePlayer(3427, 3556, 1);
+			}
+			break;
+		case 2102:
+			if(c.getX() == 3426 && c.getY() == 3556 && c.getHeight() == 1){
+			c.getPA().movePlayer(3426, 3555, 1);
+			} else if(c.getX() == 3426 && c.getY() == 3555 && c.getHeight() == 1){
+			c.getPA().movePlayer(3426, 3556, 1);
+			}
+			break;
+
+		case 2118:
+			if(c.getX() == 3433 && c.getY() == 3538){
+			c.getPA().movePlayer(3438, 3538, 0);
+			} else if(c.getX() == 1631 && c.getY() == 2836){
+			c.getPA().movePlayer(1650, 9265, 0);
+			}
+			break;
+		case 23969:
+			if(c.getX() == 1650 && c.getY() == 9264){
+			c.getPA().movePlayer(1630, 2836, 0);
+			} else if(c.getX() == 1650 && c.getY() == 9265){
+			c.getPA().movePlayer(1631, 2836, 0);
+			}
+			break;
+		case 34544:
+			if(c.getX() == 1301 && c.getY() == 10206 && c.getHeight() == 0){
+			c.getPA().movePlayer(1303, 10206, 0);
+			} else if(c.getX() == 1301 && c.getY() == 10205 && c.getHeight() == 0){
+			c.getPA().movePlayer(1303, 10205, 0);
+			} else if(c.getX() == 1303 && c.getY() == 10205 && c.getHeight() == 0){
+			c.getPA().movePlayer(1301, 10205, 0);
+			} else if(c.getX() == 1303 && c.getY() == 10206 && c.getHeight() == 0){
+			c.getPA().movePlayer(1301, 10206, 0);
+			} else if(c.getX() == 1311 && c.getY() == 10214 && c.getHeight() == 0){
+			c.getPA().movePlayer(1311, 10216, 0);
+			} else if(c.getX() == 1312 && c.getY() == 10214 && c.getHeight() == 0){
+			c.getPA().movePlayer(1312, 10216, 0);
+			} else if(c.getX() == 1311 && c.getY() == 10216 && c.getHeight() == 0){
+			c.getPA().movePlayer(1311, 10214, 0);
+			} else if(c.getX() == 1312 && c.getY() == 10216 && c.getHeight() == 0){
+			c.getPA().movePlayer(1312, 10214, 0);
+			} else if(c.getX() == 1320 && c.getY() == 10206 && c.getHeight() == 0){
+			c.getPA().movePlayer(1322, 10206, 0);
+			} else if(c.getX() == 1322 && c.getY() == 10206 && c.getHeight() == 0){
+			c.getPA().movePlayer(1320, 10206, 0);
+			} else if(c.getX() == 1320 && c.getY() == 10205 && c.getHeight() == 0){
+			c.getPA().movePlayer(1322, 10205, 0);
+			} else if(c.getX() == 1322 && c.getY() == 10205 && c.getHeight() == 0){
+			c.getPA().movePlayer(1320, 10205, 0);
+			}
+			break;
+
+
 		case 25338:
-			if(c.getClickX() == 1768 && c.getClickY() == 5366 && c.getHeight() == 1){
+			if(obX == 1769 && obY == 5365 && c.getHeight() == 1){
 				c.getPA().movePlayer(1772, 5366, 0);
 			}
 			break;
-/*		case 25339:
-			if(obX == 1778 && obY == 5345){
+		case 25339:
+			if(obX == 1778 && obY == 5344){
 				c.getPA().movePlayer(1778, 5343, 1);
 			}
 			break;
 		case 25340:
-			if(c.getClickX() == 1778 && c.getClickY() == 5343){
+			if(obX == 1778 && obY == 5344){
 				c.getPA().movePlayer(1778, 5346, 0);
 			}
-			break;*/
+			break;
+		case 30189:
+			if(obX == 2881 && obY == 9825){
+				c.getPA().movePlayer(2879, 9825, 1);
+			}
+			break;
+		case 30190:
+			if(obX == 2881 && obY == 9825){
+				c.getPA().movePlayer(2883, 9825, 0);
+			}
+			break;
+		case 154:
+			if(obX == 2887 && obY == 9823){
+				c.getPA().movePlayer(2889, 9823, 1);
+			}
+			break;
+		case 14106:
+			if(obX == 2887 && obY == 9823){
+				c.getPA().movePlayer(2886, 9823, 0);
+			}
+			break;
+		case 95:
+			if(c.getX() == 1766 && c.getY() == 5468){
+				if(c.combatLevel > 80) {
+				c.getPA().movePlayer(1766, 5467, 0);
+				}else {
+					c.sendMessage("You need a combat level of 80+ to go there.");
+				}
+			} else if(c.getX() == 1766 && c.getY() == 5467){
+				c.getPA().movePlayer(1766, 5468, 0);
+			}
+			break;
+		case 94:
+			if(c.getX() == 1765 && c.getY() == 5468){
+				if(c.combatLevel > 80) {
+				c.getPA().movePlayer(1765, 5467, 0);
+				}else {
+					c.sendMessage("You need a combat level of 80+ to go there.");
+				}
+			} else if(c.getX() == 1765 && c.getY() == 5467){
+				c.getPA().movePlayer(1765, 5468, 0);
+			}
+			break;
+		case 32212:
+			if(obX == 1744 && obY == 5323){
+				c.getPA().movePlayer(1744, 5321, 1);
+			}
+			break;
+
+		case 32211:
+			if(obX == 1744 && obY == 5322){
+				c.getPA().movePlayer(1745, 5325, 0);
+			}
+			break;
 		case 21738:
 			c.getPA().movePlayer(2647, 9557);
 			break;
@@ -551,6 +414,35 @@ if(ObjectDef.getObjectDef(objectType).name.equals("Staircase")) {
 				// }
 			}
 			break;
+		case 20973:
+			c.getBarrows().useChest();
+			break;
+
+		case 28851:
+			if(c.hosidiusFavor >= 75.0){
+				c.sendMessage("test");
+			}else{
+				c.sendMessage("You need 75 Favor in the hosidius house for this.");
+			}
+			break;
+		case 20720:
+		case 20721:
+		case 20722:
+		case 20770:
+		case 20771:
+		case 20772:
+			c.getBarrows().spawnBrother(objectType);
+			break;
+
+		case 20667:
+		case 20668:
+		case 20669:
+		case 20670:
+		case 20671:
+		case 20672:
+			c.getBarrows().moveUpStairs(objectType);
+			break;
+
 		case 10043:
 			if (c.heightLevel == 0) {
 				// if(Boundary.isIn(c, WarriorsGuildBasement.WAITING_ROOM_BOUNDARY) &&
@@ -694,31 +586,28 @@ if(ObjectDef.getObjectDef(objectType).name.equals("Staircase")) {
 			}
 			break;
 		case 25382:
-			if(obX == 3035 && obY == 4841){
-				c.getPA().movePlayer(2400, 4835, 0);
-			} else if (obX == 3029 && obY == 4837){
+			if(c.absX == 3035 && c.absY == 4842)
+			c.getPA().movePlayer(2400, 4835, 0);
+			 else if (c.absX == 3028 && c.absY == 4837)
 			c.getPA().movePlayer(2142, 4813, 0);
-			} else if (obX == 3030 && obY == 4830){
+			 else if (c.absX == 3029 && c.absY == 4830)
 			c.getPA().movePlayer(2574, 4849, 0);
-			} else if (obX == 3032 && obY == 4825){
+			 else if (c.absX == 3031 && c.absY == 4825)
 			c.getPA().movePlayer(2655, 4830, 0);
-			} else if (obX == 3039 && obY == 4822){
+			 else if (c.absX == 3039 && c.absY == 4821)
 			c.getPA().movePlayer(2521, 4834, 0);
-			} else if (obX == 3044 && obY == 4823){
+			 else if (c.absX == 3044 && c.absY == 4822)
 			c.getPA().movePlayer(2793, 4828, 0);
-			} else if (obX == 3050 && obY == 4833){
+			 else if (c.absX == 3047 && c.absY == 4825)
 			c.getPA().movePlayer(2841, 4829, 0);
-			} else if (obX == 3049 && obY == 4837){
+			else if (c.absX == 3051 && c.absY == 4833)
 			c.getPA().movePlayer(2726, 4832, 0);
-			} else if (obX == 3049 && obY == 4837){
+			 else if (c.absX == 3050 && c.absY == 4837)
 			c.getPA().movePlayer(2208, 4830, 0);
-			} else if (obX == 3048 && obY == 4839){
+			 else if (c.absX == 3049 && c.absY == 4839)
 			c.getPA().movePlayer(2464, 4818, 0);
-			} else if (obX == 3044 && obY == 4841){
+			 else if (c.absX == 3044 && c.absY == 4842)
 			c.getPA().movePlayer(2281, 4837, 0);
-			} else if (obX == 3047 && obY == 4826){
-			c.getPA().movePlayer(2841, 4829, 0);
-			}
 			break;
 		case 18493:
 			if(obX == 3235 && obY == 3228) {
@@ -730,7 +619,7 @@ if(ObjectDef.getObjectDef(objectType).name.equals("Staircase")) {
 			}
 			break;
 		case 5581: // take axe from log
-			AxeInLog.pullAxeFromLog(c, c.getClickX(), c.getClickY());
+			AxeInLog.pullAxeFromLog(c, c.objectX, c.objectY);
 			break;
 			
 		case 14910:
@@ -746,7 +635,7 @@ if(ObjectDef.getObjectDef(objectType).name.equals("Staircase")) {
 			
 			break;
 		case 9662:
-			SpadeInGround.pullSpadeFromGround(c, c.getClickX(), c.getClickY());
+			SpadeInGround.pullSpadeFromGround(c, c.getX(), c.getX());
 			break;
 		case 31555:
 			if(obX == 3073 && obY == 3654) {
@@ -759,18 +648,18 @@ if(ObjectDef.getObjectDef(objectType).name.equals("Staircase")) {
 			}
 			break;
 		case 2380:
-		  /*  if ((System.currentTimeMillis() - c.actionTimer) <= 5000) {	
-		    	c.sendMessage("you got to wait to click this again.");
+		    if ((System.currentTimeMillis() - c.actionTimer) <= 5000) {	
+		    	//c.sendMessage("you got to wait to click this again.");
 		    } else {
-		    	c.getPA().addSkillXP(60 * Config.FIREMAKING_EXPERIENCE, 11);
+		    	c.getPA().addSkillXP(45 * Config.FIREMAKING_EXPERIENCE, 11);
 		        c.sendMessage("You Gain Some FireMaking.");	
 		        c.animation(1979);
 		       c.gfx100(76);
 		        c.actionTimer = System.currentTimeMillis();
 		        c.updateRequired = true; 
 		        c.appearanceUpdateRequired = true;
-		    }*/
-			c.sendMessage("This is disabled for right now.");
+		    }
+			//c.sendMessage("This is disabled for right now.");
 		    break;
 		case 4525: // leave house
 			if (c.getHouse() != null)
@@ -858,7 +747,7 @@ if (obX == 2042 && obY == 5246) {
 			}
 			c.face(obX, obY);
 			c.ditchDelay.reset();
-			if (c.getClickY() >= 3523) {
+			if (c.getX() >= 3523) {
 				WildernessDitch.leave(c);
 			} else
 				WildernessDitch.enter(c);
@@ -890,8 +779,8 @@ if (obX == 2042 && obY == 5246) {
 			break;
 		case 2882:
 		case 2883:
-			if (c.getClickX() == 3268) {
-				if (c.absX < c.getClickX()) {
+			if (c.getX() == 3268) {
+				if (c.absX < c.getX()) {
 					c.getPA().walkTo(1, 0);
 				} else {
 					c.getPA().walkTo(-1, 0);
@@ -975,22 +864,15 @@ if (obX == 2042 && obY == 5246) {
 
 
 		case 8959:
-			if (c.getClickX() == 2490 && (c.getClickY() == 10146 || c.getClickY() == 10148)) {
+			if (c.getX() == 2490 && (c.getX() == 10146 || c.getX() == 10148)) {
 				if (c.getPA().checkForPlayer(2490,
-						c.getClickY() == 10146 ? 10148 : 10146)) {
-					new Object(6951, c.getClickX(), c.getClickY(), c.heightLevel, 1,
+						c.getX() == 10146 ? 10148 : 10146)) {
+					new Object(6951, c.getX(), c.getX(), c.heightLevel, 1,
 							10, 8959, 15);
 				}
 			}
 			break;
 
-		case 2213:
-		case 14367:
-		case 11758:
-		case 3193:
-		case 27663:
-			c.getPA().openUpBank();
-			break;
 
 		case 10177:
 			c.getPA().movePlayer(1890, 4407, 0);
@@ -1002,7 +884,7 @@ if (obX == 2042 && obY == 5246) {
 			c.getPA().movePlayer(1912, 4367, 0);
 			break;
 		case 2623:
-			if (c.absX >= c.getClickX())
+			if (c.absX >= c.getX())
 				c.getPA().walkTo(-1, 0);
 			else
 				c.getPA().walkTo(1, 0);
@@ -1017,7 +899,7 @@ if (obX == 2042 && obY == 5246) {
 
 		case 1596:
 		case 1597:
-			if (c.getClickY() >= c.getClickY())
+			if (c.getX() >= c.getX())
 				c.getPA().walkTo(0, -1);
 			else
 				c.getPA().walkTo(0, 1);
@@ -1025,12 +907,12 @@ if (obX == 2042 && obY == 5246) {
 
 		case 14235:
 		case 14233:
-			if (c.getClickX() == 2670)
+			if (c.getX() == 2670)
 				if (c.absX <= 2670)
 					c.absX = 2671;
 				else
 					c.absX = 2670;
-			if (c.getClickX() == 2643)
+			if (c.getX() == 2643)
 				if (c.absX >= 2643)
 					c.absX = 2642;
 				else
@@ -1056,14 +938,14 @@ if (obX == 2042 && obY == 5246) {
 			break;
 
 		case 9369:
-			if (c.getClickY() > 5175)
+			if (c.getX() > 5175)
 				c.getPA().movePlayer(2399, 5175, 0);
 			else
 				c.getPA().movePlayer(2399, 5177, 0);
 			break;
 
 		case 9368:
-			if (c.getClickY() < 5169) {
+			if (c.getX() < 5169) {
 				Server.fightPits.removePlayerFromPits(c.index);
 				c.getPA().movePlayer(2399, 5169, 0);
 			}
@@ -1084,7 +966,6 @@ if (obX == 2042 && obY == 5246) {
 			break;
 
 		case 2286:
-		case 154:
 		case 4058:
 		case 2295:
 		case 2285:
@@ -1220,7 +1101,7 @@ if (obX == 2042 && obY == 5246) {
 				return;
 			}
 			if (c.barrowsNpcs[0][1] == 0) {
-				Server.npcHandler.spawnNpc(c, 2030, c.getClickX(), c.getClickY() - 1, -1,
+				Server.npcHandler.spawnNpc(c, 2030, c.getX(), c.getX() - 1, -1,
 						0, 120, 25, 200, 200, true, true);
 				c.barrowsNpcs[0][1] = 1;
 			} else {
@@ -1237,7 +1118,7 @@ if (obX == 2042 && obY == 5246) {
 				return;
 			}
 			if (c.barrowsNpcs[1][1] == 0) {
-				Server.npcHandler.spawnNpc(c, 2029, c.getClickX() + 1, c.getClickY(), -1,
+				Server.npcHandler.spawnNpc(c, 2029, c.getX() + 1, c.getX(), -1,
 						0, 120, 20, 200, 200, true, true);
 				c.barrowsNpcs[1][1] = 1;
 			} else {
@@ -1253,7 +1134,7 @@ if (obX == 2042 && obY == 5246) {
 				return;
 			}
 			if (c.barrowsNpcs[2][1] == 0) {
-				Server.npcHandler.spawnNpc(c, 2028, c.getClickX(), c.getClickY() - 1, -1,
+				Server.npcHandler.spawnNpc(c, 2028, c.getX(), c.getX() - 1, -1,
 						0, 90, 17, 200, 200, true, true);
 				c.barrowsNpcs[2][1] = 1;
 			} else {
@@ -1269,7 +1150,7 @@ if (obX == 2042 && obY == 5246) {
 				return;
 			}
 			if (c.barrowsNpcs[3][1] == 0) {
-				Server.npcHandler.spawnNpc(c, 2027, c.getClickX(), c.getClickY() - 1, -1,
+				Server.npcHandler.spawnNpc(c, 2027, c.getX(), c.getX() - 1, -1,
 						0, 120, 23, 200, 200, true, true);
 				c.barrowsNpcs[3][1] = 1;
 			} else {
@@ -1285,7 +1166,7 @@ if (obX == 2042 && obY == 5246) {
 				return;
 			}
 			if (c.barrowsNpcs[4][1] == 0) {
-				Server.npcHandler.spawnNpc(c, 2026, c.getClickX(), c.getClickY() - 1, -1,
+				Server.npcHandler.spawnNpc(c, 2026, c.getX(), c.getX() - 1, -1,
 						0, 120, 45, 250, 250, true, true);
 				c.barrowsNpcs[4][1] = 1;
 			} else {
@@ -1301,7 +1182,7 @@ if (obX == 2042 && obY == 5246) {
 				return;
 			}
 			if (c.barrowsNpcs[5][1] == 0) {
-				Server.npcHandler.spawnNpc(c, 2025, c.getClickX(), c.getClickY() - 1, -1,
+				Server.npcHandler.spawnNpc(c, 2025, c.getX(), c.getX() - 1, -1,
 						0, 90, 19, 200, 200, true, true);
 				c.barrowsNpcs[5][1] = 1;
 			} else {
@@ -1314,8 +1195,8 @@ if (obX == 2042 && obY == 5246) {
 		// DOORS
 		case 1516:
 		case 1519:
-			if (c.getClickY() == 9698) {
-				if (c.absY >= c.getClickY())
+			if (c.getX() == 9698) {
+				if (c.absY >= c.getX())
 					c.getPA().walkTo(0, -1);
 				else
 					c.getPA().walkTo(0, 1);
@@ -1332,7 +1213,7 @@ if (obX == 2042 && obY == 5246) {
 		case 6725:
 		case 3198:
 		case 3197:
-			Server.objectHandler.doorHandling(objectType, c.getClickX(), c.getClickY(),
+			Server.objectHandler.doorHandling(objectType, c.getX(), c.getX(),
 					0);
 			break;
 
@@ -1381,19 +1262,19 @@ if (obX == 2042 && obY == 5246) {
 			break;
 
 		case 1755:
-			if (c.getClickX() == 2884 && c.getClickY() == 9797)
+			if (c.getX() == 2884 && c.getX() == 9797)
 				c.getPA().movePlayer(c.absX, c.absY - 6400, 0);
 			break;
 		case 1759:
-			if (c.getClickX() == 2884 && c.getClickY() == 3397)
+			if (c.getX() == 2884 && c.getX() == 3397)
 				c.getPA().movePlayer(c.absX, c.absY + 6400, 0);
 			break;
 		case 16154:
-			if (c.getClickX() == 3081 && c.getClickY() == 3420)
+			if (c.getX() == 3081 && c.getX() == 3420)
 				c.getPA().movePlayer(1859, 5243, 0);
 			break;
 		case 16148:
-			if (c.getClickX() == 1859 && c.getClickY() == 5244)
+			if (c.getX() == 1859 && c.getX() == 5244)
 				c.getPA().movePlayer(3081, 3421, 0);
 			break;
 		case 409:
@@ -1458,15 +1339,15 @@ if (obX == 2042 && obY == 5246) {
 			break;
 
 		case 9294:
-			if (c.absX < c.getClickX()) {
-				c.getPA().movePlayer(c.getClickX() + 1, c.absY, 0);
-			} else if (c.absX > c.getClickX()) {
-				c.getPA().movePlayer(c.getClickX() - 1, c.absY, 0);
+			if (c.absX < c.getX()) {
+				c.getPA().movePlayer(c.getX() + 1, c.absY, 0);
+			} else if (c.absX > c.getX()) {
+				c.getPA().movePlayer(c.getX() - 1, c.absY, 0);
 			}
 			break;
 
 		case 9293:
-			if (c.absX < c.getClickX()) {
+			if (c.absX < c.getX()) {
 				c.getPA().movePlayer(2892, 9799, 0);
 			} else {
 				c.getPA().movePlayer(2886, 9799, 0);
@@ -1474,22 +1355,38 @@ if (obX == 2042 && obY == 5246) {
 			break;
 		case 10529:
 		case 10527:
-			if (c.absY <= c.getClickY())
+			if (c.absY <= c.getX())
 				c.getPA().walkTo(0, 1);
 			else
 				c.getPA().walkTo(0, -1);
 			break;
 		case 3044:
+		case 24009:
+		case 26300:
+		case 16469:
+		case 14838:
+		case 2030:
 			c.getSmithing().sendSmelting();
 			break;
 		case 733:
+			GlobalObject objectOne = null;
+			int chance =  4;
 			c.animation(451);
-			if (c.getClickX() == 3158 && c.getClickY() == 3951) {
-				new Object(734, c.getClickX(), c.getClickY(), c.heightLevel, 1, 10,
-						733, 50);
-			} else {
-				new Object(734, c.getClickX(), c.getClickY(), c.heightLevel, 0, 10,
-						733, 50);
+			c.sendMessage("You fail to cut through it.");
+			if (Misc.random(chance) == 0) {
+				c.sendMessage("You slash the web apart.");
+				if (c.objectX == 3092 && c.objectY == 3957) {
+					objectOne = new GlobalObject(734, obX, obY, c.heightLevel, 2, 0, 50, 733);
+				} else if (c.objectX == 3095 && c.objectY == 3957) {
+					objectOne = new GlobalObject(734, obX, obY, c.heightLevel, 0, 0, 50, 733);
+				} else if (c.objectX == 3158 && c.objectY == 3951) {
+					objectOne = new GlobalObject(734, obX, obY, c.heightLevel, 1, 10, 50, 733);
+				} else if (c.objectX == 3105 && c.objectY == 3958 || c.objectX == 3106 && c.objectY == 3958) {
+					objectOne = new GlobalObject(734, obX, obY, c.heightLevel, 3, 10, 50, 733);
+				}
+				if (objectOne != null) {
+					Server.getGlobalObjects().add(objectOne);
+				}
 			}
 			break;
 
@@ -1505,14 +1402,22 @@ if (obX == 2042 && obY == 5246) {
 		if (Server.getMultiplayerSessionListener().inAnySession(c)) {
 			return;
 		}
+		if (c.isMorphed) {
+			return;
+			}
+		if(c.getRights().isBetween(9, 10)) {
+			c.sendMessage("Object type: " + objectType+" ObjectX:"+obX+" ObjectY"+obY+".");
+	}
+
+		c.face(obX, obY);
 		c.clickObjectType = 0;
-/*			final String ObjectName = ObjectDef.getObjectDef(objectType).name;
+			final String ObjectName = ObjectDef.getObjectDef(objectType).name;
 			if (ObjectName.equalsIgnoreCase("bank booth") || ObjectName.equalsIgnoreCase("bank chest") || ObjectName.equalsIgnoreCase("Counter")){ 
 				c.getPA().openUpBank();
 				return;
 				}
 			if (ObjectName.equalsIgnoreCase("Furnace")){ 
-				c.getSmithing().sendSmelting();
+				Smelting.openInterface(c);
 				return;
 				
 			}
@@ -1530,8 +1435,8 @@ if (obX == 2042 && obY == 5246) {
 						c.getPA().movePlayer(3069, 3857, 0);
 						return;
 					}
-					if(c.getClickY() > 6400) {
-						c.getPA().movePlayer(c.getClickX(), c.getClickY()-6400, c.heightLevel);
+					if(c.getX() > 6400) {
+						c.getPA().movePlayer(c.getX(), c.getX()-6400, c.heightLevel);
 						return;
 					} else {
 						c.getPA().movePlayer(c.absX, c.absY, c.heightLevel+1);
@@ -1555,8 +1460,8 @@ if (obX == 2042 && obY == 5246) {
 						c.getPA().movePlayer(1560, 2830, 0);
 						return;
 					}
-					if(c.getClickY() < 6400 && (c.heightLevel & 3) == 0) {
-						c.getPA().movePlayer(c.getClickX(), c.getClickY()+6400, c.heightLevel);
+					if(c.getX() < 6400 && (c.heightLevel & 3) == 0) {
+						c.getPA().movePlayer(c.getX(), c.getX()+6400, c.heightLevel);
 						return;
 					} else {
 						c.getPA().movePlayer(c.absX, c.absY, c.heightLevel-1);
@@ -1573,7 +1478,7 @@ if (obX == 2042 && obY == 5246) {
 					c.getPA().movePlayer(c.absX, c.absY, c.heightLevel-1);
 					return;
 				}
-			}*/
+			}
 			if (c.playerCannon != null && objectType == 6) {
 				if (c.playerCannon.pickUpCannon(objectType, obX, obY)) {
 					PlayerHandler.removeCannon(c.playerCannon);
@@ -1583,9 +1488,6 @@ if (obX == 2042 && obY == 5246) {
 				c.sendMessage("This is not your cannon!");
 			}
 
-		if (c.isMorphed) {
-			return;
-			}
 		Location3D location = new Location3D(obX, obY, c.heightLevel);
 		// c.sendMessage("Object type: " + objectType);
 		switch (objectType) {
@@ -1635,20 +1537,20 @@ break;
 					c.sendMessage("You fail to pick the lock.");
 					break;
 				}
-				if (c.getClickX() == 3044 && c.getClickY() == 3956) {
+				if (c.getX() == 3044 && c.getX() == 3956) {
 					if (c.absX == 3045) {
 						c.getPA().walkTo2(-1, 0);
 					} else if (c.absX == 3044) {
 						c.getPA().walkTo2(1, 0);
 					}
 
-				} else if (c.getClickX() == 3038 && c.getClickY() == 3956) {
+				} else if (c.getX() == 3038 && c.getX() == 3956) {
 					if (c.absX == 3037) {
 						c.getPA().walkTo2(1, 0);
 					} else if (c.absX == 3038) {
 						c.getPA().walkTo2(-1, 0);
 					}
-				} else if (c.getClickX() == 3041 && c.getClickY() == 3959) {
+				} else if (c.getX() == 3041 && c.getX() == 3959) {
 					if (c.absY == 3960) {
 						c.getPA().walkTo2(0, -1);
 					} else if (c.absY == 3959) {
@@ -1710,7 +1612,26 @@ break;
 		if(Butterflys.Flys.Butterflys.containsKey(i)) {
 			Butterflys.catchButterfly(c, i, idx);
 		}
+/*		if (Server.npcHandler.npcs[i].isBoothBanker()) {
+			if (Server.npcHandler.npcs[i].getCorrectStandPosition(c.getPosition(), 2)) {
+				c.getPA().openUpBank();
+			}
+			return;
+		}*/
+		if (PetHandler.isPet(i)) {
+			if (Objects.equals(PetHandler.getOptionForNpcId(i), "first")) {
+				if (PetHandler.pickupPet(c, i, true))
+					return;
+			}
+		}
 		switch (i) {
+		case 2040:
+			if (c.getZulrahLostItems().size() > 0) {
+				c.getZulrahLostItems().retain();
+			}else {
+				c.sendMessage("You dont have items in here.");
+			}
+			break;
 		case 8059:
 			c.getVorkath().wakeUp();
 			break;
@@ -1733,6 +1654,15 @@ break;
 		case 3014: //Man
 		case 3015: //Woman
 			c.start(new ManandWomanDialogue());
+			break;
+		case 401:
+			c.start(new TuraelDialogue());
+			break;
+		case 402:
+			c.start(new MazchnaDialogue());
+			break;
+		case 405:
+			c.start(new DuradelDialogue());
 			break;
 		case 8494:
 			c.start(new HansXmasDialogue());
@@ -1906,12 +1836,23 @@ break;
 		case 462:
 			c.getDH().sendDialogues(7, i);
 			break;
-
+		case 3657:
+		case 1519:
+		case 1510:
+		case 324:// SWORDIES+TUNA-CAGE+HARPOON
+			// Fishing.attemptdata(c, 7);
+			Fishing.startFishing(c, 6, i);
+			break;
 			// FISHING
 			case 1530: // NET + BAIT
 			case 1518:
 				// Fishing.attemptdata(c, 1);
 				Fishing.startFishing(c, 1, i);
+				break;
+				
+			case 4711:
+				// Fishing.attemptdata(c, 1);
+				Fishing.startFishing(c, 7, i);
 				break;
 				
 			//case 1520: // NET + BAIT
@@ -1931,10 +1872,6 @@ break;
 				break;
 			case 3417: // TROUT
 				Fishing.startFishing(c, 3, i);
-				break;
-			case 3657:
-				// Fishing.attemptdata(c, 8);
-				Fishing.startFishing(c, 6, i);
 				break;
 			case 635:
 				// Fishing.attemptdata(c, 13); // DARK CRAB FISHING
@@ -1979,9 +1916,77 @@ break;
 		if(i >= 761 && i <= 773 && i != 767) {
 			c.getDH().sendDialogues(908, i);
 		}
-		if (PetHandler.pickupPet(c, npcType))
-			return;
+			if (PetHandler.isPet(npcType)) {
+				if (PetHandler.getOptionForNpcId(npcType) == "second") {
+					if (PetHandler.pickupPet(c, npcType, true))
+						return;
+				}
+			}
 		switch (npcType) {
+		case 401:
+			if(c.combatLevel > 20){
+				DialogueManager.sendNpcChat(c, 401, Emotion.ANGRY_1, "Your Combat level is a above 20,","You need to talk to Mazchna.");
+				c.getDialogue().end();
+			}else if (!c.getSlayer().getTask().isPresent()) {
+			c.getSlayer().createNewTask(401);
+			}else {
+			DialogueManager.sendNpcChat(c, 401, Emotion.CALM, 
+					"You currently have " + c.getSlayer().getTaskAmount() + " "
+							+ c.getSlayer().getTask().get().getPrimaryName() + " to kill.",
+					"You cannot get an easier task. You must finish this.");
+			}
+			break;
+		case 402:
+			if(c.combatLevel<20){
+				DialogueManager.sendNpcChat(c, 402, Emotion.ANGRY_1, "Do not waste my time peasent.","You need a Combat level of at least 20.");
+				c.getDialogue().end();
+			} else if(c.combatLevel > 100){
+					DialogueManager.sendNpcChat(c, 402, Emotion.CALM, "Your Combat level is a above 100,","You need to talk to Duradel.");
+					c.getDialogue().end();
+				}else if (!c.getSlayer().getTask().isPresent()) {
+			c.getSlayer().createNewTask(402);
+			c.getDialogue().end();
+			}else {
+			DialogueManager.sendNpcChat(c, 402, Emotion.CALM, 
+					"You currently have " + c.getSlayer().getTaskAmount() + " "
+							+ c.getSlayer().getTask().get().getPrimaryName() + " to kill.",
+					"You cannot get an easier task. You must finish this.");
+			//c.getDialogue().end();
+			}
+			break;
+		case 405:
+			if(c.combatLevel< 100){
+				DialogueManager.sendNpcChat(c, 405, Emotion.ANGRY_1, "Do not waste my time peasent.","You need a Combat level of at least 100.");
+				c.getDialogue().end();
+			} else if (c.playerLevel[18] < 50) {
+					DialogueManager.sendNpcChat(c, 405, Emotion.ANGRY_1, "You must have a slayer level of at least 50 weakling.");
+					c.getDialogue().end();
+			}else if (!c.getSlayer().getTask().isPresent()) {
+			c.getSlayer().createNewTask(405);
+			c.getDialogue().end();
+			}else {
+			DialogueManager.sendNpcChat(c, 405, Emotion.CALM, 
+					"You currently have " + c.getSlayer().getTaskAmount() + " "
+							+ c.getSlayer().getTask().get().getPrimaryName() + " to kill.",
+					"You cannot get an easier task. You must finish this.");
+			//c.getDialogue().end();
+			}
+			break;
+		case 6797:
+			if(c.combatLevel<85){
+				DialogueManager.sendNpcChat(c, 6797, Emotion.ANGRY_1, "Do not waste my time peasent.","You need a Combat level of at least 85.");
+				c.getDialogue().end();
+			}else if (!c.getSlayer().getTask().isPresent()) {
+			c.getSlayer().createNewTask(6797);
+			c.getDialogue().end();
+			}else {
+			DialogueManager.sendNpcChat(c, 6797, Emotion.CALM, 
+					"You currently have " + c.getSlayer().getTaskAmount() + " "
+							+ c.getSlayer().getTask().get().getPrimaryName() + " to kill.",
+					"You cannot get an easier task. You must finish this.");
+			//c.getDialogue().end();
+			}
+			break;
 		case 585:
 			if(!c.getRights().isIronman()) {
 			c.getShops().openShop(14);
@@ -1997,7 +2002,7 @@ break;
 				if(!c.getRights().isIronman()) {
 				c.getShops().openShop(3);
 				}else {
-					
+				c.getShops().openShop(257);
 				}
 				break;
 				
@@ -2005,6 +2010,20 @@ break;
 				c.start(new SheepDialogue());
 				break;
 
+			case 1301:
+				if(!c.getRights().isIronman()) {
+				c.getShops().openShop(4);
+				} else {
+					
+				}
+				break;
+			case 1174:
+				if(!c.getRights().isIronman()) {
+				c.getShops().openShop(46);
+				} else {
+					
+				}
+				break;
 		case 508:
 			if(!c.getRights().isIronman()) {
 			c.getShops().openShop(49);
@@ -2183,7 +2202,7 @@ break;
 			if(!c.getRights().isIronman()) {
 			c.getShops().openShop(55);
 			}else {
-				
+				c.getShops().openShop(22);
 			}
 			break;
 			
@@ -2240,6 +2259,12 @@ break;
 		if(c.getRights().isBetween(9, 10)) {
 			c.sendMessage("Third Npc Click: " + npcType+".");
 	}
+		if (PetHandler.isPet(npcType)) {
+			if (PetHandler.getOptionForNpcId(npcType) == "third") {
+				if (PetHandler.pickupPet(c, npcType, true))
+					return;
+			}
+		}
 		switch (npcType) {
 		case 5422:
 			if(!c.getRights().isIronman()) {
@@ -2247,6 +2272,15 @@ break;
 			}else {
 				
 			}
+			break;
+		case 401:
+		case 402:
+		case 403:
+		case 404:
+		case 405:
+		case 6797:
+		case 8623:
+			c.getShops().openShop(64);
 			break;
 		case 1909:
 			c.sendMessage("You Have "+c.votePoints+" Vote Points.", 255);
@@ -2273,6 +2307,9 @@ break;
 			c.sendMessage("Fourth Npc Click: " + npcType+".");
 	}
 		switch(npcType) {
+		case 401:
+			c.getSlayer().handleInterface("buy");
+			break;
 			case 2575:
 				c.sendMessage("woooooww, fourth nlick nps works!");
 				break;
@@ -2351,6 +2388,7 @@ break;
 		c.npcClickIndex = 0;
 
 		switch (npcType) {
+		case 401:
 		case 402:
 		case 405:
 		case 490:

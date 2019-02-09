@@ -13,6 +13,7 @@ public abstract class Dialogue {
 	}
 
 	public void end() {
+		//player.getPA().closeAllWindows();
 		next = -1;
 	}
 

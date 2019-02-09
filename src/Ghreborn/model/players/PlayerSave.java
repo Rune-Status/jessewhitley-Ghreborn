@@ -18,6 +18,7 @@ import Ghreborn.core.PlayerHandler;
 import Ghreborn.model.content.dailytasks.DailyTasks.PossibleTasks;
 import Ghreborn.model.content.dailytasks.TaskTypes;
 import Ghreborn.model.content.gambling.Gambling;
+import Ghreborn.model.items.GameItem;
 import Ghreborn.model.items.bank.BankItem;
 import Ghreborn.model.items.bank.BankTab;
 import Ghreborn.model.players.skills.slayer.SlayerMaster;
@@ -392,6 +393,16 @@ public class PlayerSave {
 						p.mouseButton = Boolean.parseBoolean(token2);
 					} else if (token.equals("acceptAid")) {
 						p.acceptAid = Boolean.parseBoolean(token2);
+					} else if (token.equals("arceussFavor")) {
+						p.arceussFavor = Double.parseDouble(token2);
+					} else if (token.equals("hosidiusFavor")) {
+						p.hosidiusFavor = Double.parseDouble(token2);
+					} else if (token.equals("lovakengjFavor")) {
+						p.lovakengjFavor = Double.parseDouble(token2);
+					} else if (token.equals("piscarilliusFavor")) {
+						p.piscarilliusFavor = Double.parseDouble(token2);
+					} else if (token.equals("shazienFavor")) {
+						p.shazienFavor = Double.parseDouble(token2);
 					} else if (token.equals("days")) {
 						p.daysPlayed = Long.parseLong(token2);
 					} else if (token.equals("hours")) {
@@ -418,6 +429,8 @@ public class PlayerSave {
 						p.lastClanChat = token2;
 					} else if (token.equals("onLoginClan")) {
 						p.lastClanChat = token2;
+					} else if (token.equals("placeholders")) {
+						p.placeHolders = Boolean.parseBoolean(token2);
 					} else if (token.equals("tutorial-progress")) {
 						p.tutorial = Integer.parseInt(token2);
 					} else if (token.equals("itemsinlootbag")) {
@@ -551,6 +564,14 @@ public class PlayerSave {
 					} else if (token.equals("void")) {
 						for (int j = 0; j < token3.length; j++) {
 							p.voidStatus[j] = Integer.parseInt(token3[j]);
+						}
+					} else if (token.equals("lost-items")) {
+						if (token3.length > 1) {
+							for (int i = 0; i < token3.length; i += 2) {
+								int itemId = Integer.parseInt(token3[i]);
+								int itemAmount = Integer.parseInt(token3[i + 1]);
+								p.getZulrahLostItems().add(new GameItem(itemId, itemAmount));
+							}
 						}
 					} else if (token.equals("gwkc")) {
 						p.killCount = Integer.parseInt(token2);
@@ -759,6 +780,16 @@ public class PlayerSave {
 			characterfile.write("character-uid = ", 0, 16);
 			characterfile.write(Long.toString(p.uniqueIdentifier), 0, Long
 					.toString(p.uniqueIdentifier).length());
+			characterfile.newLine();			
+			characterfile.write("arceussFavor = " + p.arceussFavor);
+			characterfile.newLine();
+			characterfile.write("hosidiusFavor = " + p.hosidiusFavor);
+			characterfile.newLine();
+			characterfile.write("lovakengjFavor = " + p.lovakengjFavor);
+			characterfile.newLine();
+			characterfile.write("piscarilliusFavor = " + p.piscarilliusFavor);
+			characterfile.newLine();
+			characterfile.write("shazienFavor = " + p.shazienFavor);
 			characterfile.newLine();
 			characterfile.write("days = " + p.daysPlayed);
 			characterfile.newLine();
@@ -788,6 +819,8 @@ public class PlayerSave {
 					.toString(p.height).length());
 			characterfile.newLine();
 			characterfile.write("last-clan-chat = " + p.lastClanChat);
+			characterfile.newLine();
+			characterfile.write("placeholders = " + p.placeHolders);
 			characterfile.newLine();
 			characterfile.write("has-npc = ", 0, 10);
 			characterfile.write(Boolean.toString(p.hasNpc), 0, Boolean.toString(p.hasNpc).length());
@@ -975,6 +1008,14 @@ public class PlayerSave {
 			characterfile.write("fightMode = ", 0, 12);
 			characterfile.write(Integer.toString(p.fightMode), 0, Integer
 					.toString(p.fightMode).length());
+			characterfile.newLine();
+			characterfile.write("lost-items = ");
+			for (GameItem item : p.getZulrahLostItems()) {
+				if (item == null) {
+					continue;
+				}
+				characterfile.write(item.getId() + "\t" + item.getAmount() + "\t");
+			}
 			characterfile.newLine();
 			characterfile.write("void = ", 0, 7);
 			String toWrite = p.voidStatus[0] + "\t" + p.voidStatus[1] + "\t"

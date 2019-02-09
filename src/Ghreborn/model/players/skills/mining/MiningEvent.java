@@ -7,6 +7,7 @@ import org.apache.commons.lang3.RandomUtils;
 import Ghreborn.Config;
 import Ghreborn.Server;
 import Ghreborn.core.PlayerHandler;
+import Ghreborn.definitions.ItemCacheDefinition;
 import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.model.npcs.NPC;
@@ -144,6 +145,8 @@ public class MiningEvent extends CycleEvent {
 
 	@Override
 	public void execute(CycleEventContainer container) {
+		double osrsExperience = 0;
+		double regExperience = 0;
 		int pieces = 0;
 		for (int i = 0; i < prospectorOutfit.length; i++) {
 			if (player.getItems().isWearingItem(prospectorOutfit[i])) {
@@ -168,13 +171,18 @@ public class MiningEvent extends CycleEvent {
 			}
 		}
 		int chance20 = Misc.random(3);
-		player.face(location.getX(), location.getY());
+		//player.face(location.getX(), location.getY());
 		if(mineral.equals(Mineral.ESSENCE)) {
 			if(player.playerLevel[player.playerMining] >= 30) {
 				player.getItems().addItem(7936, 1);
+				player.sendMessage("You got some "+ItemCacheDefinition.forID(7936).getName()+".");
 			}else {
 				player.getItems().addItem(1436, 1);
+				player.sendMessage("You got some "+ItemCacheDefinition.forID(1436).getName()+".");
 			}
+		}
+		if(!mineral.equals(Mineral.ESSENCE)) {
+		player.sendMessage("You got some "+ItemCacheDefinition.forID(mineral.getMineralReturn().generate()).getName()+".");
 		}
 		player.getItems().addItem(mineral.getMineralReturn().generate(), 1);
 		if (chance20 == 1 && player.smeltOre < 1 && player.getItems().playerHasItem(13243) || player.playerEquipment[player.playerWeapon] == 13243) {
@@ -271,14 +279,18 @@ public class MiningEvent extends CycleEvent {
 				}
 			}
 		}
-		/*if (Misc.random(30) == 0) {
-			player.getPA().rewardPoints(3, "Congrats, You randomly got 3 PK Points from mining!");
-		}*/
+		if (Misc.random(3000) == 0) {
+			player.getItems().addItem(6199, 1);
+			player.getPA().messageall("<col=006600>" +player.playerName+" Has found a Mystery box!");
+		}
+		osrsExperience = mineral.getExperience() + mineral.getExperience() / 10 * pieces;
+		regExperience = mineral.getExperience() * Config.MINING_EXPERIENCE + mineral.getExperience() * Config.MINING_EXPERIENCE / 10 * pieces;
+		
 		//Achievements.increase(player, AchievementType.MINING, 1);
 		if (player.playerEquipment[player.playerHat] == 12013 && player.playerEquipment[player.playerChest] == 12014 && player.playerEquipment[player.playerLegs] == 12015 && player.playerEquipment[player.playerFeet] == 12016) {
-			player.getPA().addSkillXP(Config.MINING_EXPERIENCE * mineral.getExperience() * 1.2, Skill.MINING.getId());
+			player.getPA().addSkillXP((int) (player.getRights().isIronman() ? osrsExperience : regExperience) * 1.2, Skill.MINING.getId());
 		} else {
-			player.getPA().addSkillXP(Config.MINING_EXPERIENCE * mineral.getExperience(), Skill.MINING.getId());
+			player.getPA().addSkillXP((int) (player.getRights().isIronman() ? osrsExperience : regExperience), Skill.MINING.getId());
 		}
 		player.smeltOre = 0;
 	}

@@ -8285,8 +8285,8 @@ if(i == 23903) //ID
 if(i == 23904) //ID
 	{
 		class8.itemActions = new String[] {null, "Wear", null, null, null};
-		class8.name = "Orange Ghostly robe"; //Name
-		class8.description = "Its an Orange Ghostly robe"; //Description
+		class8.name = "Orange Ghostly robe top"; //Name
+		class8.description = "Its an Orange Ghostly robe top"; //Description
         		class8.modifiedModelColors = new int[1];
         		class8.originalModelColors = new int[1];
         		class8.modifiedModelColors[0] = 10266;
@@ -8310,8 +8310,8 @@ if(i == 23904) //ID
 if(i == 23905) //ID
 	{
 		class8.itemActions = new String[] {null, "Wear", null, null, null};
-		class8.name = "Orange Ghostly robe"; //Name
-		class8.description = "Its an Orange Ghostly robe"; //Description
+		class8.name = "Orange Ghostly robe bottom"; //Name
+		class8.description = "Its an Orange Ghostly robe bottom"; //Description
         		class8.modifiedModelColors = new int[1];
         		class8.originalModelColors = new int[1];
         		class8.modifiedModelColors[0] = 10266;
@@ -9048,7 +9048,7 @@ if(i == 23934) //ID
 	}
 if(i == 23935) //ID
 {
-	class8.itemActions = new String[] {null, "Wield", null, null, null};
+	class8.itemActions = new String[] {null, "Wield", null, null, "Drop"};
 	class8.name = "Winter Halberd"; //Name
 	class8.description = "Made by Jacoby/198078"; //Description
 	class8.modelId = 95806;
@@ -9366,7 +9366,7 @@ class8.certID = 23950;//Here is the id of the item you want noted
 
 	if(i == 23952) //ID
 		{
-			class8.itemActions = new String[] {null, "Wear", null, null, null};
+			class8.itemActions = new String[] {null, "Wear", null, null, "Drop"};
 			class8.name = "3rd age platelegs (g)"; //Name
 			class8.description = "Its an 3rd age platelegs (g)"; //Description
 		class8.modifiedModelColors = new int[1];
@@ -9389,7 +9389,7 @@ class8.certID = 23950;//Here is the id of the item you want noted
 		}
 	if(i == 23953) //ID
 		{
-			class8.itemActions = new String[] {null, "Wear", null, null, null};
+			class8.itemActions = new String[] {null, "Wear", null, null, "Drop"};
 			class8.name = "3rd age Platebody (g)"; //Name
 			class8.description = "Its an 3rd age Platebody (g)"; //Description
 		class8.modifiedModelColors = new int[1];
@@ -9412,7 +9412,7 @@ class8.certID = 23950;//Here is the id of the item you want noted
 		}
 if(i == 23954) //ID
 	{
-		class8.itemActions = new String[] {null, "Wear", null, null, null};
+		class8.itemActions = new String[] {null, "Wear", null, null, "Drop"};
 		class8.name = "3rd age full helmet (g)"; //Name
 		class8.description = "Its an 3rd age full helmet (g)"; //Description
 		class8.modifiedModelColors = new int[1];
@@ -9435,7 +9435,7 @@ if(i == 23954) //ID
 	}
 if(i == 23955) //ID
 {
-	class8.itemActions = new String[] {null, "Wield", null, null, null};
+	class8.itemActions = new String[] {null, "Wield", null, null, "Drop"};
 	class8.name = "3rd age kiteshield (g)"; //Name
 	class8.description = "Its an 3rd age kiteshield (g)"; //Description
 class8.modifiedModelColors = new int[4];

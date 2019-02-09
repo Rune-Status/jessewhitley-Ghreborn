@@ -1,83 +1,69 @@
 package Ghreborn.model.players.skills.agility.impl;
 
+import Ghreborn.Config;
 import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
-import Ghreborn.model.players.Player;
+import Ghreborn.model.players.Client;
+import Ghreborn.model.players.Client;
 
 /**
  * WildernessAgility
+ * 
  * @author Andrew (I'm A Boss on Rune-Server and Mr Extremez on Mopar & Runelocus)
  */
 
 public class WildernessAgility {
 
-	public static final int WILDERNESS_PIPE_OBJECT = 23137,
-			WILDERNESS_SWING_ROPE_OBJECT = 23132,
-			WILDERNESS_STEPPING_STONE_OBJECT = 23556,
-			WILDERNESS_LOG_BALANCE_OBJECT = 23542,
+	public static final int WILDERNESS_PIPE_OBJECT = 23137, WILDERNESS_SWING_ROPE_OBJECT = 23132,
+			WILDERNESS_STEPPING_STONE_OBJECT = 23556, WILDERNESS_LOG_BALANCE_OBJECT = 23542,
 			WILDERNESS_ROCKS_OBJECT = 23640;
 
-	public boolean wildernessCourse(final Player c, final int objectId) {
+	public boolean wildernessCourse(final Client c, final int objectId) {
 		switch (objectId) {
+		case 23552:
+		case 23555:
+			if (c.getAgilityHandler().hotSpot(c, 2998, 3916)) {
+				c.setForceMovement(2998, 3931, 0, 400, "NORTH", 762);
+				c.getPA().addSkillXP(40 * (c.getRights().isIronman() ? Config.Ironman_exp_rate : Config.AGILITY_EXPERIENCE), c.playerAgility);
+			}
+			if (c.getAgilityHandler().hotSpot(c, 2998, 3931)) {
+				c.setForceMovement(2998, 3916, 0, 400, "SOUTH", 762);
+				c.getPA().addSkillXP(40 * (c.getRights().isIronman() ? Config.Ironman_exp_rate : Config.AGILITY_EXPERIENCE), c.playerAgility);
+			}
+			return true;
+			
 		case WILDERNESS_PIPE_OBJECT: // pipe
 			if (c.getAgilityHandler().checkLevel(c, objectId)) {
 				return false;
 			}
 			if (c.getAgilityHandler().hotSpot(c, 3004, 3937)) {
-				c.getAgilityHandler().walk(c, 0, 13, c.getAgilityHandler().getAnimation(objectId), 748);
-			} else if (c.absX == 3004 && c.absY > 3937 && c.absY < 3950) {
-				c.getPA().movePlayer(3004, 3950, 0);
+				c.setForceMovement(3004, 3950, 0, 400, "NORTH", c.getAgilityHandler().getAnimation(objectId));
 			}
-			
 			c.getAgilityHandler().resetAgilityProgress();
 			c.getAgilityHandler().agilityProgress[0] = true;
-                    
+
 			return true;
 		case WILDERNESS_SWING_ROPE_OBJECT:
 			if (c.getAgilityHandler().checkLevel(c, objectId)) {
 				return false;
 			}
-			if (c.getAgilityHandler().hotSpot(c, 3005, 3953)) {
-				c.getAgilityHandler().walk(c, 0, 1, c.getAgilityHandler().getAnimation(objectId), -1);
-				if (c.getAgilityHandler().agilityProgress[0] == true) {
-					c.getAgilityHandler().agilityProgress[1] = true;
-                                        
-				}
-				
-				  CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-			            @Override
-			            public void execute(CycleEventContainer container) {
-							if(c == null || c.disconnected || c.isDead) {
-								container.stop();
-								return;
-							}
-						c.getPA().movePlayer(3005, 3958, 0);
-						container.stop();
-					}
-					@Override
-						public void stop() {
-							
-						}
-				}, 1);
+			if (c.absY >= 3955) {
+				c.getPA().movePlayer(3005, 3958);
+			}
+			c.startAnimation(751);
+			c.setForceMovement(3005, 3958, 0, 40, "NORTH", -1);
+			if (c.getAgilityHandler().agilityProgress[0] == true) {
+				c.getAgilityHandler().agilityProgress[1] = true;
 			}
 			return true;
 		case WILDERNESS_STEPPING_STONE_OBJECT:
 			if (c.getAgilityHandler().checkLevel(c, objectId)) {
 				return false;
 			}
-			if (c.getAgilityHandler().hotSpot(c, 3002, 3960)) {
-				c.getAgilityHandler().walk(c, -6, 0, c.getAgilityHandler().getAnimation(objectId), -1);
-			} else if (c.absX > 2996 && c.absX < 3002 && c.absY == 3960) {
-				c.getPA().movePlayer(2996, 3960, 0);
-			}
-			
-			c.getAgilityHandler().steppingStone = 6;
-			c.getAgilityHandler().steppingStoneTimer = 2;
-			c.getAgilityHandler().steppingStone--;
+			c.setForceMovement(2996, 3960, 0, 255, "WEST", c.getAgilityHandler().getAnimation(objectId));
 			if (c.getAgilityHandler().agilityProgress[1] == true) {
 				c.getAgilityHandler().agilityProgress[3] = true;
-                             
 			}
 			return true;
 
@@ -86,14 +72,10 @@ public class WildernessAgility {
 				return false;
 			}
 			if (c.getAgilityHandler().hotSpot(c, 3002, 3945)) {
-				c.getAgilityHandler().walk(c, -8, 0, c.getAgilityHandler().getAnimation(objectId), -1);
-				if (c.getAgilityHandler().agilityProgress[3] == true) {
-					c.getAgilityHandler().agilityProgress[5] = true;
-                                  
-				}
-				
-			} else if (c.absX > 2994 && c.absX < 3002 && c.absY == 3945) {
-				c.getPA().movePlayer(2994, 3945, 0);
+				c.setForceMovement(2994, 3945, 0, 200, "WEST", c.getAgilityHandler().getAnimation(objectId));
+			}
+			if (c.getAgilityHandler().agilityProgress[3] == true) {
+				c.getAgilityHandler().agilityProgress[5] = true;
 			}
 			return true;
 
@@ -101,16 +83,9 @@ public class WildernessAgility {
 			if (c.getAgilityHandler().checkLevel(c, objectId)) {
 				return false;
 			}
-			c.getAgilityHandler().walk(c, 0, -4, c.getAgilityHandler().getAnimation(objectId), -1);
-			if (c.getAgilityHandler().agilityProgress[5] == true) {
-				int experience = c.playerEquipment[c.playerCape] == 10071 ? 15600 : 15600;
-				c.getPA().addSkillXP(experience, 16);   
-				c.getAgilityHandler().lapBonus = 52_000;
-				//c.getPA().rewardPoints(1, "You have been given 1 PK Point as a reward for completing the course!");
-				c.getAgilityHandler().lapFinished2(c);
-			} else {
-				
-			}
+			c.setForceMovement(c.absX, 3933, 0, 50, "SOUTH", c.getAgilityHandler().getAnimation(objectId));
+			c.getAgilityHandler().lapFinished(c, 5, c.getRights().isIronman() ? 571 : 15600, 6000);
+			//c.getDiaryManager().getWildernessDiary().progress(WildernessDiaryEntry.WILDERNESS_AGILITY);
 			return true;
 		}
 		return false;

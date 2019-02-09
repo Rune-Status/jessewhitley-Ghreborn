@@ -1,370 +1,369 @@
 package Ghreborn.model.players.skills.fletching;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Optional;
+import java.util.Set;
+
 import Ghreborn.Config;
+import Ghreborn.Server;
 import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
+import Ghreborn.model.items.ItemAssistant;
 import Ghreborn.model.items.UseItem;
 import Ghreborn.model.players.Client;
+import Ghreborn.model.players.skills.Skill;
 import Ghreborn.model.players.skills.SkillHandler;
 import Ghreborn.util.Misc;
 
-public class Fletching extends SkillHandler {
+public class Fletching {
 
-	public enum fletchingData {
-		SHORTBOW(new int[][] { { 34189, 1 }, { 34188, 5 }, { 34187, 10 }, { 34186, 28 } }, 1511, 50, 5, 5), LONGBOW(
-				new int[][] { { 34185, 1 }, { 34184, 5 }, { 34183, 10 }, { 34182, 28 } }, 1511, 48, 10,
-				10), ARROW_SHAFT(new int[][] { { 34193, 1 }, { 34192, 5 }, { 34191, 10 }, { 34190, 28 } }, 1511, 52, 1,
-						5), OAK_SHORTBOW(new int[][] { { 34189, 1 }, { 34188, 5 }, { 34187, 10 }, { 34186, 28 } }, 1521,
-								54, 20, 17), OAK_LONGBOW(
-										new int[][] { { 34185, 1 }, { 34184, 5 }, { 34183, 10 }, { 34182, 28 } }, 1521,
-										56, 25, 25), OAK_STOCK(
-												new int[][] { { 34193, 1 }, { 34192, 5 }, { 34191, 10 },
-														{ 34190, 28 } },
-												1521, 9442, 24, 16), WILLOW_SHORTBOW(
-														new int[][] { { 34189, 1 }, { 34188, 5 }, { 34187, 10 },
-																{ 34186, 28 } },
-														1519, 60, 35, 33), WILLOW_LONGBOW(
-																new int[][] { { 34185, 1 }, { 34184, 5 }, { 34183, 10 },
-																		{ 34182, 28 } },
-																1519, 58, 40, 42), WILLOW_STOCK(
-																		new int[][] { { 34193, 1 }, { 34192, 5 },
-																				{ 34191, 10 }, { 34190, 28 } },
-																		1519, 9444, 39, 22), MAPLE_SHORTBOW(
-																				new int[][] { { 34189, 1 },
-																						{ 34188, 5 }, { 34187, 10 },
-																						{ 34186, 28 } },
-																				1517, 64, 50,
-																				50), MAPLE_LONGBOW(new int[][] {
-																						{ 34185, 1 }, { 34184, 5 },
-																						{ 34183, 10 }, { 34182, 28 } },
-																						1517, 62, 55, 58), MAPLE_STOCK(
-																								new int[][] {
-																										{ 34193, 1 },
-																										{ 34192, 5 },
-																										{ 34191, 10 },
-																										{ 34190, 28 } },
-																								1517, 9448, 54,
-																								32), YEW_SHORTBOW(
-																										new int[][] {
-																												{ 34189, 1 },
-																												{ 34188, 5 },
-																												{ 34187, 10 },
-																												{ 34186, 28 } },
-																										1515, 68, 65,
-																										68), YEW_LONGBOW(
-																												new int[][] {
-																														{ 34185, 1 },
-																														{ 34184, 5 },
-																														{ 34183, 10 },
-																														{ 34182, 28 } },
-																												1515,
-																												66, 70,
-																												75), YEW_STOCK(
-																														new int[][] {
-																																{ 34193, 1 },
-																																{ 34192, 5 },
-																																{ 34191, 10 },
-																																{ 34190, 28 } },
-																														1515,
-																														9452,
-																														69,
-																														50), MAGIC_SHORTBOW(
-																																new int[][] {
-																																		{ 34189, 1 },
-																																		{ 34188, 5 },
-																																		{ 34187, 10 },
-																																		{ 34186, 28 } },
-																																1513,
-																																72,
-																																80,
-																																83), MAGIC_LONGBOW(
-																																		new int[][] {
-																																				{ 34185, 1 },
-																																				{ 34184, 5 },
-																																				{ 34183, 10 },
-																																				{ 34182, 28 } },
-																																		1513,
-																																		70,
-																																		85,
-																																		92);
+	private static final Set<FletchableGem> GEMS = Collections.unmodifiableSet(EnumSet.allOf(FletchableGem.class));
 
-		private int[][] buttonId;
-		private int logid, product, level;
-		private int xp;
+	private static final Set<FletchableUnfinishedBolt> UNFINISHED_BOLTS = Collections.unmodifiableSet(EnumSet.allOf(FletchableUnfinishedBolt.class));
 
-		private fletchingData(final int[][] buttonId, final int logid, final int product, final int level,
-				final int xp) {
-			this.buttonId = buttonId;
-			this.logid = logid;
-			this.product = product;
-			this.level = level;
-			this.xp = xp;
-		}
+	private static final Set<FletchableBow> BOWS = Collections.unmodifiableSet(EnumSet.allOf(FletchableBow.class));
 
-		public int getButtonId(final int button) {
-			for (int i = 0; i < buttonId.length; i++) {
-				if (button == buttonId[i][0]) {
-					return buttonId[i][0];
-				}
-			}
-			return -1;
-		}
+	private static final Set<FletchableCrossbow> CROSSBOWS = Collections.unmodifiableSet(EnumSet.allOf(FletchableCrossbow.class));
 
-		public int getAmount(final int button) {
-			for (int i = 0; i < buttonId.length; i++) {
-				if (button == buttonId[i][0]) {
-					return buttonId[i][1];
-				}
-			}
-			return -1;
-		}
+	private static final Set<FletchableArrow> ARROWS = Collections.unmodifiableSet(EnumSet.allOf(FletchableArrow.class));
 
-		public String getName() {
-			String s = name().toLowerCase();
-			String t = s.substring(0, 1).toUpperCase() + s.substring(1);
-			t = t.replaceAll("_", " ");
-			return t;
-		}
+	private static final Set<FletchableJavelin> JAVELINS = Collections.unmodifiableSet(EnumSet.allOf(FletchableJavelin.class));
 
-		public int getLogId() {
-			return logid;
-		}
+	private static final Set<FletchableDart> DARTS = Collections.unmodifiableSet(EnumSet.allOf(FletchableDart.class));
 
-		public int getProduct() {
-			return product;
-		}
+	private static final Set<FletchableBolt> BOLTS = Collections.unmodifiableSet(EnumSet.allOf(FletchableBolt.class));
 
-		public int getLevel() {
-			return level;
-		}
+	/**
+	 * An unmodifiable {@link Set} of {@link FletchableLogGroup} elements
+	 */
+	private static final Set<FletchableLogGroup> FLETCHABLE_LOG_GROUP = Collections.unmodifiableSet(EnumSet.allOf(FletchableLogGroup.class));
+	/**
+	 * An array of values that represent the amount of some selection
+	 */
+	private static final int[] FLETCHABLE_AMOUNTS = { 1, 5, 10, -1 };
 
-		public int getXP() {
-			return xp * Config.FLETCHING_EXPERIENCE;
-		}
+	/**
+	 * The {@link Client} that will be fletching
+	 */
+	private final Client player;
 
+	/**
+	 * An Optional of type {@link FletchableLogGroup} that will keep track of what group the player has selected for fletching.
+	 */
+	private Optional<FletchableLogGroup> selectedGroup = Optional.empty();
+
+	/**
+	 * The {@link FletchableLog} that the player has selected to fletch
+	 */
+	private Optional<FletchableLog> selectedFletchable = Optional.empty();
+
+	/**
+	 * Creates a new single class to manage fletching operations related to the {@code fletching} skill.
+	 * 
+	 * @param player the player that will be fletching
+	 */
+	public Fletching(final Client player) {
+		this.player = player;
 	}
 
-	private static final int[][] ITEM_ON_ITEM = { { 52, 314, 53, 1, 1 }, { 53, 39, 882, 3, 1 }, { 53, 40, 884, 4, 15 },
-			{ 53, 41, 886, 6, 30 }, { 53, 42, 888, 8, 45 }, { 53, 43, 890, 11, 60 }, { 53, 44, 892, 14, 75 },
-			{ 53, 11237, 11212, 16, 90 }, { 314, 819, 806, 2, 1 }, { 314, 820, 807, 4, 22 }, { 314, 821, 808, 8, 37 },
-			{ 314, 822, 809, 11, 52 }, { 314, 823, 810, 15, 67 }, { 314, 824, 811, 19, 81 },
-			{ 314, 11232, 11230, 25, 95 }, };
-
-	public static boolean arrows(Client c, int item1, int item2) {
-		for (int i = 0; i < ITEM_ON_ITEM.length; i++) {
-			if ((item1 == ITEM_ON_ITEM[i][0] || item1 == ITEM_ON_ITEM[i][1])
-					&& (item2 == ITEM_ON_ITEM[i][1] || item2 == ITEM_ON_ITEM[i][0])) {
-				return true;
-			}
-		}
-		return false;
+	public boolean combine(int use, int used) {
+		selectedGroup = FLETCHABLE_LOG_GROUP.stream().filter(g -> Arrays.stream(g.getFletchables()).anyMatch(f -> f.getItemId() == use || f.getItemId() == used)).findFirst();
+		selectedGroup.ifPresent(group -> {
+			FletchableLog[] fletchables = group.getFletchables();
+			player.getSkilling().stop();
+			player.getSkilling().setSkill(Skill.FLETCHING);
+			player.getPA().sendChatInterface(8880);
+			player.getPA().sendFrame126("What would you like to make?", 8879);
+			player.getPA().sendFrame246(8884, 190, fletchables[1].getProduct());
+			player.getPA().sendFrame246(8883, 190, fletchables[0].getProduct());
+			player.getPA().sendFrame246(8885, 190, fletchables[2].getProduct());
+			player.getPA().sendFrame126(ItemAssistant.getItemName(fletchables[0].getProduct()), 8889);
+			player.getPA().sendFrame126(ItemAssistant.getItemName(fletchables[1].getProduct()), 8893);
+			player.getPA().sendFrame126(ItemAssistant.getItemName(fletchables[2].getProduct()), 8897);
+		});
+		return selectedGroup.isPresent();
 	}
 
-	public static void makeArrows(Client c, int item1, int item2) {
-		for (int j = 0; j < ITEM_ON_ITEM.length; j++) {
-			if ((item1 == ITEM_ON_ITEM[j][0] && item2 == ITEM_ON_ITEM[j][1])
-					|| (item2 == ITEM_ON_ITEM[j][0] && item1 == ITEM_ON_ITEM[j][1])) {
-
-				if (!hasRequiredLevel(c, c.playerFletching, ITEM_ON_ITEM[j][4], "fletching",
-						"make " + c.getItems().getItemName(ITEM_ON_ITEM[j][2]) + "")) {
-					return;
-				}
-
-				if (!noInventorySpace(c, "fletching")) {
-					return;
-				}
-				int amount1 = c.getItems().getItemAmount(item1);
-				int amount2 = c.getItems().getItemAmount(item2);
-
-				int otherAmount = 0;
-				if (amount1 >= 15) {
-					amount1 = 15;
-				}
-				if (amount2 >= 15) {
-					amount2 = 15;
-				}
-				if (amount1 > amount2) {
-					otherAmount = amount1 - amount2;
-					amount1 = amount1 - otherAmount;
-				} else if (amount2 > amount1) {
-					otherAmount = amount2 - amount1;
-					amount2 = amount2 - otherAmount;
-				}
-				int xp = 0;
-				if (amount1 >= amount2) {
-					xp = amount1;
-				} else {
-					xp = amount2;
-				}
-				if (c.getItems().playerHasItem(item1, amount1) && c.getItems().playerHasItem(item2, amount2)) {
-					c.getItems().deleteItem(item1, c.getItems().getItemSlot(item1), amount1);
-					c.getItems().deleteItem(item2, c.getItems().getItemSlot(item2), amount2);
-					c.getItems().addItem(ITEM_ON_ITEM[j][2], amount1);
-					c.getPA().addSkillXP((ITEM_ON_ITEM[j][3] * xp) * FLETCHING_XP, c.playerFletching);
+	public void select(int buttonId) {
+		selectedGroup.ifPresent(group -> {
+			for (FletchableLog fletchable : group.getFletchables()) {
+				int index = Misc.linearSearch(fletchable.getButtonIds(), buttonId);
+				if (index != -1) {
+					int amount = FLETCHABLE_AMOUNTS[index];
+					selectedFletchable = Optional.of(fletchable);
+					if (amount == -1) {
+						player.getOutStream().createFrame(27);
+						player.flushOutStream();
+						break;
+					}
+					fletchLog(fletchable, amount);
+					break;
 				}
 			}
-		}
+		});
 	}
 
-	public static void makeJavelins(Client c, int itemA, int itemB) {
-		int javelinId = -1;
-
-		if (UseItem.combines(itemA, itemB, 19584, 19570)) {
-			javelinId = 825;
-		} else if (UseItem.combines(itemA, itemB, 19584, 19572)) {
-			javelinId = 826;
-		} else if (UseItem.combines(itemA, itemB, 19584, 19574)) {
-			javelinId = 827;
-		} else if (UseItem.combines(itemA, itemB, 19584, 19576)) {
-			javelinId = 828;
-		} else if (UseItem.combines(itemA, itemB, 19584, 19578)) {
-			javelinId = 829;
-		} else if (UseItem.combines(itemA, itemB, 19584, 19580)) {
-			javelinId = 830;
-		} else if (UseItem.combines(itemA, itemB, 19584, 19582)) {
-			javelinId = 19484;
-		} else {
+	/**
+	 * Attempts to cut a log with a knife in hopes to make some secondary item
+	 * 
+	 * @param logId the log being cut
+	 */
+	public void fletchLog(FletchableLog fletchable, int amount) {
+		selectedGroup = Optional.empty();
+		selectedFletchable = Optional.empty();
+		if (!player.getItems().playerHasItem(fletchable.getItemId())) {
+			player.sendMessage("You do not have the items required for this.");
+			player.getPA().removeAllWindows();
 			return;
 		}
-
-		int amountA = c.getItems().getItemCount(itemA);
-		int amountB = c.getItems().getItemCount(itemB);
-
-		if (amountA <= 0 || amountB <= 0) {
+		if (player.playerLevel[Skill.FLETCHING.getId()] < fletchable.getLevel()) {
+			player.sendMessage("You need a fletching level of " + fletchable.getLevel() + " to do this.");
+			player.getPA().removeAllWindows();
 			return;
 		}
-
-		int amount = Math.min(amountA, amountB);
-
-		c.getItems().deleteItem2(itemA, amount);
-		c.getItems().deleteItem2(itemB, amount);
-		c.getItems().addItem(javelinId, amount);
-		c.getPA().addSkillXP(500 * 3 * Config.FLETCHING_EXPERIENCE, Config.FLETCHING);
+		player.animation(1248);
+		player.getPA().removeAllWindows();
+		Server.getEventHandler().stop(player, "skilling");
+		Server.getEventHandler().submit(new FletchLogEvent(player, 3, fletchable, amount));
 	}
 
-	public static void normal(Client c, int itemUsed, int useWith) {
-		final int result = (itemUsed == 946 ? useWith : itemUsed);
-		if ((itemUsed == 946 && useWith == 1511) || (itemUsed == 1151 && useWith == 946)) {
-			showInterfaceFletching(c, new int[] { 50, 48, 52 }, 0);
-		}
-		c.fletchingType = result;
-	}
-
-	public static void others(Client c, int itemUsed, int useWith) {
-		final int result = (itemUsed == 946 ? useWith : itemUsed);
-		for (int i = 0; i < DATA.length; i++) {
-			if ((itemUsed == 946 && useWith == DATA[i][0]) || (itemUsed == DATA[i][0] && useWith == 946)) {
-				showInterfaceOthers(c, new int[] { DATA[i][1], DATA[i][4], DATA[i][8] }, DATA[i][7]);
+	public void fletchGem(int use, int used) {
+		selectedGroup = Optional.empty();
+		selectedFletchable = Optional.empty();
+		Optional<FletchableGem> gem = GEMS.stream().filter(g -> g.getGem() == use || g.getGem() == used).findFirst();
+		gem.ifPresent(g -> {
+			if (!player.getItems().playerHasItem(g.getGem())) {
+				player.sendMessage("You do not have the items required for this.");
+				player.getPA().removeAllWindows();
+				return;
 			}
-			c.fletchingType = result;
-		}
-	}
-
-	private static final int[][] DATA = { { 1521, 54, 20, 17, 56, 25, 25, 0, 9442 },
-			{ 1519, 60, 35, 33, 58, 40, 41, 1, 9444 }, { 1517, 64, 50, 50, 62, 55, 58, 2, 9448 },
-			{ 1515, 68, 65, 68, 66, 70, 75, 3, 9452 }, { 1513, 72, 80, 83, 70, 85, 91, 4, 9440 }, };
-
-	private static void showInterfaceOthers(Client c, int[] items, int type) {
-		for (int i = 0; i < DATA.length; i++) {
-			if (type == DATA[i][7]) {
-				for (int l = 0; l < DATA.length; l++) {
-					c.playerSkillProp[9][l] = DATA[i][l];
-				}
+			if (player.playerLevel[Skill.FLETCHING.getId()] < g.getLevel()) {
+				player.sendMessage("You need a fletching level of " + g.getLevel() + " to do this.");
+				player.getPA().removeAllWindows();
+				return;
 			}
-		}
-		c.getPA().sendChatInterface(8880);
-		c.getPA().sendFrame126("What would you like to make?", 8879);
-		c.getPA().sendFrame246(8884, 190, items[0]);
-		c.getPA().sendFrame246(8883, 190, items[1]);
-		c.getPA().sendFrame246(8885, 190, items[2]);
-		c.getPA().sendFrame126("" + c.getItems().getItemName(items[1]) + "", 8889);
-		c.getPA().sendFrame126("" + c.getItems().getItemName(items[0]) + "", 8893);
-		c.getPA().sendFrame126("" + c.getItems().getItemName(items[2]) + "", 8897);
-		c.playerFletch = true;
+			player.getItems().deleteItem2(g.getGem(), 1);
+			player.getItems().addItem(g.getTips(), g.getAmount());
+			player.getPA().addSkillXP(g.getExperience() * (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.FLETCHING_EXPERIENCE), Skill.FLETCHING.getId());
+		});
 	}
 
-	private static void showInterfaceFletching(Client c, int[] items, int type) {
-		c.getPA().sendChatInterface(8880);
-		c.getPA().sendFrame126("What would you like to make?", 8879);
-		c.getPA().sendFrame246(8884, 190, items[0]);
-		c.getPA().sendFrame246(8883, 190, items[1]);
-		c.getPA().sendFrame246(8885, 190, items[2]);
-		c.getPA().sendFrame126("" + c.getItems().getItemName(items[1]) + "", 8889);
-		c.getPA().sendFrame126("" + c.getItems().getItemName(items[0]) + "", 8893);
-		c.getPA().sendFrame126("" + c.getItems().getItemName(items[2]) + "", 8897);
-		c.playerFletch = true;
-	}
-
-	public static int[][] normal = { { 1511, 50, 52, 50, 1, 0, 6684, 52 }, };
-
-	public static void attemptData(final Client c, final int buttonId) {
-		for (final fletchingData l : fletchingData.values()) {
-			if (buttonId == l.getButtonId(buttonId)) {
-				if (c.fletchingType == l.getLogId()) {
-					if (c.playerLevel[9] < l.getLevel()) {
-						c.sendMessage("You need a Fletching level of " + l.getLevel() + " to make this.");
-						c.getPA().removeAllWindows();
-						return;
-					}
-					int item = c.getItems().getItemAmount(l.getAmount(buttonId));
-					int amount = l.getAmount(buttonId);
-					c.doAmount = amount;
-					if (c.playerSkilling[9]) {
-						return;
-					}
-					c.playerSkilling[9] = true;
-					c.stopPlayerSkill = true;
-					c.getPA().removeAllWindows();
-
-					final int itemToDelete = l.getLogId();
-
-					final int addItem = l.getProduct();
-					final int addXP = l.getXP();
-
-					c.animation(6702);
-					CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-						@Override
-						public void execute(CycleEventContainer container) {
-							if (c == null || c.disconnected || c.teleporting || c.isDead) {
-								container.stop();
-								return;
-							}
-							if (l.getLogId() > 0) {
-								c.getItems().deleteItem2(c.fletchingType, 1);
-								c.getItems().addItem(addItem, addItem == 52 ? 15 : 1);
-								c.getPA().addSkillXP(addXP, 9);
-
-							}
-							c.animation(6702);
-							deleteTime(c);
-							if (!c.getItems().playerHasItem(l.getLogId(), 1) || c.doAmount <= 0) {
-								resetFletching(c);
-								container.stop();
-							}
-							if (!c.stopPlayerSkill) {
-								resetFletching(c);
-								container.stop();
-							}
-						}
-
-						@Override
-						public void stop() {
-
-						}
-					}, 2);
-				}
+	public void fletchUnfinishedBolt(int boltId) {
+		Optional<FletchableUnfinishedBolt> bolt = UNFINISHED_BOLTS.stream().filter(b -> b.getUnfinished() == boltId).findFirst();
+		bolt.ifPresent(b -> {
+			if (player.getItems().freeSlots() < 1) {
+				player.sendMessage("You need at least 1 free slot to do this.");
+				player.getPA().removeAllWindows();
+				return;
 			}
-		}
+			if (!player.getItems().playerHasItem(314, 10)) {
+				player.sendMessage("You need at least 10 feathers to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			if (!player.getItems().playerHasItem(b.getUnfinished(), 10)) {
+				player.sendMessage("You need at least 10 of this bolt type to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			if (player.playerLevel[Skill.FLETCHING.getId()] < b.getLevel()) {
+				player.sendMessage("You need a fletching level of " + b.getLevel() + " to fletch this bolt.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			if (player.getSkilling().isSkilling()) {
+				player.getSkilling().stop();
+			}
+			player.getItems().deleteItem2(314, 10);
+			player.getItems().deleteItem2(b.getUnfinished(), 10);
+			player.getItems().addItem(b.getBolt(), 10);
+			player.getPA().addSkillXP(b.getExperience() * (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.FLETCHING_EXPERIENCE), Skill.FLETCHING.getId());
+		});
 	}
 
-	public static void resetFletching(Client c) {
-		c.playerSkilling[9] = false;
-		c.stopPlayerSkill = false;
-		c.playerFletch = false;
-		for (int i = 0; i < 9; i++) {
-			c.playerSkillProp[9][i] = -1;
+	public void fletchHeadlessArrows() {
+		if (player.getItems().freeSlots() < 1) {
+			player.sendMessage("You need at least 1 free slot.");
+			player.getPA().removeAllWindows();
+			return;
 		}
-		c.animation(65535);
+		if (!player.getItems().playerHasItem(52, 15)) {
+			player.sendMessage("You need at least 15 arrow shafts to do this.");
+			player.getPA().removeAllWindows();
+			return;
+		}
+		if (!player.getItems().playerHasItem(314, 15)) {
+			player.sendMessage("You need at least 15 feathers to do this.");
+			player.getPA().removeAllWindows();
+			return;
+		}
+		player.getItems().deleteItem2(314, 15);
+		player.getItems().deleteItem2(52, 15);
+		player.getItems().addItem(53, 15);
+		player.getPA().addSkillXP(15 * (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.FLETCHING_EXPERIENCE), Skill.FLETCHING.getId());
+	}
+
+	public void fletchUnstrung(int bowId) {
+		Optional<FletchableBow> bow = BOWS.stream().filter(b -> b.getItem() == bowId).findFirst();
+		bow.ifPresent(b -> {
+			player.getSkilling().stop();
+			if (player.playerLevel[Skill.FLETCHING.getId()] < b.getLevelRequired()) {
+				player.sendMessage("You need a fletching level of " + b.getLevelRequired() + " to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			player.getSkilling().setSkill(Skill.FLETCHING);
+			Server.getEventHandler().submit(new StringBowEvent(b, player, 3));
+		});
+	}
+
+	public void fletchUnstrungCross(int crossbowId) {
+		Optional<FletchableCrossbow> crossbow = CROSSBOWS.stream().filter(b -> b.getItem() == crossbowId).findFirst();
+		crossbow.ifPresent(b -> {
+			player.getSkilling().stop();
+			if (player.playerLevel[Skill.FLETCHING.getId()] < b.getLevelRequired()) {
+				player.sendMessage("You need a fletching level of " + b.getLevelRequired() + " to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			player.getSkilling().setSkill(Skill.FLETCHING);
+			Server.getEventHandler().submit(new StringCrossbowEvent(b, player, 3));
+		});
+	}
+
+	public void fletchArrow(int arrowId) {
+		Optional<FletchableArrow> arrow = ARROWS.stream().filter(a -> a.getId() == arrowId).findFirst();
+		arrow.ifPresent(a -> {
+			player.getSkilling().stop();
+			if (player.playerLevel[Skill.FLETCHING.getId()] < a.getLevelRequired()) {
+				player.sendMessage("You need a fletching level of " + a.getLevelRequired() + " to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			player.getSkilling().setSkill(Skill.FLETCHING);
+			if (!player.getItems().playerHasItem(53, 15)) {
+				player.sendMessage("You need at least 15 headless arrows to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			if (!player.getItems().playerHasItem(a.getId(), 15)) {
+				player.sendMessage("You need at least 15 arrowheads to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			if (player.getItems().freeSlots() < 1) {
+				player.sendMessage("You need at least 1 free slot to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			player.getItems().deleteItem2(53, 15);
+			player.getItems().deleteItem2(a.getId(), 15);
+			player.getItems().addItem(a.getReward(), 15);
+			player.getPA().addSkillXP((int) a.getExperience() * (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.FLETCHING_EXPERIENCE), Skill.FLETCHING.getId());
+		});
+	}
+	
+	public void fletchJavelin(int arrowId) {
+		Optional<FletchableJavelin> arrow = JAVELINS.stream().filter(a -> a.getId() == arrowId).findFirst();
+		arrow.ifPresent(a -> {
+			player.getSkilling().stop();
+			if (player.playerLevel[Skill.FLETCHING.getId()] < a.getLevelRequired()) {
+				player.sendMessage("You need a fletching level of " + a.getLevelRequired() + " to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			player.getSkilling().setSkill(Skill.FLETCHING);
+			if (!player.getItems().playerHasItem(19584, 15)) {
+				player.sendMessage("You need at least 15 javelin shafts to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			if (!player.getItems().playerHasItem(a.getId(), 15)) {
+				player.sendMessage("You need at least 15 javelin heads to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			if (player.getItems().freeSlots() < 1) {
+				player.sendMessage("You need at least 1 free slot to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			player.getItems().deleteItem2(19584, 15);
+			player.getItems().deleteItem2(a.getId(), 15);
+			player.getItems().addItem(a.getReward(), 15);
+			player.getPA().addSkillXP((int) a.getExperience() * (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.FLETCHING_EXPERIENCE), Skill.FLETCHING.getId());
+		});
+	}
+
+	public void fletchDart(int dartId) {
+		Optional<FletchableDart> dart = DARTS.stream().filter(a -> a.getId() == dartId).findFirst();
+		dart.ifPresent(d -> {
+			player.getSkilling().stop();
+			if (player.playerLevel[Skill.FLETCHING.getId()] < d.getLevelRequired()) {
+				player.sendMessage("You need a fletching level of " + d.getLevelRequired() + " to do this.");
+				player.getPA().removeAllWindows();
+
+				return;
+			}
+			player.getSkilling().setSkill(Skill.FLETCHING);
+			if (!player.getItems().playerHasItem(314, 10)) {
+				player.sendMessage("You need at least 10 feathers to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			if (!player.getItems().playerHasItem(d.getId(), 10)) {
+				player.sendMessage("You need at least 10 dart tips to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			if (player.getItems().freeSlots() < 1) {
+				player.sendMessage("You need at least 1 free slot to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			player.getItems().deleteItem2(314, 10);
+			player.getItems().deleteItem2(d.getId(), 10);
+			player.getItems().addItem(d.getReward(), 10);
+			player.getPA().addSkillXP((int) (10 * d.getExperience()) * (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.FLETCHING_EXPERIENCE), Skill.FLETCHING.getId());
+		});
+	}
+
+/*	public void fletchBolt(int boltId, int tipId) {
+		Optional<FletchableBolt> bolt = BOLTS.stream().filter(b -> b.getUnfinished() == boltId && b.getTip() == tipId).findFirst();
+			player.getSkilling().stop();
+			if (player.playerLevel[Skill.FLETCHING.getId()] < b.getLevel()) {
+				player.sendMessage("You need a fletching level of " + b.getLevel() + " to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			player.getSkilling().setSkill(Skill.FLETCHING);
+			if (!player.getItems().playerHasItem(tipId, 15)) {
+				player.sendMessage("You need at least 15 tips to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			if (!player.getItems().playerHasItem(boltId, 15)) {
+				player.sendMessage("You need at least 15 bolts to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			if (player.getItems().freeSlots() < 1) {
+				player.sendMessage("You need at least 1 free slot to do this.");
+				player.getPA().removeAllWindows();
+				return;
+			}
+			player.getItems().deleteItem2(boltId, 15);
+			player.getItems().deleteItem2(tipId, 15);
+			player.getItems().addItem(b.getBolt(), 15);
+			player.getPA().addSkillXP(b.getExperience() * (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.FLETCHING_EXPERIENCE), Skill.FLETCHING.getId());
+		});
+		return bolt.isPresent();
+	}*/
+
+	public Optional<FletchableLog> getSelectedFletchable() {
+		return selectedFletchable;
 	}
 }

@@ -17,6 +17,9 @@ import Ghreborn.Config;
 import Ghreborn.Server;
 import Ghreborn.clip.Region;
 import Ghreborn.model.content.DailyTaskKills;
+import Ghreborn.model.content.barrows.Barrows;
+import Ghreborn.model.content.barrows.brothers.Brother;
+import Ghreborn.model.content.godwars.*;
 import Ghreborn.model.item.Antifire;
 import Ghreborn.model.items.Item;
 import Ghreborn.model.items.Item2;
@@ -43,6 +46,8 @@ import Ghreborn.model.npcs.drops.NpcDropManager;
 import Ghreborn.model.players.Boundary;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.Player;
+import Ghreborn.model.players.combat.Damage;
+import Ghreborn.model.players.combat.DamageEffect;
 import Ghreborn.model.players.combat.Hitmark;
 import Ghreborn.model.players.skills.hunter.impling.PuroPuro;
 import Ghreborn.util.Location3D;
@@ -50,6 +55,8 @@ import Ghreborn.util.Misc;
 import Ghreborn.world.ItemHandler;
 import Ghreborn.world.objects.GlobalObject;
 import Ghreborn.core.PlayerHandler;
+import Ghreborn.definitions.ItemCacheDefinition;
+import Ghreborn.definitions.NPCCacheDefinition;
 import Ghreborn.event.EventManager;
 import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
@@ -138,7 +145,7 @@ public class NPCHandler {
 					int offY = (nX - pX) * -1;
 					c.getPA().createPlayersProjectile(nX, nY, offX, offY, 50,
 							getProjectileSpeed(i), npcs[i].projectileId, 43,
-							31, -c.getId() - 1, 65);
+							31, -c.getIndex() - 1, 65);
 					if (npcs[i].npcType == 7554) {
 						c.getPA().sendPlayerObjectAnimation(c, 3220, 5738, 7371, 10, 3, c.getHeight());
 					}
@@ -935,6 +942,18 @@ public class NPCHandler {
 		case 2561:
 		case 2550:
 			return 6;
+		case Brother.AHRIM:
+			return 6;
+		case Brother.DHAROK:
+			return 7;
+		case Brother.GUTHAN:
+			return 5;
+		case Brother.KARIL:
+			return 4;
+		case Brother.TORAG:
+			return 5;
+		case Brother.VERAC:
+			return 5;
 			// saradomin gw boss
 		case 2562:
 			return 2;
@@ -1057,10 +1076,84 @@ public class NPCHandler {
 			case 7554:
 			case 7555:
 		case 7560:
-		case 7527:
 		case 7528:
 		case 7529:
 		case 8508:
+		case 7525: // Vanguard
+		case 7526: // Vanguard
+		case 7527: // Vanguard
+		case 7530: // Vespula
+		case 7531: // Vespula
+		case 7532: // Vespula
+		case 7533: // <col=00ffff>Abyssal portal</col>
+		case 7534: // Lux grub
+		case 7535: // Lux grub
+		case 7536: // Lux grub
+		case 7537: // Lux grub
+		case 7538: // Vespine soldier
+		case 7539: // Vespine soldier
+		case 7540: // Tekton
+		case 7541: // Tekton
+		case 7542: // Tekton
+		case 7543: // Tekton (enraged)
+		case 7545: // Tekton
+		case 7546: // Scavenger runt
+		case 7547: // Scavenger runt
+		case 7548: // Scavenger beast
+		case 7549: // Scavenger beast
+		case 7550: // Great Olm (Right claw)
+		case 7551: // Great Olm
+		case 7552: // Great Olm (Left claw)
+		case 7556: // null
+		case 7557: // null
+		case 7558: // <col=00ffff>Fire</col>
+		case 7561: // Muttadile
+		case 7562: // Muttadile
+		case 7564: // <col=00ffff>Meat tree</col>
+		case 7565: // <col=00ffff>Rocks</col>
+		case 7567: // Vasa Nistirio
+		case 7568: // <col=00ffff>Glowing crystal</col>
+		case 7569: // <col=00ffff>Guardian</col>
+		case 7570: // <col=00ffff>Guardian</col>
+		case 7571: // <col=00ffff>Guardian</col>
+		case 7572: // <col=00ffff>Guardian</col>
+		case 7574: // Lizardman shaman
+		case 7575: // Spawn
+		case 7576: // Jewelled Crab
+		case 7577: // Jewelled Crab (red)
+		case 7578: // Jewelled Crab (green)
+		case 7579: // Jewelled Crab (blue)
+		case 7580: // Energy focus (white)
+		case 7581: // Energy focus (red)
+		case 7582: // Energy focus (green)
+		case 7583: // Energy focus (blue)
+		case 7584: // Ice demon
+		case 7586: // Icefiend
+		case 7587: // Guanic bat
+		case 7588: // Prael bat
+		case 7589: // Giral bat
+		case 7590: // Phluxia bat
+		case 7591: // Kryket bat
+		case 7592: // Murng bat
+		case 7593: // Psykk bat
+		case 7594: // Cave snake
+		case 7595: // Captain Rimor
+		case 7596: // null
+		case 7597: // Lizard
+		case 7598: // <col=00ffff>Strange Device</col>
+		case 7599: // Mountain Guide
+		case 7600: // Mountain Guide
+		case 7601: // Swamp Priest
+		case 7602: // Corrupted scavenger
+		case 7603: // Corrupted scavenger
+		case 7607: // Imerominia
+		case 7608: // Pagida
+		case 7609: // Istoria
+		case 7610: // Logios
+		case 7611: // Meleti
+		case 7612: // Krato
+		case 7613: // Ektheme
+		case 7614: // Archeio
 			return -1;
 
 		case 963:
@@ -1132,6 +1225,12 @@ public class NPCHandler {
 		}
 
 	}
+	/**
+	 * Barrows kills
+	 * 
+	 * @param i
+	 *            the barrow brother whom been killed
+	 */
 	public static NPC newNPC(int npcType, int x, int y, int heightLevel, int WalkingType, int HP, int maxHit,
 			int attack, int defence) {
 		// first, search for a free slot
@@ -1418,7 +1517,21 @@ public class NPCHandler {
 						npc.getNextNPCMovement();
 						npc.walkingHome = false;
 					}
-
+					if(type == 8615) {
+						if(npc.HP <= 825) {
+							npc.requestTransform(8619);
+						}
+					} 
+					if(type == 8619) {
+						if(npc.HP <= 550) {
+							npc.requestTransform(8620);
+						}
+					}
+					if(type == 8620) {
+						if(npc.HP <= 275) {
+							npc.requestTransform(8621);
+						}
+					}
 					if (type >= 2042 && type <= 2044 && npcs[i].HP > 0) {
 						Client player = (Client) PlayerHandler.players[npcs[i].spawnedBy];
 						if (player != null && player.getZulrahEvent().getNpc() != null
@@ -1437,14 +1550,60 @@ public class NPCHandler {
 							}
 						}
 					}
+
 					/**
 					 * Attacking player
 					 **/
 					// Player player = PlayerHandler.players[npcs[i].spawnedBy];
-					if (isAggressive(i, false) && !npcs[i].underAttack && !npcs[i].isDead && !switchesAttackers(i)) {
-						npcs[i].killerId = getCloseRandomPlayer(i);
-					} else if (isAggressive(i, false) && !npcs[i].underAttack && !npcs[i].isDead && switchesAttackers(i)) {
-						npcs[i].killerId = getCloseRandomPlayer(i);
+					if (isAggressive(i, false) && !npc.underAttack && npc.killerId <= 0 && !npc.isDead
+							&& !switchesAttackers(i) && npc.inMulti() && !Boundary.isIn(npc, Boundary.GODWARS_BOSSROOMS)
+							&& !Boundary.isIn(npcs[i], Boundary.CORP)) {
+						Player closestPlayer = null;
+						int closestDistance = Integer.MAX_VALUE;
+						God god = GodwarsNPCs.NPCS.get(npc.npcType);
+
+						for (Player player : Server.playerHandler.players) {
+							if (player == null) {
+								continue;
+							}
+							if (player.isIdle)
+								continue;
+
+							if (god != null && player.inGodwars() && player.getEquippedGodItems() != null
+									&& player.getEquippedGodItems().contains(god)) {
+								continue;
+							}
+							/**
+							 * Skips attacking a player if mode set to invisible
+							 */
+							if (player.isInvisible()) {
+								continue;
+							}
+
+							int distance = Misc.distanceToPoint(npc.absX, npc.absY, player.absX, player.absY);
+							if (distance < closestDistance && distance <= distanceRequired(i) + followDistance(i)) {
+								closestDistance = distance;
+								closestPlayer = player;
+							}
+						}
+						if (closestPlayer != null) {
+							npc.killerId = closestPlayer.getIndex();
+							closestPlayer.underAttackBy = npc.getIndex();
+							closestPlayer.underAttackBy2 = npc.getIndex();
+						}
+					} else if (isAggressive(i, false) && !npcs[i].underAttack && !npcs[i].isDead
+							&& (switchesAttackers(i) || Boundary.isIn(npc, Boundary.GODWARS_BOSSROOMS))) {
+
+						if (System.currentTimeMillis() - npcs[i].lastRandomlySelectedPlayer > 10000) {
+							int player = getCloseRandomPlayer(i);
+
+							if (player > 0) {
+								npcs[i].killerId = player;
+								PlayerHandler.players[player].underAttackBy = i;
+								PlayerHandler.players[player].underAttackBy2 = i;
+								npcs[i].lastRandomlySelectedPlayer = System.currentTimeMillis();
+							}
+						}
 					}
 
 					/*if (NpcDefinition.DEFINITIONS[i].isAggressive() && !npcs[i].underAttack && !npcs[i].isDead
@@ -1514,7 +1673,11 @@ public class NPCHandler {
 							if ((npcs[i].absX > npcs[i].makeX + Config.NPC_RANDOM_WALK_DISTANCE)
 									|| (npcs[i].absX < npcs[i].makeX - Config.NPC_RANDOM_WALK_DISTANCE)
 									|| (npcs[i].absY > npcs[i].makeY + Config.NPC_RANDOM_WALK_DISTANCE)
-									|| (npcs[i].absY < npcs[i].makeY - Config.NPC_RANDOM_WALK_DISTANCE)) {
+									|| (npcs[i].absY < npcs[i].makeY - Config.NPC_RANDOM_WALK_DISTANCE)
+											&& npcs[i].npcType != 1635 && npcs[i].npcType != 1636 && npcs[i].npcType != 1637
+											&& npcs[i].npcType != 1638 && npcs[i].npcType != 1639 && npcs[i].npcType != 1640
+											&& npcs[i].npcType != 1641 && npcs[i].npcType != 1642 && npcs[i].npcType != 1643
+											&& npcs[i].npcType != 1654 && npcs[i].npcType != 7302) {
 								npcs[i].walkingHome = true;
 							}
 						}
@@ -1552,8 +1715,10 @@ public class NPCHandler {
 								int direction = Misc.random3(8);
 								int movingToX = npcs[i].getX() + NPCClipping.DIR[direction][0];
 								int movingToY = npcs[i].getY() + NPCClipping.DIR[direction][1];
-								if (npcs[i].npcType >= 1635 && npcs[i].npcType <= 1643 || npcs[i].npcType == 1654 || npcs[i].npcType == 7302) {
-										NPCDumbPathFinder.walkTowards(npcs[i], npcs[i].getX() - 1 + Misc.random(8), npcs[i].getY() - 1 + Misc.random(8));
+								if (npcs[i].npcType >= 1635 && npcs[i].npcType <= 1643 || npcs[i].npcType == 1654
+										|| npcs[i].npcType == 7302) {
+									NPCDumbPathFinder.walkTowards(npcs[i], npcs[i].getX() - 1 + Misc.random(8),
+											npcs[i].getY() - 1 + Misc.random(8));
 								} else {
 									if (Math.abs(npcs[i].makeX - movingToX) <= 1 && Math.abs(npcs[i].makeY - movingToY) <= 1
 											&& NPCDumbPathFinder.canMoveTo(npcs[i], direction)) {
@@ -1582,24 +1747,6 @@ public class NPCHandler {
 						Client player = (Client) PlayerHandler.players[npcs[i].spawnedBy];
 					
 						if (npcs[i].actionTimer == 0 && npcs[i].applyDead == false && npcs[i].needRespawn == false) {
-							if(npcs[i].npcType == VorkathConstants.SLEEPING_VORKATH_ID) {
-								npcs[i].isDead = false;
-								//player.sendMessage("HELL NO");
-								continue;
-							}
-							if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
-								if (player.getVorkath().isForceDeath()) { //if forced death (ie player logout)
-									npcs[i].isDead = true;
-									npcs[i].updateRequired = true;
-								} else {
-									//player.sendMessage("Applying death");
-									npcs[i].killedBy = player.getIndex();
-									dropItems(i);
-									player.getVorkath().resetCombat();
-									player.getVorkath().handleDeath();
-								}
-								continue;
-							}
 							if (npcs[i].npcType == 6618) {
 								npcs[i].forceChat("Ow!");
 							}
@@ -1621,6 +1768,10 @@ public class NPCHandler {
 								npcs[i].killedBy = getNpcKillerId(i);
 								npcs[i].animId = getDeadEmote(i); // dead emote
 								npcs[i].animUpdateRequired = true;
+								if(npcs[i].npcType == 8621) {
+									npcs[i].requestTransform(8622);
+									npcs[i].animation(8258);
+							}
 								switch (npcs[i].npcType) {	
 								case Skotizo.SKOTIZO_ID:
 									if (player.getSkotizo() != null) {
@@ -1677,23 +1828,42 @@ public class NPCHandler {
 								}
 								npcs[i].freezeTimer = 0;
 								npcs[i].applyDead = true;
-								killedBarrow(i);
+								//killedBarrow(i);
 								//killedCrypt(i);
 								if (player != null) {
 									this.tzhaarDeathHandler(player, i);
 									this.infernoDeathHandler(player, i);
 									continue;
 								}
+								killedBarrow(i);
 								npcs[i].actionTimer = 4; // delete time
 								resetPlayersInCombat(i);
 							}
 						} else if (npcs[i].actionTimer == 0 &&npcs[i].applyDead&&!npcs[i].needRespawn) {
+							if(npcs[i].npcType == VorkathConstants.SLEEPING_VORKATH_ID) {
+								npcs[i].isDead = false;
+								//player.sendMessage("HELL NO");
+								continue;
+							}
+							if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
+								if (player.getVorkath().isForceDeath()) { //if forced death (ie player logout)
+									npcs[i].isDead = true;
+									npcs[i].updateRequired = true;
+								} else {
+									//player.sendMessage("Applying death");
+									npcs[i].killedBy = player.getIndex();
+									dropItems(i);
+									player.getVorkath().resetCombat();
+									player.getVorkath().handleDeath();
+								}
+								continue;
+							}
 							int killerIndex = npcs[i].killedBy;
 							npcs[i].needRespawn = true;
 							npcs[i].actionTimer = getRespawnTime(i); // respawn time
 							dropItems(i);
-/*							if (killerIndex < PlayerHandler.players.length - 1) {
-								Player target = PlayerHandler.players[npcs[i].killedBy];
+							if (killerIndex < PlayerHandler.players.length - 1) {
+								Client target = (Client) PlayerHandler.players[npcs[i].killedBy];
 
 								if (target != null) {
 									target.getSlayer().killTaskMonster(npcs[i]);
@@ -1702,7 +1872,7 @@ public class NPCHandler {
 									  //target.getSlayer().handleSuperiorExp(npcs[i]); }
 									 
 								}
-							}*/
+							}
 							if(npcs[i].inRaids()){
 								Player killer = PlayerHandler.players[npcs[i].killedBy];
 								killer.getRaids().raidLeader.getRaids().handleMobDeath(npcs[i].npcType);
@@ -1895,20 +2065,24 @@ public class NPCHandler {
 
 
 	/**
+	 * Barrows kills
 	 * 
+	 * @param i
+	 *            the barrow brother whom been killed
 	 */
 	private void killedBarrow(int i) {
-		Client c = (Client) PlayerHandler.players[npcs[i].killedBy];
-		if (c != null) {
-			for (int o = 0; o < c.barrowsNpcs.length; o++) {
-				if (npcs[i].npcType == c.barrowsNpcs[o][0]) {
-					c.barrowsNpcs[o][1] = 2; // 2 for dead
-					c.barrowsKillCount++;
+		Client player = (Client) PlayerHandler.players[npcs[i].killedBy];
+		if (player != null && player.getBarrows() != null) {
+			Optional<Brother> brother = player.getBarrows().getBrother(npcs[i].npcType);
+			if (brother.isPresent()) {
+				brother.get().handleDeath();
+			} else if (Boundary.isIn(npcs[i], Barrows.TUNNEL)) {
+				if (player.getBarrows().getKillCount() < 25) {
+					player.getBarrows().increaseMonsterKilled();
 				}
 			}
 		}
 	}
-
 	private void tzhaarDeathHandler(Client player, int i) {// hold a vit plz
 		if (npcs[i] != null) {
 			if (player != null) {
@@ -1999,8 +2173,11 @@ public class NPCHandler {
 			if (npcs[i].npcType == 2042 || npcs[i].npcType == 2043 || npcs[i].npcType == 2044) {
 				c.getZulrahEvent().stop();
 			}
-			if (npcs[i].npcType == 7151 || npcs[i].npcType == 7152 || npcs[i].npcType == 7153) {
+			if (npcs[i].npcType == 7151 	|| npcs[i].npcType == 7152 || npcs[i].npcType == 7153) {
 				c.hits = 0;
+			}
+			if(npcs[i].npcType == 8611) {
+				npcs[i].requestTransform(8610);
 			}
 			if (npcs[i].npcType == 5862) {
 				c.CAST_GHOSTS = 0;
@@ -2106,193 +2283,8 @@ public class NPCHandler {
 			if (AnimatedArmour.isAnimatedArmourNpc(npcs[i].npcType)) {
 				AnimatedArmour.dropTokens(c, npcs[i].npcType, npcs[i].absX, npcs[i].absY);
 			}
+			PetHandler.receive(c, npcs[i]);
 
-			int random = Misc.random(1500);
-			int chaos = Misc.random(1000);
-			int chaos1 = Misc.random(300);
-			int zulrahpet = Misc.random(3000);
-			if (npcs[i].npcType == 2054 && chaos == 100) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(11995, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Chaos Elemental pet.");
-					}
-				}
-			}
-			if (npcs[i].npcType == 6619 && chaos == 600) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(11995, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Chaos Elemental pet.");
-					}
-				}
-			}
-			if ((npcs[i].npcType >= 2042 && npcs[i].npcType <= 2044) && zulrahpet == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(12921, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Zulrah snakeling.");
-					}
-				}
-			}
-			if ((npcs[i].npcType >= 2042 && npcs[i].npcType <= 2044) && zulrahpet == 201) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(12939, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Zulrah snakeling.");
-					}
-				}
-			}
-			if ((npcs[i].npcType >= 2042 && npcs[i].npcType <= 2044) && zulrahpet == 202) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(12940, 1);
-
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Zulrah snakeling.");
-
-					}
-				}
-			}
-			if (npcs[i].npcType == 239 && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(12653, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Prince Black Dragon.");
-					}
-				}
-			}
-			if (npcs[i].npcType == 2265 && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(12643, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Dagannoth Supreme Pet.");
-					}
-				}
-			}
-			if (npcs[i].npcType == 2267 && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(12645, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Dagannoth Rex pet.");
-					}
-				}
-			}
-			if (npcs[i].npcType == 5862 && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(13247, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x HellPuppy pet.");
-					}
-				}
-			}
-			if (npcs[i].npcType == 3129 && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(12652, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x K'ril Tsutsaroth pet.");
-					}
-				}
-			}
-			if (npcs[i].npcType == 2205 && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(12651, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Commander Zilyana pet.");
-					}
-				}
-			}
-			if (npcs[i].npcType == 3162 && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(12649, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Kree'Arra pet.");
-					}
-				}
-			}
-			if (npcs[i].npcType == 2215 && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(12650, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x General Graardor Jr.");
-					}
-				}
-			}
-			if (npcs[i].npcType == 494 && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(12655, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Kraken Jr.");
-					}
-				}
-			}
-			if (npcs[i].npcType == 6609 && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(13178, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Callisto pet.");
-					}
-				}
-			}
-			if ((npcs[i].npcType == 6611 || npcs[i].npcType == 6612) && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(13179, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Vet'ion pet.");
-					}
-				}
-			}
-			if (npcs[i].npcType == 6610 && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(13177, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Venenatis pet.");
-					}
-				}
-			}
-			if (npcs[i].npcType == 5779 && random == 200) {
-				c.sendMessage("<col=DD5C3E>You receive a boss pet. It has been added to your bank. Congratulations!");
-				c.getItems().addItemToBank(12646, 1);
-				for (int j = 0; j < PlayerHandler.players.length; j++) {
-					if (PlayerHandler.players[j] != null) {
-						Client c2 = (Client) PlayerHandler.players[j];
-						c2.sendMessage("<col=006600>" + c.playerName + " received a drop: 1 x Baby Mole.");
-					}
-				}
-			}
 			if (npcs[i].npcType == 912 || npcs[i].npcType == 913 || npcs[i].npcType == 914)
 				c.magePoints += 1;
 			int dropX = npcs[i].absX;
@@ -2380,7 +2372,7 @@ public class NPCHandler {
 		case 1615:
 		case 1613:
 		case 82:
-		case 3200:
+		case 2054:
 			return 592;
 		case 2881:
 		case 2882:
@@ -2756,7 +2748,7 @@ public class NPCHandler {
 				return;
 			}
 		}
-		if (c.getShops().getItemShopValue(item, 1, c.getItems().getItemSlot(item)) > 100000) {
+		if (ItemCacheDefinition.forID(item).getvalue() > 100000) {
 			sendLootShareMessage(c.playerName + " received a drop: " + amount + " x "
 					+ Item.getItemName(item));
 			/*
@@ -2794,6 +2786,9 @@ public class NPCHandler {
 		case 272:
 		case 273:
 		case 2919:
+		case 7273:
+		case 7274:
+		case 7275:
 		case 6593:
 			int random2 = Misc.random(2);
 			if (random2 == 0) {
@@ -3246,7 +3241,31 @@ public class NPCHandler {
 						}
 					}
 					break;
-
+				case 239:
+					int random1 = Misc.random(100);
+					int distance = c.distanceToPoint(npcs[i].absX, npcs[i].absY);
+					if (random1 >= 60 && random1 < 65) {
+						npcs[i].projectileId = 394; // green
+						npcs[i].endGfx = 429;
+						npcs[i].attackType = 3;
+					} else if (random1 >= 65 && random1 < 75) {
+						npcs[i].projectileId = 395; // white
+						npcs[i].endGfx = 431;
+						npcs[i].attackType = 3;
+					} else if (random1 >= 75 && random1 < 80) {
+						npcs[i].projectileId = 396; // blue
+						npcs[i].endGfx = 428;
+						npcs[i].attackType = 3;
+					} else if (random1 >= 80 && distance <= 4) {
+						npcs[i].projectileId = -1; // melee
+						npcs[i].endGfx = -1;
+						npcs[i].attackType = 0;
+					} else {
+						npcs[i].projectileId = 393; // red
+						npcs[i].endGfx = 430;
+						npcs[i].attackType = 3;
+					}
+					break;
 		// arma npcs
 		case 2561:
 			npcs[i].attackType = 0;
@@ -3260,8 +3279,8 @@ public class NPCHandler {
 			npcs[i].projectileId = 1203;
 			break;
 		case 2558:
-			random = Misc.random(1);
-			npcs[i].attackType = 1 + random;
+			random1 = Misc.random(1);
+			npcs[i].attackType = 1 + random1;
 			if (npcs[i].attackType == 1) {
 				npcs[i].projectileId = 1197;
 			} else {
@@ -3271,12 +3290,12 @@ public class NPCHandler {
 			break;
 		// sara npcs
 		case 2562: // sara
-			random = Misc.random(1);
-			if (random == 0) {
+			random1 = Misc.random(1);
+			if (random1 == 0) {
 				npcs[i].attackType = 2;
 				npcs[i].endGfx = 1224;
 				npcs[i].projectileId = -1;
-			} else if (random == 1)
+			} else if (random1 == 1)
 				npcs[i].attackType = 0;
 			break;
 		case 2563: // star
@@ -3292,8 +3311,8 @@ public class NPCHandler {
 			break;
 		// bandos npcs
 		case 2550:
-			random = Misc.random(2);
-			if (random == 0 || random == 1)
+			random1 = Misc.random(2);
+			if (random1 == 0 || random1 == 1)
 				npcs[i].attackType = 0;
 			else {
 				npcs[i].attackType = 1;
@@ -3351,7 +3370,7 @@ public class NPCHandler {
 			npcs[i].projectileId = 27;
 			break;
 
-		case 3200:
+		case 2054:
 			int r2 = Misc.random(1);
 			if (r2 == 0) {
 				npcs[i].attackType = 1;
@@ -3571,7 +3590,7 @@ public class NPCHandler {
 		case 7277: //Warped Jelly
 		case 7278: //Greater Nechryael
 		case 7279: //Deviant spectre
-			return 5;
+			return 2;
 
 			case 7554:
 			return 25;
@@ -3712,6 +3731,8 @@ public class NPCHandler {
 		case 2562:
 		case 2563:
 			return 8;
+		case 239:
+			return 90;
 		case 7241: //Abyssal demon
 		case 7242: //Black demon
 		case 7243: //Black demon
@@ -3750,7 +3771,7 @@ public class NPCHandler {
 		case 7277: //Warped Jelly
 		case 7278: //Greater Nechryael
 		case 7279: //Deviant spectre
-			return 8;
+			return 3;
 		case 8349: case 8350: case 8351:
 			 return 7;
 		case 2883:
@@ -3795,7 +3816,7 @@ public class NPCHandler {
 		switch (npcs[i].npcType) {
 		case 2881:
 		case 2882:
-		case 3200:
+		case 2054:
 			return 85;
 
 		case 2745:
@@ -3831,7 +3852,7 @@ public class NPCHandler {
 		if(npcs[i].npcType == VorkathConstants.SLEEPING_VORKATH_ID) {
 			return;
 		}
-if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
+		if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
 			if (c.getVorkath() != null) {
 				c.getVorkath().handleAttack();
 			}
@@ -3976,7 +3997,7 @@ if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
 								65);
 					}
 					c.underAttackBy2 = i;
-					c.singleCombatDelay2.reset();
+					c.singleCombatDelay2 = System.currentTimeMillis();
 					npcs[i].oldIndex = c.index;
 					startAnimation(getAttackEmote(i), i);
 					c.getPA().removeAllWindows();
@@ -4048,6 +4069,9 @@ if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
 	public static NpcDefinition[] getNpcDef() {
 		return NpcDefinition.DEFINITIONS;
 	}
+	public static NPCCacheDefinition[] getNpcCacheDef() {
+		return NPCCacheDefinition.definitions;
+	}
 
 	public void applyDamage(int i) {
 		if (npcs[i] != null) {
@@ -4071,16 +4095,25 @@ if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
 			if (c.playerIndex <= 0 && c.npcIndex <= 0)
 				if (c.autoRet == 1)
 					c.npcIndex = i;
-			if (c.attackTimer <= 3 || c.attackTimer == 0 && c.npcIndex == 0 && c.oldNpcIndex == 0) {
-				if (!NPCHandler.isFightCaveNpc(i))
+			if (c.attackTimer <= 3) {
+				if (!NPCHandler.isFightCaveNpc(i)){
 					c.animation(c.getCombat().getBlockEmote());
 			}
-
+			}
+/*			if (c.getItems().isWearingItem(12931) || c.getItems().isWearingItem(13197)
+					|| c.getItems().isWearingItem(13199)) {
+				DamageEffect venom = new SerpentineHelmEffect();
+				if (venom.isExecutable(c)) {
+					venom.execute(c, npcs[i], new Damage(6));
+				}
+			}*/
 			npcs[i].totalAttacks++;
 			boolean protectionIgnored = prayerProtectionIgnored(i);
 			if (c.respawnTimer <= 0) {
 				int damage = 0;
 				int secondDamage = -1;
+				
+				Optional<Brother> activeBrother = c.getBarrows().getActive();
 				
 				if (npcs[i].attackType == 0) {
 					damage = Misc.random(getMaxHit(i));
@@ -4099,7 +4132,43 @@ if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
 						}
 						damage = 20 + Misc.random(25);
 					}
-					
+					/**
+					 * Special attacks
+					 */
+					if (activeBrother.isPresent() && activeBrother.get().getId() == npcs[i].npcType) {
+						double random = Math.random();
+						if (random <= Barrows.SPECIAL_CHANCE) {
+							switch (activeBrother.get().getId()) {
+							case Brother.DHAROK:
+								double healthRatio = Math.round(
+										(npcs[i].HP / npcs[i].maximumHealth) * 10)
+										/ 10d;
+								healthRatio = Double.max(0.1, healthRatio);
+								damage *= -2 * healthRatio + 3;
+								break;
+							case Brother.GUTHAN:
+								int addedHealth = c.prayerActive[18] ? 0
+										: Integer.min(damage,
+												npcs[i].maximumHealth - npcs[i].HP);
+								if (addedHealth > 0) {
+									c.gfx0(398);
+									npcs[i].HP += addedHealth;
+								}
+								break;
+
+							case Brother.TORAG:
+								c.gfx0(399);
+								break;
+
+							case Brother.VERAC:
+								protectionIgnored = true;
+								damage /= 2;
+								break;
+
+							}
+						}
+					}
+
 					if (c.prayerActive[18] && !protectionIgnored) { // protect
 																	// from
 																	// melee
@@ -4165,6 +4234,22 @@ if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
 							.random(NPCHandler.npcs[i].attack)) {
 						damage = 0;
 					}
+					/**
+					 * Special attacks
+					 */
+					if (activeBrother.isPresent() && activeBrother.get().getId() == npcs[i].npcType) {
+						double random = Math.random();
+						if (random <= Barrows.SPECIAL_CHANCE) {
+							switch (activeBrother.get().getId()) {
+							case Brother.KARIL:
+								c.playerLevel[Config.AGILITY] = Integer.max(0,
+										(int) (c.playerLevel[Config.AGILITY] * 0.8));
+								c.getPA().refreshSkill(Config.AGILITY);
+								c.gfx0(401);
+								break;
+							}
+						}
+					}
 					if (c.prayerActive[17] && !protectionIgnored) { // protect
 																	// from
 																	// range
@@ -4216,6 +4301,7 @@ if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
 					if (npcs[i].npcType == 6342) {
 						damage = Misc.random(35);
 					}
+					
 					if (c.prayerActive[16] && !protectionIgnored) {
 						switch (npcs[i].npcType) {
 						case 1677:
@@ -4424,6 +4510,14 @@ if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
 			if (npcs[i].attackType == 2) {
 				return 10;
 			}
+		case 239:
+			return npcs[i].attackType == 3 ? 65 : 25;
+		case 7275:
+			return npcs[i].attackType == 3 ? 50 : 29;
+case 7274:
+			return npcs[i].attackType == 3 ? 50 : 26;
+case 7273:
+			return npcs[i].attackType == 3 ? 50 : 21;
 		case 8349: 
 		 case 8350: 
 		 case 8351:
@@ -4443,8 +4537,6 @@ if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
 		case 5054:
 			return 7;
 			
-		case 239:
-			return npcs[i].attackType == 3 ? 50 : 20;
 		case 465:
 			return npcs[i].attackType == 3 ? 55 : 13;
 			
@@ -4906,6 +4998,7 @@ if (npcs[i].npcType == VorkathConstants.AWAKENED_VORKATH_ID) {
 		newNPC.maxHit = maxHit;
 		newNPC.attack = attack;
 		newNPC.defence = defence;
+		newNPC.needRespawn = false;
 		npcs[slot] = newNPC;
 		return newNPC;
 	}	

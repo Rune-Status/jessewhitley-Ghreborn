@@ -13,9 +13,13 @@ import Ghreborn.core.task.impl.CleanupTask;
 import Ghreborn.definitions.ItemCacheDefinition;
 import Ghreborn.definitions.NPCCacheDefinition;
 import Ghreborn.definitions.ObjectDef;
+import Ghreborn.definitions.VarbitDefinition;
 import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
+import Ghreborn.model.content.godwars.GodwarsEquipment;
+import Ghreborn.model.content.godwars.GodwarsNPCs;
+import Ghreborn.model.content.trails.CasketRewards;
 import Ghreborn.model.npcs.NPCHandler;
 import Ghreborn.model.npcs.drop.NpcDropSystem;
 import Ghreborn.model.objects.Doors;
@@ -75,6 +79,7 @@ public class RS2Server {
 			World.getWorld().getBackgroundLoader().waitForPendingTasks();
 		}
 		CycleEventHandler.getSingleton();
+		Server.getEventHandler().process();
 		//GlobalDropsHandler.initialize();
 		new ItemDefinitionLoader().load();
 		new NpcDefinitionLoader().load();
@@ -90,11 +95,16 @@ public class RS2Server {
 			e1.printStackTrace();
 		}
 		new EquipmentRequirementLoader().load();
+		GodwarsEquipment.load();
+		GodwarsNPCs.load();
+		CasketRewards.read();
 		ItemCacheDefinition.unpackConfig();
 		NPCCacheDefinition.unpackConfig();
+		VarbitDefinition.LoadConfig();
 		World.getWorld().getBackgroundLoader().shutdown();
 		ObjectDef.loadConfig();
         Region.load();
+        Server.serverData.processQueue();
         Server.startMinutesCounter();
         try {
 			Server.globalObjects.loadGlobalObjectFile();

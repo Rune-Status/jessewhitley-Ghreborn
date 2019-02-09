@@ -6,14 +6,20 @@ import java.util.Optional;
 import Ghreborn.Config;
 import Ghreborn.Server;
 import Ghreborn.core.PlayerHandler;
+import Ghreborn.definitions.ItemCacheDefinition;
 import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
+import Ghreborn.model.content.barrows.Barrows;
 import Ghreborn.model.content.teleport.Tablets;
+import Ghreborn.model.content.trails.MasterClue;
+import Ghreborn.model.content.trails.RewardLevel;
 import Ghreborn.model.item.Nests;
 import Ghreborn.model.items.Item2;
 import Ghreborn.model.items.ItemDefinition;
 import Ghreborn.model.minigames.treasuretrails.ClueScroll;
+import Ghreborn.model.npcs.NPCHandler;
+import Ghreborn.model.players.Boundary;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.PacketType;
 import Ghreborn.model.players.PlayerCannon;
@@ -348,7 +354,64 @@ int itemId = packet.getLEShort(); // us to be
 		if(itemId == 7776) {
 			c.getItems().deleteItem2(7776, 1);
 			c.votePoints += 1;
+			c.getPA().sendFrame126("<col=FF7F00>Vote Points:</col> <col=ffffff>"+c.votePoints,
+					29168);
 		}
+        if (itemId == 2714) { // Easy Clue Scroll Casket
+            c.getItems().deleteItem(itemId, 1);
+            c.getTrails().addRewards(RewardLevel.EASY);
+            c.setEasyClueCounter(c.getEasyClueCounter() + 1);
+            c.sendMessage("@blu@You have completed " + c.getEasyClueCounter() + " easy Treasure Trails.");
+        }
+        if (itemId == 2802) { // Medium Clue Scroll Casket
+            c.getItems().deleteItem(itemId, 1);
+            c.getTrails().addRewards(RewardLevel.MEDIUM);
+            c.setMediumClueCounter(c.getMediumClueCounter() + 1);
+            c.sendMessage("@blu@You have completed " + c.getMediumClueCounter() + " medium Treasure Trails.");
+        }
+        if (itemId == 2775) { // Hard Clue Scroll Casket
+            c.getItems().deleteItem(itemId, 1);
+            c.getTrails().addRewards(RewardLevel.HARD);
+            c.setHardClueCounter(c.getHardClueCounter() + 1);
+            c.sendMessage("@blu@You have completed " + c.getHardClueCounter() + " hard Treasure Trails.");
+        }
+        if (itemId == 19841) { // Master Clue Scroll Casket
+            if (c.getItems().playerHasItem(19841)) {
+                c.getItems().deleteItem(itemId, 1);
+                c.getTrails().addRewards(RewardLevel.MASTER);
+                c.setMasterClueCounter(c.getMasterClueCounter() + 1);
+                c.sendMessage("@blu@You have completed " + c.getMasterClueCounter() + " master Treasure Trails.");
+                if (Misc.random(200) == 2 && c.getItems().getItemCount(19730) == 0 && c.summonId != 19730) {
+                    PlayerHandler.executeGlobalMessage("[<col=CC0000>Clue</col>] @cr20@ <col=255>" + c.playerName
+                            + "</col> hit the jackpot and got a <col=CC0000>Bloodhound</col> pet!");
+                    c.getItems().addItemUnderAnyCircumstance(19730, 1);
+                }
+            }
+        }
+        if (itemId == 2677) {
+           //	 Achievements.increase(c, AchievementType.CLUES, 1);
+            c.getItems().deleteItem(itemId, 1);
+            c.getItems().addItem(2714, 1);
+            c.sendMessage("You've recieved a easy clue scroll casket.");
+        }
+        if (itemId == 2801) {
+            //Achievements.increase(c, AchievementType.CLUES, 1);
+            c.getItems().deleteItem(itemId, 1);
+            c.getItems().addItem(2802, 1);
+            c.sendMessage("You've recieved a medium clue scroll casket.");
+        }
+        if (itemId == 2722) {
+            //Achievements.increase(c, AchievementType.CLUES, 1);
+            c.getItems().deleteItem(itemId, 1);
+            c.getItems().addItem(2775, 1);
+            c.sendMessage("You've recieved a hard clue scroll casket.");
+        }
+        /**
+         * Master clue scroll
+         */
+        if (itemId == 19835) {
+            MasterClue.progressScroll(c);
+        }
 		if (itemId == 13044) { //Zammy armour set
 		    if (c.getItems().hasFreeSlots(4)) {
 			    c.getItems().deleteItem(13044, 1);
@@ -475,12 +538,13 @@ if(c.getItems().playerHasItem(16544)){
 			if(c.getItems().playerHasItem(16545)){
 	        	   c.getItems().deleteItem2(16545, 1);
 	        	   c.getItems().addItem(randomLucky, 1);
-	        	   c.sendMessage("You just got an "+ItemDefinition.DEFINITIONS[randomLucky].getName()+"!");
-	        	   c.getPA().messageall("<col=830014>"+c.playerName+" Has Gotten an "+ItemDefinition.DEFINITIONS[randomLucky].getName()+"!");
+	        	   c.sendMessage("You just got an "+ItemCacheDefinition.forID(randomLucky).getName()+"!");
+	        	   c.getPA().messageall("<col=830014>"+c.playerName+" Has Gotten an "+ItemCacheDefinition.forID(randomLucky).getName()+"!");
 	           }
 		}
 		if (itemId == 16546){ // Lucky Box
-			int[] Luckys = {12650,12649,12641,12644,12645,12643,11995,12653,12655,13178,12646,12921,12936,12940,13179,13177,12648,13181,12616,13320,13225,21187,21188,21189,21192,21193,21194,21196,21197,13322,13323,13324,13325,13326,13247,13262,21748,21750,21291,21509,20851,21273,21992};
+			int[] Luckys = {12650, 12649, 12651, 12652, 12644, 12645,
+		            12643, 11995, 12653, 12655, 13178, 12646, 13179, 13177, 12921, 13181, 12816, 12647};
 			int randomLucky = Luckys[Misc.random(Luckys.length - 1)];
 			if (c.getItems().freeSlots() < 1) {
 				c.sendMessage("You need 1 free slots to open this box.");
@@ -489,8 +553,8 @@ if(c.getItems().playerHasItem(16544)){
 			if(c.getItems().playerHasItem(16546)){
 	        	   c.getItems().deleteItem2(16546, 1);
 	        	   c.getItems().addItem(randomLucky, 1);
-	        	   c.sendMessage("You just got an "+ItemDefinition.DEFINITIONS[randomLucky].getName()+"!");
-	        	   c.getPA().messageall("<col=830014>"+c.playerName+" Has Gotten an "+ItemDefinition.DEFINITIONS[randomLucky].getName()+"!");
+	        	   c.sendMessage("You just got an "+ItemCacheDefinition.forID(randomLucky).getName()+"!");
+	        	   c.getPA().messageall("<col=830014>"+c.playerName+" Has Gotten an "+ItemCacheDefinition.forID(randomLucky).getName()+" From A Pet Box");
 	           }
 		}
 		if(itemId == 10006) {
@@ -509,8 +573,8 @@ if(c.getItems().playerHasItem(16544)){
 			if(c.getItems().playerHasItem(23822)){
 	        	   c.getItems().deleteItem2(23822, 1);
 	        	   c.getItems().addItem(randomLucky, 1);
-	        	   c.sendMessage("You just got an "+ItemDefinition.DEFINITIONS[randomLucky].getName()+"!");
-	        	   c.getPA().messageall("<col=255>"+c.playerName+" Has Gotten an "+ItemDefinition.DEFINITIONS[randomLucky].getName()+" From an Uncommon Mystery box!");
+	        	   c.sendMessage("You just got an "+ItemCacheDefinition.forID(randomLucky).getName()+"!");
+	        	   c.getPA().messageall("<col=255>"+c.playerName+" Has Gotten an "+ItemCacheDefinition.forID(randomLucky).getName()+" From an Uncommon Mystery box!");
 	           }
 		}
 		if (itemId == 23823){ // Lucky Box
@@ -523,8 +587,8 @@ if(c.getItems().playerHasItem(16544)){
 			if(c.getItems().playerHasItem(23823)){
 	        	   c.getItems().deleteItem2(23823, 1);
 	        	   c.getItems().addItem(randomLucky, 1);
-	        	   c.sendMessage("You just got an "+ItemDefinition.DEFINITIONS[randomLucky].getName()+"!");
-	        	   c.getPA().messageall("<col=255>"+c.playerName+" Has Gotten an "+ItemDefinition.DEFINITIONS[randomLucky].getName()+" From an Common Mystery box!");
+	        	   c.sendMessage("You just got an "+ItemCacheDefinition.forID(randomLucky).getName()+"!");
+	        	   c.getPA().messageall("<col=255>"+c.playerName+" Has Gotten an "+ItemCacheDefinition.forID(randomLucky).getName()+" From an Common Mystery box!");
 	           }
 		}
 		if (itemId == 23824){ // Lucky Box
@@ -551,33 +615,37 @@ if(c.getItems().playerHasItem(16544)){
 			if(c.getItems().playerHasItem(23825)){
 	        	   c.getItems().deleteItem2(23825, 1);
 	        	   c.getItems().addItem(randomLucky, 1);
-	        	   c.sendMessage("You just got an "+ItemDefinition.DEFINITIONS[randomLucky].getName()+"!");
-	        	   c.getPA().messageall("<col=255>"+c.playerName+" Has Gotten an "+ItemDefinition.DEFINITIONS[randomLucky].getName()+" From an Super Rare Mystery box!");
+	        	   c.sendMessage("You just got an "+ItemCacheDefinition.forID(randomLucky).getName()+"!");
+	        	   c.getPA().messageall("<col=255>"+c.playerName+" Has Gotten an "+ItemCacheDefinition.forID(randomLucky).getName()+" From an Super Rare Mystery box!");
 	           }
 		}
 		if (itemId ==  550){ // present for xmas event
 c.getPA().showMap();
 }
 		if (itemId == 952) {
-			if (c.inArea(3553, 3301, 3561, 3294)) {
-				c.teleTimer = 3;
-				c.newLocation = 1;
-			} else if (c.inArea(3550, 3287, 3557, 3278)) {
-				c.teleTimer = 3;
-				c.newLocation = 2;
-			} else if (c.inArea(3561, 3292, 3568, 3285)) {
-				c.teleTimer = 3;
-				c.newLocation = 3;
-			} else if (c.inArea(3570, 3302, 3579, 3293)) {
-				c.teleTimer = 3;
-				c.newLocation = 4;
-			} else if (c.inArea(3571, 3285, 3582, 3278)) {
-				c.teleTimer = 3;
-				c.newLocation = 5;
-			} else if (c.inArea(3562, 3279, 3569, 3273)) {
-				c.teleTimer = 3;
-				c.newLocation = 6;
-			}
+			CycleEventHandler.getSingleton().addEvent(this, new CycleEvent() {
+				int time = 0;
+				@Override
+				public void execute(CycleEventContainer container) {
+					if (++time == 1) {
+						c.animation(830);
+						c.sendMessage("You dig..");
+						return;
+					}
+
+					if (++time != 3) {
+						return;
+					}
+		            if (Boundary.isIn(c, Barrows.GRAVEYARD)) {
+		                c.getBarrows().digDown();
+		                container.stop();
+		                return;
+		            }
+		            c.sendMessage("You find nothing of interest.");
+					container.stop();
+				}
+
+			}, 1);
 		}
 	}
 

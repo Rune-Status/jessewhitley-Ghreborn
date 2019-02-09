@@ -2,6 +2,7 @@ package Ghreborn.model.players.skills;
 
 import java.util.Optional;
 
+import Ghreborn.Server;
 import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventHandler;
 import Ghreborn.model.players.Client;
@@ -21,6 +22,7 @@ public class Skilling {
 	}
 	
 	public void stop() {
+		Server.getEventHandler().stop(player, "skilling");
 		CycleEventHandler.getSingleton().stopEvents(this);
 		skill = Optional.empty();
 	}

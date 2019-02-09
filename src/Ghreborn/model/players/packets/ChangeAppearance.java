@@ -12,7 +12,7 @@ public class ChangeAppearance implements PacketType {
 	//LOL I wrote this
 	
 	private static final int[][] MALE_VALUES = { 
-			{ 0, 8 }, // head
+			{ 0, 22 }, // head
 			{ 10, 17 }, // jaw
 			{ 18, 25 }, // torso
 			{ 26, 31 }, // arms

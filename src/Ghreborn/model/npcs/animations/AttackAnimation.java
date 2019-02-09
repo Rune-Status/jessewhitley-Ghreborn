@@ -787,7 +787,15 @@ case 7795: //Ancient Wyvern
 			} else {
 				return 5896;
 			}
-
+		case 8609://Hydra
+			int test1 = Misc.random(2);
+			if (test1 == 2) {
+				return 8261;
+			} else if (test1 == 1) {
+				return 8262;
+			} else {
+				return 8263;
+			}
 		case 2054:
 			return 3146;
 

@@ -11,7 +11,7 @@ import Ghreborn.core.PlayerHandler;
 public class MagicExtras {
 
 	public static void multiSpellEffectNPC(Client c, int npcId, int damage) {					
-		switch(c.MAGIC_SPELLS[c.oldSpellId][0]) {
+		switch(MagicData.MAGIC_SPELLS[c.oldSpellId][0]) {
 			case 12891:
 			case 12881:
 				if (NPCHandler.npcs[npcId].freezeTimer < -4) {
@@ -72,9 +72,9 @@ public class MagicExtras {
 				NPCHandler.npcs[npcId].underAttack = true;
 				if (Misc.random(c.getCombat().mageAtk()) > Misc.random(c.getCombat().mageDef()) && !c.magicFailed) {
 					if(c.getCombat().getEndGfxHeight() == 100){ // end GFX
-						n.gfx100(c.MAGIC_SPELLS[c.oldSpellId][5]);
+						n.gfx100(MagicData.MAGIC_SPELLS[c.oldSpellId][5]);
 					} else {
-						n.gfx0(c.MAGIC_SPELLS[c.oldSpellId][5]);
+						n.gfx0(MagicData.MAGIC_SPELLS[c.oldSpellId][5]);
 					}
 					int damage = Misc.random(c.getCombat().magicMaxHit());
 					if (NPCHandler.npcs[npcId].HP - damage < 0) { 
@@ -94,7 +94,7 @@ public class MagicExtras {
 	}
 
 	public static void multiSpellEffect(Client c, int playerId, int damage) {					
-		switch(c.MAGIC_SPELLS[c.oldSpellId][0]) {
+		switch(MagicData.MAGIC_SPELLS[c.oldSpellId][0]) {
 			case 13011:
 			case 13023:
 			if(System.currentTimeMillis() - PlayerHandler.players[playerId].reduceStat > 35000) {
@@ -131,9 +131,9 @@ public class MagicExtras {
 				c.barrageCount++;
 				if (Misc.random(c.getCombat().mageAtk()) > Misc.random(c2.getCombat().mageDef()) && !c.magicFailed) {
 					if(c.getCombat().getEndGfxHeight() == 100){ // end GFX
-						c2.gfx100(c.MAGIC_SPELLS[c.oldSpellId][5]);
+						c2.gfx100(MagicData.MAGIC_SPELLS[c.oldSpellId][5]);
 					} else {
-						c2.gfx0(c.MAGIC_SPELLS[c.oldSpellId][5]);
+						c2.gfx0(MagicData.MAGIC_SPELLS[c.oldSpellId][5]);
 					}
 					int damage = Misc.random(c.getCombat().magicMaxHit());
 					if (c2.prayerActive[12]) {
@@ -142,8 +142,8 @@ public class MagicExtras {
 					if (c2.playerLevel[3] - damage < 0) {
 						damage = c2.playerLevel[3];					
 					}
-					c.getPA().addSkillXP((c.MAGIC_SPELLS[c.oldSpellId][7] + damage*Config.MAGIC_EXP_RATE), 6); 
-					c.getPA().addSkillXP((c.MAGIC_SPELLS[c.oldSpellId][7] + damage*Config.MAGIC_EXP_RATE/3), 3);
+					c.getPA().addSkillXP((MagicData.MAGIC_SPELLS[c.oldSpellId][7] + damage*(c.getRights().isIronman() ? 4 : Config.MAGIC_EXP_RATE)), 6); 
+					c.getPA().addSkillXP((MagicData.MAGIC_SPELLS[c.oldSpellId][7] + damage*(c.getRights().isIronman() ? 4 : Config.MAGIC_EXP_RATE /3)), 3);
 					c2.appendDamage(damage, damage > 0 ? Hitmark.HIT : Hitmark.MISS);
 					c2.addDamageReceived(c.playerName, damage);
 					c2.getPA().refreshSkill(3);

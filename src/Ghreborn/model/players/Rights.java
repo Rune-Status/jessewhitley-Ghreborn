@@ -17,7 +17,7 @@ public enum Rights {
 	ADMINISTRATOR(2, MODERATOR),
 	OWNER(9, ADMINISTRATOR, MODERATOR),
 	Co_OWNER(10,OWNER, ADMINISTRATOR, MODERATOR),
-	//UNKNOWN(4),
+	Graphic_Designer(5),
 	DONATOR(3), //  contributor
 	SUPER_DONATOR(7), // sponsor
 	RESPECTED_DONATOR(8), // supporter
@@ -157,6 +157,9 @@ public enum Rights {
 	public boolean isYoutuber() {
 		return equals(YOUTUBER);
 	}
+	public boolean isGraphic_Designer() {
+		return equals(Graphic_Designer);
+	}
 	
 	
 	/**
@@ -166,11 +169,14 @@ public enum Rights {
 	public boolean isHelper() {
 		return equals(HELPER);
 	}
+	public boolean isIronman() {
+		return  isIronmans() || isUltimateIronman() || isHardcoreIronman() ;
+	}
 	/**
 	 * 
 	 * @return true if they are of type ironman
 	 */
-	public boolean isIronman() {
+	public boolean isIronmans() {
 		return equals(IRONMAN);
 	}
 	/**

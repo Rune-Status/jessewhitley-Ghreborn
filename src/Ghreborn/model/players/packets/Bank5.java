@@ -9,6 +9,7 @@ import Ghreborn.model.multiplayer_session.MultiplayerSession;
 import Ghreborn.model.multiplayer_session.trade.TradeSession;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.PacketType;
+import Ghreborn.model.players.skills.Smithing;
 import Ghreborn.model.players.skills.crafting.JewelryMaking;
 import Ghreborn.net.Packet;
 
@@ -34,6 +35,14 @@ public class Bank5 implements PacketType {
 		case 4245:
 			JewelryMaking.mouldItem(c, removeId, 5);
 			break;
+		case 1119:
+		case 1120:
+		case 1121:
+		case 1122:
+		case 1123:
+			Smithing.readInput(c.playerLevel[c.playerSmithing], Integer.toString(removeId), c, 5);
+			break;
+
 		case 3900:
 			c.getShops().buyItem(removeId, removeSlot, 1);
 			break;
@@ -87,14 +96,6 @@ public class Bank5 implements PacketType {
 			//c.getTradeAndDuel().fromDuel(removeId, removeSlot, 5);
 			break;
 
-		case 1119:
-		case 1120:
-		case 1121:
-		case 1122:
-		case 1123:
-			c.getSmithing().readInput(c.playerLevel[c.playerSmithing],
-					Integer.toString(removeId), c, 5);
-			break;
 
 		}
 	}

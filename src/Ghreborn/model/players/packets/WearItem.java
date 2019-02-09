@@ -37,15 +37,18 @@ public class WearItem implements PacketType {
 				
 		}
 		switch (c.wearId) {
-		case 5509:
+		}
+		if(c.wearId == 5509) {
 			Pouches.empty(c, Pouch.forId(c.wearId), c.wearId, 0);
-			break;
-		case 5510:
+			return;
+		}
+		if(c.wearId == 5510) {
 			Pouches.empty(c, Pouch.forId(c.wearId), c.wearId, 1);
-			break;
-		case 5512:
+			return;
+		}
+		if(c.wearId == 5512) {
 			Pouches.empty(c, Pouch.forId(c.wearId), c.wearId, 2);
-			break;
+			return;
 		}
 		if(c.wearId == 23821) {
 			if(!c.playerName.equalsIgnoreCase("justin")) {

@@ -102,11 +102,11 @@ public class NonCombatSpells extends MagicRequirements {
 				c.getItems().deleteItem(itemId, slot, 1);
 				c.getShops();
 				c.getItems().addItem(995, ShopAssistant.getItemShopValue(itemId)/3);
-				c.animation(c.MAGIC_SPELLS[49][2]);
-				c.gfx100(c.MAGIC_SPELLS[49][3]);
+				c.animation(MagicData.MAGIC_SPELLS[49][2]);
+				c.gfx100(MagicData.MAGIC_SPELLS[49][3]);
 				c.alchDelay = System.currentTimeMillis();
 				c.getPA().sendFrame106(6);
-				c.getPA().addSkillXP(c.MAGIC_SPELLS[49][7] * Config.MAGIC_EXP_RATE, 6);
+				c.getPA().addSkillXP(MagicData.MAGIC_SPELLS[49][7] * (c.getRights().isIronman() ? 4 : Config.MAGIC_EXP_RATE), 6);
 				c.getPA().refreshSkill(6);
 				}
 				}
@@ -135,11 +135,11 @@ public class NonCombatSpells extends MagicRequirements {
 				c.getItems().deleteItem(itemId, slot, 1);
 				c.getShops();
 				c.getItems().addItem(995, (int)(ShopAssistant.getItemShopValue(itemId)*.75));
-				c.animation(c.MAGIC_SPELLS[50][2]);
-				c.gfx100(c.MAGIC_SPELLS[50][3]);
+				c.animation(MagicData.MAGIC_SPELLS[50][2]);
+				c.gfx100(MagicData.MAGIC_SPELLS[50][3]);
 				c.alchDelay = System.currentTimeMillis();
 				c.getPA().sendFrame106(6);
-				c.getPA().addSkillXP(c.MAGIC_SPELLS[50][7] * Config.MAGIC_EXP_RATE, 6);
+				c.getPA().addSkillXP(MagicData.MAGIC_SPELLS[50][7] * (c.getRights().isIronman() ? 4 : Config.MAGIC_EXP_RATE), 6);
 				c.getPA().refreshSkill(6);
 				}
 				}

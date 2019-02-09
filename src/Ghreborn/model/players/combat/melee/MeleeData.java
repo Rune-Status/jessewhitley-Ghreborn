@@ -2,7 +2,7 @@ package Ghreborn.model.players.combat.melee;
 
 import Ghreborn.model.npcs.animations.BlockAnimation;
 import Ghreborn.model.players.*;
-
+import Ghreborn.model.players.combat.magic.MagicData;
 import Ghreborn.*;
 import Ghreborn.core.PlayerHandler;
 
@@ -65,7 +65,7 @@ public class MeleeData {
 		c.playerTurn90CCWIndex = 0x336;
 		c.playerRunIndex = 0x338;
 
-		if (weaponName.contains("halberd") || weaponName.contains("hasta") || weaponName.contains("guthan")
+		if (weaponName.contains("halberd") || weaponName.contains("scythe of vitur") || weaponName.contains("hasta") || weaponName.contains("guthan")
 				|| weaponName.contains("sceptre")) {
 			c.playerStandIndex = 809;
 			c.playerWalkIndex = 1146;
@@ -198,12 +198,14 @@ public class MeleeData {
 			c.playerWalkIndex = 2064;
 			break;
 		case 6528:
+		case 20756:
 			c.playerStandIndex = 0x811;
 			c.playerWalkIndex = 2064;
 			c.playerRunIndex = 1664;
 			break;
 		case 12848:
 		case 4153:
+		case 23986:
 			c.playerStandIndex = 1662;
 			c.playerWalkIndex = 1663;
 			c.playerRunIndex = 1664;
@@ -264,7 +266,7 @@ public class MeleeData {
 				|| weaponName.contains("c'bow") && !weaponName.contains("karil")) {
 			return 4230;
 		}
-		if (weaponName.contains("halberd")) {
+		if (weaponName.contains("halberd") || weaponName.contains("scythe of vitur")) {
 			return 440;
 		}
 		if (weaponName.startsWith("dragon dagger")) {
@@ -331,6 +333,7 @@ public class MeleeData {
 			return 2075;
 		case 12848:
 		case 4153: // granite maul
+		case 23986:
 			return 1665;
 		case 11824:
 		case 23994:
@@ -415,6 +418,7 @@ public class MeleeData {
 		 */
 		case 12848:
 		case 4153:
+		case 23986:
 			return 1666;
 		case 7158:
 			return 410;
@@ -458,7 +462,7 @@ public class MeleeData {
 			if (c.spellId == 52 || c.spellId == 53) {
 				return 4;
 			}
-			switch (c.MAGIC_SPELLS[c.spellId][0]) {
+			switch (MagicData.MAGIC_SPELLS[c.spellId][0]) {
 			case 12871: // ice blitz
 			case 13023: // shadow barrage
 			case 12891: // ice barrage
@@ -593,7 +597,7 @@ public class MeleeData {
 	}
 	public static int getHitDelay(Player c, int i, String weaponName) {
 		if (c.usingMagic) {
-			switch (c.MAGIC_SPELLS[c.spellId][0]) {
+			switch (MagicData.MAGIC_SPELLS[c.spellId][0]) {
 			case 12891:
 				return 4;
 			case 12871:

@@ -10,7 +10,7 @@ public final class NpcDefinition {
 	/**
 	 * The array that contains all of the NPC definitions.
 	 */
-	public static final NpcDefinition[] DEFINITIONS = new NpcDefinition[15000];
+	public static final NpcDefinition[] DEFINITIONS = new NpcDefinition[30000];
 
 	/**
 	 * The identification for this NPC.

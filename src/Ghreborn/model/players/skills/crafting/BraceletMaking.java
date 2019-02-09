@@ -5,6 +5,7 @@ import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
 import Ghreborn.model.players.Client;
+import Ghreborn.model.players.skills.Skill;
 
 public class BraceletMaking extends CraftingData {
 	
@@ -54,7 +55,7 @@ public class BraceletMaking extends CraftingData {
 								+ c.getItems().getItemName(l.getProduct()).toLowerCase() + ".");
 						return;
 					}
-					c.startAnimation(1249);
+					c.animation(1249);
 					c.getPA().removeAllWindows();
 					c.playerIsCrafting = true;
 					amount = l.getAmount(buttonId);
@@ -88,8 +89,8 @@ public class BraceletMaking extends CraftingData {
 								c.getItems();
 								c.sendMessage("You make a "
 										+ c.getItems().getItemName(l.getProduct()) + ".");
-								c.getPA().addSkillXP((int) l.getXP() *  Config.CRAFTING_EXPERIENCE, 12);
-								c.startAnimation(1249);
+								c.getPA().addSkillXP((int) l.getXP() *  (c.getRights().isIronman() ? Config.Ironman_exp_rate : Config.CRAFTING_EXPERIENCE), 12);
+								c.animation(1249);
 								amount--;
 								if (!c.getItems().playerHasItem(gold_bar)) {
 									c.sendMessage("You have run out of gold bars.");

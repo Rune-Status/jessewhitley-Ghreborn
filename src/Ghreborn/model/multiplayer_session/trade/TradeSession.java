@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 
 import Ghreborn.Server;
+import Ghreborn.definitions.ItemCacheDefinition;
 import Ghreborn.model.items.GameItem;
 import Ghreborn.model.items.ItemDefinition;
 import Ghreborn.model.multiplayer_session.MultiplayerSession;
@@ -187,7 +188,7 @@ public class TradeSession extends MultiplayerSession {
     	trade.setTradeWith(player.getUsername());
     	for (GameItem item : items.get(player)) {
     		if (item.id > 0) {
-    			String itemName = ItemDefinition.DEFINITIONS[item.id].getName();
+    			String itemName = ItemCacheDefinition.forID(item.id).getName();
     			trade.push(new com.everythingrs.marketplace.Item(item.id, item.amount, itemName));
     		}
     	}

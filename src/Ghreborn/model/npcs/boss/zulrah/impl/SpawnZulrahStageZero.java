@@ -29,7 +29,7 @@ public class SpawnZulrahStageZero extends ZulrahStage {
 			player.getPA().movePlayer(2268, 3069, zulrah.getInstancedZulrah().getHeight());
 		}
 		if (cycle == 13) {
-			Server.npcHandler.spawnNpc(player, 2042, 2266, 3072, zulrah.getInstancedZulrah().getHeight(), -1, 500, 41, 500, 500, true, false);
+			Server.npcHandler.spawnNpc(player, 2042, 2266, 3072, zulrah.getInstancedZulrah().getHeight(), -1, 500, 41, 500, 500, false, false);
 			NPC npc = NPCHandler.getNpc(2042, 2266, 3072, zulrah.getInstancedZulrah().getHeight());
 			if (npc == null) {
 				player.sendMessage("Something seems to have gone wrong! Please contact a staff member of Noxious.");

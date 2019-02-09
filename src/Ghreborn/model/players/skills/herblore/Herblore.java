@@ -65,7 +65,7 @@ public class Herblore {
 				return;
 			}
 			ItemDefinition definition = ItemDefinition.forId(h.getClean());
-			player.getPA().addSkillXP(h.getExperience() * Config.HERBLORE_EXPERIENCE, Skill.HERBLORE.getId());
+			player.getPA().addSkillXP(h.getExperience() * (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.HERBLORE_EXPERIENCE), Skill.HERBLORE.getId());
 			player.getItems().deleteItem2(h.getGrimy(), 1);
 			player.getItems().addItem(h.getClean(), 1);
 			player.sendMessage("You Clean the " + definition.getName() + ".");
@@ -92,7 +92,7 @@ public class Herblore {
 						container.stop();
 						return;
 					}
-					player.startAnimation(363);
+					player.animation(363);
 					Arrays.asList(p.getIngredients()).stream().forEach(ing -> player.getItems().deleteItem2(ing.getId(), ing.getAmount()));
 					
 					/**
@@ -109,7 +109,7 @@ public class Herblore {
 					}
 					
 					player.getItems().addItem(p.getResult().getId(), p.getResult().getAmount());
-					player.getPA().addSkillXP(p.getExperience() *  Config.HERBLORE_EXPERIENCE, Skill.HERBLORE.getId());
+					player.getPA().addSkillXP(p.getExperience() *  (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.HERBLORE_EXPERIENCE), Skill.HERBLORE.getId());
 					player.sendMessage("You combine all of the ingredients and make a " + definition.getName() + ".");
 					//Achievements.increase(player, AchievementType.HERB, 1);
 					switch (p) {

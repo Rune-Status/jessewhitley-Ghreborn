@@ -81,7 +81,7 @@ public static int platebody[] = {13944, 23280, 19546, 20139, 13911, 10348 , 1033
         return legs[(int) (Math.random() * legs.length)];
     }
 
-    public static boolean isPlate(int itemID) {
+    public static boolean isFullBody(int itemID) {
         for (int i = 0; i < platebody.length; i++) {
             if (platebody[i] == itemID) {
                 return true;
@@ -90,7 +90,7 @@ public static int platebody[] = {13944, 23280, 19546, 20139, 13911, 10348 , 1033
         return false;
     }
 
-    public static boolean isFullHelm(int itemID) {
+    public static boolean isFullHat(int itemID) {
         for (int i = 0; i < fullHelm.length; i++) {
             if (fullHelm[i] == itemID) {
                 return true;

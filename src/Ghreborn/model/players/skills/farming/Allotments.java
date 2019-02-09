@@ -10,6 +10,7 @@ import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
 import Ghreborn.model.Location;
+import Ghreborn.model.players.Boundary;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.Player;
 import Ghreborn.util.Misc;
@@ -46,8 +47,8 @@ public class Allotments {
 	public static final int DISEASED = 0x02;
 	public static final int DEAD = 0x03;
 
-	public static final int FALADOR_AND_CATHERBY_CONFIG = 504;
-	public static final int ARDOUGNE_AND_PHASMATYS_CONFIG = 505;
+	public static final int FALADOR_PHASMATYS_CONFIG = 529;
+	public static final int ARDOUGNE_AND_PHASMATYS_CONFIG = 529;
 
 	/* This is the enum holding the seeds info */
 	public enum AllotmentData {
@@ -249,13 +250,13 @@ public class Allotments {
 		int configValue;
 		for (int i = 0; i < farmingStages.length; i++) {
 			configValues[i] = getConfigValue(farmingStages[i], farmingSeeds[i], farmingState[i], i);
+			if(Boundary.isIn(player, Boundary.FALADOR_FARM)) {
+		configValue = configValues[i] | (configValues[i + 1] << 8);
+		player.getPA().sendFrame87(FALADOR_PHASMATYS_CONFIG, configValues[i] | (configValues[i + 1] << 8));
+			}
+		//cnfigValue = configValues[4] << 16 | configValues[5] << 8 << 16 | configValues[6] | configValues[7] << 8;
+		//player.getPA().sendFrame87(ARDOUGNE_AND_PHASMATYS_CONFIG, configValue);
 		}
-
-		configValue = (configValues[0] << 16) + (configValues[1] << 8 << 16) + configValues[2] + (configValues[3] << 8);
-		player.getPA().sendFrame87(FALADOR_AND_CATHERBY_CONFIG, configValue);
-
-		configValue = configValues[4] << 16 | configValues[5] << 8 << 16 | configValues[6] | configValues[7] << 8;
-		player.getPA().sendFrame87(ARDOUGNE_AND_PHASMATYS_CONFIG, configValue);
 
 	}
 	public int getConfigValue(int allotmentStage, int seedId, int plantState, int index) {

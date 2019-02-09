@@ -24,6 +24,8 @@ import Ghreborn.model.content.Lootbag;
 import Ghreborn.model.content.MoneyBag;
 import Ghreborn.model.content.MysteryBox;
 import Ghreborn.model.content.QuickPrayer;
+import Ghreborn.model.content.barrows.Barrows;
+import Ghreborn.model.content.barrows.TunnelEvent;
 import Ghreborn.model.content.clan.Clan;
 import Ghreborn.model.content.dailytasks.DailyTasks;
 import Ghreborn.model.content.dialogue.Dialogue;
@@ -34,6 +36,7 @@ import Ghreborn.model.content.gambling.Flowers;
 import Ghreborn.model.content.randomevents.RandomEvent;
 import Ghreborn.model.content.randomevents.InterfaceClicking.impl.InterfaceClickHandler;
 import Ghreborn.model.content.teleport.TeleportExecutor;
+import Ghreborn.model.content.trails.TreasureTrails;
 import Ghreborn.model.items.EquipmentSet;
 import Ghreborn.model.items.Item;
 import Ghreborn.model.items.ItemAssistant;
@@ -45,6 +48,7 @@ import Ghreborn.model.minigames.inferno.Inferno;
 import Ghreborn.model.minigames.inferno.Tzkalzuk;
 import Ghreborn.model.minigames.raids.Raids;
 import Ghreborn.model.minigames.rfd.DisposeTypes;
+import Ghreborn.model.minigames.rogues_den.Wallsafe;
 import Ghreborn.model.minigames.warriors_guild.WarriorsGuild;
 import Ghreborn.model.minigames.warriors_guild.WarriorsGuildBasement;
 import Ghreborn.model.multiplayer_session.trade.Trade;
@@ -59,6 +63,8 @@ import Ghreborn.model.npcs.NPC;
 import Ghreborn.model.npcs.NPCDeathTracker;
 import Ghreborn.model.npcs.NPCHandler;
 import Ghreborn.model.npcs.PetHandler;
+import Ghreborn.model.npcs.PetHandler.Pets;
+import Ghreborn.model.npcs.boss.Alchemical_Hydra.Alchemical_Hydra;
 import Ghreborn.model.npcs.boss.Armadyl.Armadyl;
 import Ghreborn.model.npcs.boss.Bandos.Bandos;
 import Ghreborn.model.npcs.boss.Cerberus.Cerberus;
@@ -70,6 +76,7 @@ import Ghreborn.model.npcs.boss.instances.InstancedAreaManager;
 import Ghreborn.model.npcs.boss.skotizo.Skotizo;
 import Ghreborn.model.npcs.boss.vorkath.Vorkath;
 import Ghreborn.model.npcs.boss.zulrah.Zulrah;
+import Ghreborn.model.npcs.boss.zulrah.ZulrahLostItems;
 import Ghreborn.model.players.combat.CombatAssistant;
 import Ghreborn.model.players.combat.Damage;
 import Ghreborn.model.players.combat.DamageQueueEvent;
@@ -79,6 +86,7 @@ import Ghreborn.model.players.skills.construction.Room;
 import Ghreborn.model.players.skills.cooking.Cooking;
 import Ghreborn.model.players.skills.farming.Allotments;
 import Ghreborn.model.players.skills.farming.Bushes;
+import Ghreborn.model.players.skills.firemake.Firemaking;
 import Ghreborn.model.players.skills.fletching.Fletching;
 import Ghreborn.model.players.skills.herblore.Herblore;
 import Ghreborn.model.players.skills.hunter.Hunter;
@@ -94,6 +102,7 @@ import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
 import Ghreborn.event.EventManager;
+import Ghreborn.event.event.Event2;
 import Ghreborn.event.Event;
 import Ghreborn.event.EventContainer;
 import Ghreborn.model.players.skills.*;
@@ -123,14 +132,17 @@ public class Client extends Player {
 	private PlayerKill playerKills;
 	private Cerberus cerberus = null;
 	public int woodcuttingTree;
+	private InterfaceClickHandler randomInterfaceClick = new InterfaceClickHandler(this);
 	private final QuickPrayer quick = new QuickPrayer();
 	private Tzkalzuk tzkalzuk = null;
 	public InstancedArea instancedArea;
+	private ZulrahLostItems lostItemsZulrah;
 	private int clickItemId = -1;
 	public NPC spawnedNpc;
 	public Rights rights = Rights.PLAYER;
 	public Stream inStream = null, outStream = null;
 	public Zulrah zulrah = new Zulrah(this);
+	private Smelting smelting = new Smelting(this);
 	private Bandos bandos = new Bandos(this);
 	private Vorkath vorkath = new Vorkath(this);
 	private TeleportExecutor teleports = new TeleportExecutor();
@@ -138,6 +150,7 @@ public class Client extends Player {
 	private DailyGearBox dailyGearBox = new DailyGearBox(this);
 	private DailySkillBox dailySkillBox = new DailySkillBox(this);
 	private MysteryBox mysteryBox = new MysteryBox(this);
+	private TreasureTrails trails = new TreasureTrails(this);
 	private DonatorBox donatorBox = new DonatorBox(this);
 	private WarriorsGuild warriorsGuild = new WarriorsGuild(this);
 	private WarriorsGuildBasement warriorsGuildbasement = new WarriorsGuildBasement(this);
@@ -145,7 +158,9 @@ public class Client extends Player {
 	private ExtremeDonatorBox extremedonatorBox = new ExtremeDonatorBox(this);
 	private NPCDeathTracker npcDeathTracker = new NPCDeathTracker(this);
 	private Armadyl armadyl = new Armadyl(this);
+	private Alchemical_Hydra hydra = new Alchemical_Hydra(this);
 	private Zamorak zamorak = new Zamorak(this);
+	private SkillInterfaces skillinterface = new SkillInterfaces(this);
 	private List<Byte> poisonDamageHistory = new ArrayList<>(4);
 	private ItemAssistant itemAssistant = new ItemAssistant(this);
 	private ShopAssistant shopAssistant = new ShopAssistant(this);
@@ -160,11 +175,13 @@ public class Client extends Player {
 	private Ignores ignores = new Ignores(this);
 	private Kraken kraken = new Kraken(this);
 	private Lootbag lootbag = new Lootbag(this);
+	private Wallsafe wallsafe = new Wallsafe(this);
 	//private TextHandler textHandler = new TextHandler(this);
 	//private DialogueHandler dialogueHandler = new DialogueHandler(this);
 	private Queue<Packet> queuedPackets = new LinkedList<Packet>();
 	private Potions potions = new Potions(this);
 	private MusicManager music = new MusicManager (this);
+	private Barrows barrows = new Barrows(this);
 	private Food food = new Food(this);
 	private Dialogue dialogue = null;
 	public PlayerCannon playerCannon;
@@ -184,13 +201,14 @@ private DamageQueueEvent damageQueue = new DamageQueueEvent(this);
 	private Crafting crafting = new Crafting(this);
 	private Smithing smith = new Smithing(this);
 	private Prayer prayer = new Prayer(this);
-	private Fletching fletching = new Fletching();
+	private Fletching fletching = new Fletching(this);
 	private SmithingInterface smithInt = new SmithingInterface(this);
 	private Thieving thieving = new Thieving(this);
 	private Firemaking firemaking = new Firemaking(this);
 	private Herblore herblore = new Herblore(this);
 	private FightCave fightcave = null;
 	private int toxicBlowpipeCharge;
+	//public Smelting.Bars bar = null;
 	private int toxicBlowpipeAmmo;
 	private int toxicBlowpipeAmmoAmount;
 	private int serpentineHelmCharge;
@@ -231,12 +249,24 @@ private DamageQueueEvent damageQueue = new DamageQueueEvent(this);
 	public MoneyBag getMoneyBag() {
 		return moneybag;
 	}
+	public SkillInterfaces getSkillInterface() {
+		return skillinterface;
+	}
+	public ZulrahLostItems getZulrahLostItems() {
+		if (lostItemsZulrah == null) {
+			lostItemsZulrah = new ZulrahLostItems(this);
+		}
+		return lostItemsZulrah;
+	}
 	public void setTrading(boolean trading) {
 		this.trading = trading;
 	}
 	 public Vorkath getVorkath() {
 	        return vorkath;
 	    }
+	 public Smelting getSmelting() {
+		 return smelting;
+	 }
 
 	    public void setVorkath(Vorkath vorkath) {
 	        this.vorkath = vorkath;
@@ -485,6 +515,9 @@ private DamageQueueEvent damageQueue = new DamageQueueEvent(this);
 		if (armadyl.getInstancedArmadyl() != null) {
 			InstancedAreaManager.getSingleton().disposeOf(armadyl.getInstancedArmadyl());
 		}
+		if (hydra.getInstancedAlchemicalHydra() != null) {
+			InstancedAreaManager.getSingleton().disposeOf(hydra.getInstancedAlchemicalHydra());
+		}
 		if (skotizo != null) {
 			InstancedAreaManager.getSingleton().disposeOf(skotizo);
 		}
@@ -495,9 +528,13 @@ private DamageQueueEvent damageQueue = new DamageQueueEvent(this);
 		if (getPA().viewingOtherBank) {
 			getPA().resetOtherBank();
 		}
-		if(getRights().isIronman() && !getRights().isPlayer() && !getRights().isAdministrator() && !getRights().isOwner() && !getRights().isCoOwner() && !playerName.equalsIgnoreCase("raven")) {
+		if(getRights().isIronmans() && !getRights().isPlayer() && !getRights().isAdministrator() && !getRights().isOwner() && !getRights().isCoOwner() && !playerName.equalsIgnoreCase("raven")) {
 		boolean debugMessage = false; 
 		com.everythingrs.hiscores.Hiscores.update("1yas9sbywkw3j71agw4iiicnmi251x4tx8auv1vcz8c2d0io1orma598wc2jvhvgxtmhu4k7qfr",  "Ironman Mode", this.playerName, this.getRights().getValue(), this.playerXP, debugMessage);
+		}    
+		if(getRights().isHardcoreIronman() && !getRights().isPlayer() && !getRights().isAdministrator() && !getRights().isOwner() && !getRights().isCoOwner() && !playerName.equalsIgnoreCase("raven")) {
+		boolean debugMessage = false; 
+		com.everythingrs.hiscores.Hiscores.update("1yas9sbywkw3j71agw4iiicnmi251x4tx8auv1vcz8c2d0io1orma598wc2jvhvgxtmhu4k7qfr",  "Hardcore Ironman Mode", this.playerName, this.getRights().getValue(), this.playerXP, debugMessage);
 		}    
 		if(!getRights().isAdministrator() &&!getRights().isIronman() && !getRights().isOwner() && !getRights().isCoOwner() && !playerName.equalsIgnoreCase("raven")) {
 		boolean debugMessage = false; 
@@ -518,6 +555,7 @@ private DamageQueueEvent damageQueue = new DamageQueueEvent(this);
 		getFriends().notifyFriendsOfUpdate();
 		PlayerHandler.playerCount--;
 		Misc.println("[Logged out]: "+playerName+"");
+		Server.getEventHandler().stop(this);
 		CycleEventHandler.getSingleton().stopEvents(this);
 		HostList.getHostList().remove(session);
 		disconnected = true;
@@ -581,8 +619,12 @@ public MusicManager getMusic(){
 			//getPA().updatefarming();
 			if(hasNpc == true) {
 				if (summonId > 0) {
-						PetHandler.spawnPet(this, summonId, -1, true);
+					Pets pet = PetHandler.forItem(summonId);
+					if (pet != null) {
+						PetHandler.spawn(this, pet, true, false);
+					}
 				}
+			
 			}
 			for (int i = 0; i < 23; i++) {
 				getPA().setSkillLevel(i, playerLevel[i], playerXP[i]);
@@ -634,6 +676,7 @@ public MusicManager getMusic(){
 			setSidebarInterface(13, 23418);
 			setSidebarInterface(0, 2423);
 			getMusic().load();
+			setHouse(House.load(this));
 			//Server.clanManager.joinOnLogin(this);
 			if (playerName.equalsIgnoreCase("sgsrocks")){
 				setRights(Rights.OWNER);
@@ -644,10 +687,10 @@ public MusicManager getMusic(){
 			if (playerName.equalsIgnoreCase("spadow")){
 				setRights(Rights.DEVELOPER);
 			        }
-			if (playerName.equalsIgnoreCase("lolly") || playerName.equalsIgnoreCase("father") || playerName.equalsIgnoreCase("") || playerName.equalsIgnoreCase("")){
+			if (playerName.equalsIgnoreCase("") || playerName.equalsIgnoreCase("") || playerName.equalsIgnoreCase("") || playerName.equalsIgnoreCase("")){
 				setRights(Rights.MODERATOR);
 			        }
-			if (playerName.equalsIgnoreCase("Jbogle") || playerName.equalsIgnoreCase("lp316")){
+			if (playerName.equalsIgnoreCase("") || playerName.equalsIgnoreCase("lp316")){
 				setRights(Rights.ADMINISTRATOR);
 			        }
 				  
@@ -658,7 +701,7 @@ public MusicManager getMusic(){
 	            sendMessage("Staff applications are now open! do ::forums");
 	            sendMessage("Do ::commands to see player commands");
 	            sendMessage("Do ::discord to see newest updates and talk to players.");
-	            sendMessage("Remember to do Vote Everyday for great rewards! and");
+	            sendMessage("Remember to do Vote every 12 hours for great rewards! and");
 	            sendMessage("to bring more players to the server!");
 	            if (Config.doubleEXPWeekend == true) {
 					sendMessage("Enjoy Double EXP Weekend!");
@@ -816,6 +859,7 @@ public MusicManager getMusic(){
 				getHouse().save();
 				//getPA().movePlayer(2953, 3224, 0);
 			}
+			Server.getEventHandler().stop(this);
 			CycleEventHandler.getSingleton().stopEvents(this);
 			properLogout = true;
 			disconnected = true;
@@ -859,6 +903,9 @@ public MusicManager getMusic(){
 					Config.GLOBAL_MESSAGE = 5;
 				} else if(Config.GLOBAL_MESSAGE == 5) {
 					sendMessage("[Information] Thank-You for playing Ghreborn!",255);
+					Config.GLOBAL_MESSAGE = 6;
+				} else if(Config.GLOBAL_MESSAGE == 6) {
+					sendMessage("[Information] Remember to Vote Every 12 Hours. :)",255);
 					Config.GLOBAL_MESSAGE = 0;
 				}
 	        }
@@ -880,6 +927,12 @@ public MusicManager getMusic(){
 		}
 		if (getInstancedArea() != null) {
 			getInstancedArea().process();
+		}
+		if(Boundary.isIn(this, Boundary.KARUULM_SLAYER_DUNGEON)) {
+			if(playerEquipment[playerFeet] == 23037/*getItems().playerHasEquipped(23037)*/) {
+			} else {
+				appendDamage(4, Hitmark.HIT);
+			}
 		}
 		if (vorkath != null) {
             if (vorkath.getVorkathInstance() != null) {
@@ -971,7 +1024,7 @@ public MusicManager getMusic(){
 		}
 	}, 3600);*/
 			
-
+		//c.getPA().sendFrame126("<col=FF7F00>Players:</col> <col=3CB71E>"+ Server.playerHandler.getPlayersOnline()+"", 29163);
 		if(isDead && respawnTimer == -6) {
 			getPA().applyDead();
 		}
@@ -1017,34 +1070,60 @@ public MusicManager getMusic(){
 			}
 		}
 		getCombat().handlePrayerDrain();
-		if (singleCombatDelay.elapsed(6000)) {
+		if (System.currentTimeMillis() - singleCombatDelay > 5000) {
 			underAttackBy = 0;
 		}
-		if (singleCombatDelay2.elapsed(6000)) {
+		if (System.currentTimeMillis() - singleCombatDelay2 > 5000) {
 			underAttackBy2 = 0;
 		}
-		if (inWild()) {
+		if (inWild() && Boundary.isIn(this, Boundary.SAFEPK)) {
 			int modY = absY > 6400 ? absY - 6400 : absY;
 			wildLevel = (((modY - 3520) / 8) + 1);
 			if (Config.SINGLE_AND_MULTI_ZONES) {
-				getPA().sendFrame126("<col=ffff00>Level: " + wildLevel, 199);
+				getPA().sendFrame126("@yel@Level: " + wildLevel, 199);
 			} else {
 				getPA().multiWay(-1);
-				getPA().sendFrame126("<col=ffff00>Level: " + wildLevel, 199);
+				getPA().sendFrame126("@yel@Level: " + wildLevel, 199);
 			}
 			getPA().showOption(3, 0, "Attack", 1);
-			if (Config.BOUNTY_HUNTER_ACTIVE) {
+			if (Config.BOUNTY_HUNTER_ACTIVE && !inClanWars()) {
 				getPA().walkableInterface(28000);
 				getPA().sendFrame171(1, 28070);
 				getPA().sendFrame171(0, 196);
 			} else {
 				getPA().walkableInterface(197);
 			}
-		} else if (Boundary.isIn(this, Boundary.PURO_PURO)) {
-			//getPA().walkableInterface(39112);
-		getPA().sendFrame99(2);
-			
-	
+	} else if (inWild() && !inClanWars() && !Boundary.isIn(this, Boundary.SAFEPK)) {
+		int modY = absY > 6400 ? absY - 6400 : absY;
+		wildLevel = (((modY - 3520) / 8) + 1);
+		if (Config.SINGLE_AND_MULTI_ZONES) {
+			getPA().sendFrame126("@yel@Level: " + wildLevel, 199);
+		} else {
+			getPA().multiWay(-1);
+			getPA().sendFrame126("@yel@Level: " + wildLevel, 199);
+		}
+		getPA().showOption(3, 0, "Attack", 1);
+		if (Config.BOUNTY_HUNTER_ACTIVE && !inClanWars()) {
+			getPA().walkableInterface(28000);
+			getPA().sendFrame171(1, 28070);
+			getPA().sendFrame171(0, 196);
+		} else {
+			getPA().walkableInterface(197);
+		}
+
+		// } else if (Boundary.isIn(this, Boundary.SKELETAL_MYSTICS)) {
+		// getPA().walkableInterface(42300);
+	} else if (inClanWars() && inWild()) {
+		getPA().showOption(3, 0, "Attack", 1);
+		getPA().walkableInterface(197);
+		getPA().sendFrame126("@yel@3-126", 199);
+		wildLevel = 126;
+	} else if (Boundary.isIn(this, Boundary.SCORPIA_LAIR)) {
+		getPA().sendFrame126("@yel@Level: 54", 199);
+		// getPA().walkableInterface(197);
+		wildLevel = 54;
+	} else if (getItems().isWearingItem(10501, 3) && !inWild()) {
+		getPA().showOption(3, 0, "Throw-At", 1);
 	} else if (inEdgeville()) {
 		if (Config.BOUNTY_HUNTER_ACTIVE) {
 			if (bountyHunter.hasTarget()) {
@@ -1057,45 +1136,58 @@ public MusicManager getMusic(){
 			}
 		} else {
 			getPA().sendFrame99(0);
+			getPA().walkableInterface(-1);
 			getPA().showOption(3, 0, "Null", 1);
 		}
 		getPA().showOption(3, 0, "null", 1);
-	} else if ((inDuelArena() || Boundary.isIn(this, Boundary.DUEL_ARENAS))) {
+/*	} else if (Boundary.isIn(this, PestControl.LOBBY_BOUNDARY)) {
+		getPA().walkableInterface(21119);
+		PestControl.drawInterface(this, "lobby");
+	} else if (Boundary.isIn(this, PestControl.GAME_BOUNDARY)) {
+		getPA().walkableInterface(21100);
+		PestControl.drawInterface(this, "game");*/
+	} else if ((inDuelArena() || Boundary.isIn(this, Boundary.DUEL_ARENA))) {
 		getPA().walkableInterface(201);
-		if (Boundary.isIn(this, Boundary.DUEL_ARENAS)) {
+		if (Boundary.isIn(this, Boundary.DUEL_ARENA)) {
 			getPA().showOption(3, 0, "Attack", 1);
 		} else {
 			getPA().showOption(3, 0, "Challenge", 1);
 		}
 		wildLevel = 126;
-	} else if (isInBarrows() || isInBarrows2()) {
-		getPA().walkableInterface(16128);
-		getPA().sendFrame126("" + barrowsKillCount, 16137);
-		if (barrowsNpcs[2][1] == 2) {
-			getPA().sendFrame126("<col=DD5C3E>Karils", 16135);
-		}
-		if (barrowsNpcs[3][1] == 2) {
-			getPA().sendFrame126("<col=DD5C3E>Guthans", 16134);
-		}
-		if (barrowsNpcs[1][1] == 2) {
-			getPA().sendFrame126("<col=DD5C3E>Torags", 16133);
-		}
-		if (barrowsNpcs[5][1] == 2) {
-			getPA().sendFrame126("<col=DD5C3E>Ahrims", 16132);
-		}
-		if (barrowsNpcs[0][1] == 2) {
-			getPA().sendFrame126("<col=DD5C3E>Veracs", 16131);
-		}
-		if (barrowsNpcs[4][1] == 2) {
-			getPA().sendFrame126("<col=DD5C3E>Dharoks", 16130);
-		}
+	} else if (barrows.inBarrows()) {
+		barrows.drawInterface();
+		getPA().walkableInterface(27500);
+	} else if (inGodwars()) {
+		//godwars.drawInterface();
+		//getPA().walkableInterface(16210);
+	} else if (inCwGame || inPits) {
+		getPA().showOption(3, 0, "Attack", 1);
+	} else if (getPA().inPitsWait()) {
+		getPA().showOption(3, 0, "Null", 1);
+	} else if (Boundary.isIn(this, Boundary.SKOTIZO_BOSSROOM)) {
+		getPA().walkableInterface(29230);
+	} else {
+		getPA().walkableInterface(-1);
+		getPA().showOption(3, 0, "Null", 1);
 	}
-		if (!inWild() && !Boundary.isIn(this, Boundary.PURO_PURO)) {
-			getPA().walkableInterface(-1);
-			getPA().sendFrame99(0);
-			getPA().showOption(3, 0, "Null", 1);
-			wildLevel = 0;
+	if (Boundary.isIn(this, Barrows.TUNNEL)) {
+		if (!Server.getEventHandler().isRunning(this, "barrows_tunnel")) {
+			Server.getEventHandler().submit(new TunnelEvent("barrows_tunnel", this, 1));
 		}
+		getPA().sendFrame99(2);
+	} else {
+		if (Server.getEventHandler().isRunning(this, "barrows_tunnel")) {
+			Server.getEventHandler().stop(this, "barrows_tunnel");
+		}
+		getPA().sendFrame99(0);
+	}
+	if (Boundary.isIn(this, Boundary.PURO_PURO)) {
+		getPA().sendFrame99(2);
+	}
+	if (!inWild()) {
+		wildLevel = 0;
+	}
+
 		if (!hasMultiSign && inMulti()) {
 			hasMultiSign = true;
 			getPA().multiWay(1);
@@ -1119,12 +1211,22 @@ public MusicManager getMusic(){
 				getPA().requestUpdates();
 			}
 		}
-
+		if (freezeTimer > -6) {
+			freezeTimer--;
+			if (frozenBy > 0) {
+				if (PlayerHandler.players[frozenBy] == null) {
+					freezeTimer = -1;
+					frozenBy = -1;
+				} else if (!goodDistance(absX, absY, PlayerHandler.players[frozenBy].absX,
+						PlayerHandler.players[frozenBy].absY, 20)) {
+					freezeTimer = -1;
+					frozenBy = -1;
+				}
+			}
+		}
 		if (attackTimer > 0) {
 			attackTimer--;
 		}
-
-
 		if (followId > 0) {
 			getPA().followPlayer();
 		} else if (followId2 > 0) {
@@ -1274,6 +1376,9 @@ public MusicManager getMusic(){
 	}
 	public MysteryBox getMysteryBox() {
 		return mysteryBox;
+	}
+	public Wallsafe getWallSafe() {
+		return wallsafe;
 	}
 
 	public Mining getMining() {
@@ -1532,6 +1637,9 @@ private Sound sound = new Sound(this);
 		public Armadyl getArmadyl() {
 			return armadyl;
 		}
+		public Alchemical_Hydra getAlchemicalHydra() {
+			return hydra;
+		}
 		public void setInstancedArea(InstancedArea instancedArea) {
 			this.instancedArea = instancedArea;
 			// instancedArea.onStart();
@@ -1717,6 +1825,7 @@ private Sound sound = new Sound(this);
 		public String statedInterface = "";
 		private NPC randomEventNpc;
 		
+		
 		public Inferno getInfernoMinigame() {
 			return inferno;
 		}
@@ -1895,5 +2004,86 @@ private Sound sound = new Sound(this);
 public TeleportExecutor getTeleports(){
 	return teleports;
 }
+public Barrows getBarrows() {
+	return barrows;
+}
+public TreasureTrails getTrails() {
+	return trails;
+}
+
+public InterfaceClickHandler getRandomInterfaceClick() {
+	return randomInterfaceClick;
+}
+public int distanceToPoint(int pointX, int pointY, int pointZ) {
+	return (int) Math.sqrt(
+			Math.pow(absX - pointX, 2) + Math.pow(absY - pointY, 2) + Math.pow(Math.abs(heightLevel) - pointZ, 2));
+}
+	/**
+	 * 0 North 1 East 2 South 3 West
+	 */
+	public void setForceMovement(int xOffset, int yOffset, int speedOne, int speedTwo, String directionSet,
+			int animation) {
+		if (isForceMovementActive() || forceMovement) {
+			return;
+		}
+		stopMovement();
+		xOffsetWalk = xOffset - absX;
+		yOffsetWalk = yOffset - absY;
+		playerStandIndex = animation;
+		playerRunIndex = animation;
+		playerWalkIndex = animation;
+		forceMovementActive = true;
+		getPA().requestUpdates();
+		setAppearanceUpdateRequired(true);
+		Server.getEventHandler().submit(new Event2<Client>("force_movement", this, 2) {
+
+			@Override
+			public void execute() {
+				if (attachment == null || attachment.disconnected) {
+					super.stop();
+					return;
+				}
+				attachment.updateRequired = true;
+				attachment.forceMovement = true;
+				attachment.x1 = currentX;
+				attachment.y1 = currentY;
+				attachment.x2 = currentX + xOffsetWalk;
+				attachment.y2 = currentY + yOffsetWalk;
+				attachment.speed1 = speedOne;
+				attachment.speed2 = speedTwo;
+				attachment.direction = directionSet == "NORTH" ? 0
+						: directionSet == "EAST" ? 1 : directionSet == "SOUTH" ? 2 : directionSet == "WEST" ? 3 : 0;
+				super.stop();
+			}
+		});
+		Server.getEventHandler().submit(new Event2<Client>("force_movement", this, Math.abs(xOffsetWalk) + Math.abs(yOffsetWalk)) {
+
+					@Override
+					public void execute() {
+						if (attachment == null || attachment.disconnected) {
+							super.stop();
+							return;
+						}
+						forceMovementActive = false;
+						attachment.getPA().movePlayer(xOffset, yOffset, attachment.heightLevel);
+						if (attachment.playerEquipment[attachment.playerWeapon] == -1) {
+							attachment.playerStandIndex = 0x328;
+							attachment.playerTurnIndex = 0x337;
+							attachment.playerWalkIndex = 0x333;
+							attachment.playerTurn180Index = 0x334;
+							attachment.playerTurn90CWIndex = 0x335;
+							attachment.playerTurn90CCWIndex = 0x336;
+							attachment.playerRunIndex = 0x338;
+						} else {
+							attachment.getCombat().getPlayerAnimIndex(Item
+									.getItemName(attachment.playerEquipment[attachment.playerWeapon]).toLowerCase());
+						}
+						forceMovement = false;
+						super.stop();
+					}
+				});
+	}
+
+
 
 }

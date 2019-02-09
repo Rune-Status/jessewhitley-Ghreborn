@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import Ghreborn.Server;
 import Ghreborn.model.items.GameItem;
+import Ghreborn.model.items.UseItem;
 import Ghreborn.model.multiplayer_session.MultiplayerSession;
 import Ghreborn.model.multiplayer_session.MultiplayerSessionType;
 import Ghreborn.model.multiplayer_session.trade.TradeSession;
@@ -25,6 +26,23 @@ public class BankX2 implements PacketType {
 		if (Xamount == 0) {
 			Xamount = 1;
 		}
+		if (c.buyingX) {
+			if (Xamount <= 2500) {
+			c.getShops().buyItem(c.xRemoveId, c.xRemoveSlot, Xamount);
+			} else {
+			c.sendMessage("You cannot buy more than 2500 at a time.");
+			}
+			c.xRemoveSlot = 0;
+			c.xInterfaceId = 0;
+			c.xRemoveId = 0;
+			c.buyingX = false;
+			
+			}
+		final int amount2 = Xamount;
+		c.getFletching().getSelectedFletchable().ifPresent(fletchable -> {
+			c.getFletching().fletchLog(fletchable, amount2);
+			return;
+		});
 		switch (c.xInterfaceId) {
 		case 5064:
 			if (c.inTrade) {
@@ -32,6 +50,14 @@ public class BankX2 implements PacketType {
 				return;
 			}
 			break;
+			
+		case 3900:
+		c.getShops().buyItem(c.xRemoveId, c.xRemoveSlot, Xamount);
+		break;
+			
+		case 3823:
+		c.getShops().sellItem(c.xRemoveId , c.xRemoveSlot, Xamount);
+		break;
 
 		case 5382:
 			if (Server.getMultiplayerSessionListener().inSession(c, MultiplayerSessionType.TRADE)) {
@@ -69,6 +95,13 @@ public class BankX2 implements PacketType {
 		case 6669:
 			//c.getTradeAndDuel().fromDuel(c.xRemoveId, c.xRemoveSlot, Xamount);
 			break;
+		}
+		if (c.settingUnnoteAmount) {
+			if (Xamount < 1) {
+				UseItem.unNoteItems(c, c.unNoteItemId, 1);
+			} else {
+				UseItem.unNoteItems(c, c.unNoteItemId, Xamount);
+			}
 		}
 		if (c.getPrayer().getAltarBone().isPresent()) {
 			c.getPrayer().alter(Xamount);

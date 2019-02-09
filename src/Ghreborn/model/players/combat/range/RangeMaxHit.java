@@ -26,6 +26,21 @@ public class RangeMaxHit extends RangeData {
 		if (c.npcIndex > 0 && c.getItems().isWearingItem(20997)) {
 			rangeLevel += 1.35;
 		}
+		if (c.npcIndex > 0 && c.getItems().isWearingItem(24041)) {
+			rangeLevel += 1.35;
+		}
+		if (c.npcIndex > 0 && c.getItems().isWearingItem(24042)) {
+			rangeLevel += 1.35;
+		}
+		if (c.npcIndex > 0 && c.getItems().isWearingItem(24043)) {
+			rangeLevel += 1.35;
+		}
+		if (c.npcIndex > 0 && c.getItems().isWearingItem(24044)) {
+			rangeLevel += 1.35;
+		}
+		if (c.npcIndex > 0 && c.getItems().isWearingItem(24045)) {
+			rangeLevel += 1.35;
+		}
  		if (c.fullVoidRange()){
 			rangeLevel += c.getLevelForXP(c.playerXP[c.playerRanged]) * 0.1;
 		}
@@ -55,6 +70,21 @@ public class RangeMaxHit extends RangeData {
 			b *= 1.15;
 		}
 		if (c.npcIndex > 0 && c.getItems().isWearingItem(20997)) {
+			b*= 3.00;
+		}
+		if (c.npcIndex > 0 && c.getItems().isWearingItem(24041)) {
+			b*= 3.00;
+		}
+		if (c.npcIndex > 0 && c.getItems().isWearingItem(24042)) {
+			b*= 3.00;
+		}
+		if (c.npcIndex > 0 && c.getItems().isWearingItem(24043)) {
+			b*= 3.00;
+		}
+		if (c.npcIndex > 0 && c.getItems().isWearingItem(24044)) {
+			b*= 3.00;
+		}
+		if (c.npcIndex > 0 && c.getItems().isWearingItem(24045)) {
 			b*= 3.00;
 		}
 		if (c.fullVoidRange()) {

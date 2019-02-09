@@ -6,6 +6,7 @@ import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
 import Ghreborn.model.content.dailytasks.DailyTasks;
 import Ghreborn.model.content.dailytasks.DailyTasks.PossibleTasks;
+import Ghreborn.model.items.ItemAssistant;
 import Ghreborn.model.players.Client;
 import Ghreborn.util.Misc;
 
@@ -52,6 +53,12 @@ public class Smithing {
 			item = 1357;
 			removeamount = 1;
 			maketimes = amounttomake;
+		} else if (type.equals("1271") && level >= 75) {
+					xp = 125;
+					item = 1271;
+					remove = 2361;
+					removeamount = 2;
+					maketimes = amounttomake;
 		} else if (type.equalsIgnoreCase("1211") && level >= 70) { // Dagger
 			xp = 63;
 			item = 1211;
@@ -229,6 +236,12 @@ public class Smithing {
 			remove = 2349;
 			removeamount = 2;
 			maketimes = amounttomake;
+		} else if (type.equals("1265") && level >= 5) {
+			xp = 25;
+			item = 1265;
+			remove = 2349;
+			removeamount = 2;
+			maketimes = amounttomake;
 		} else if (type.equals("864") && level >= 7) {
 			xp = 25;
 			item = 864;
@@ -313,7 +326,13 @@ public class Smithing {
 			removeamount = 1;
 			maketimes = amounttomake;
 		}
-
+	 else if (type.equals("1267") && level >= 5) {
+		xp = 50;
+		item = 1267;
+		remove = 2351;
+		removeamount = 2;
+		maketimes = amounttomake;
+	 }
 		else if (type.equals("9140") && level >= 19) //Dart tips
 		{
 			xp = 25;
@@ -496,7 +515,13 @@ public class Smithing {
 			removeamount = 1;
 			maketimes = amounttomake;
 		}
-		
+		 else if (type.equals("1273") && level >= 55) {
+			xp = 100;
+			item = 1273;
+			remove = 2359;
+			removeamount = 2;
+			maketimes = amounttomake;
+}
 
 		else if (type.equalsIgnoreCase("1209") && level >= 50) // Dagger
 		{
@@ -662,7 +687,13 @@ public class Smithing {
 			removeamount = 1;
 			maketimes = amounttomake;
 		}
-		
+	 else if (type.equals("1275") && level >= 90) {
+		xp = 150;
+		item = 1275;
+		remove = 2363;
+		removeamount = 2;
+		maketimes = amounttomake;
+	 }
 		else if (type.equals("9144") && level >= 89) //Dart tips
 		{
 			
@@ -838,6 +869,13 @@ public class Smithing {
 			maketimes = amounttomake;
 		}
 
+		 else if (type.equals("1269") && level >= 35) {
+			xp = 75;
+			item = 1269;
+			remove = 2353;
+			removeamount = 2;
+			maketimes = amounttomake;
+}
 		else if (type.equals("9141") && level >= 34) //Dart tips
 		{
 			xp = 50;
@@ -1074,7 +1112,7 @@ public class Smithing {
 				double bonus = 1.0;
 				if(c.getItems().playerHasItem(2949))
 					bonus *= 1.2;
-				c.getPA().addSkillXP(xp * Config.SMITHING_EXPERIENCE * bonus, 13);
+				c.getPA().addSkillXP((int) (xp * (c.getRights().isIronman() ? Config.Ironman_exp_rate : Config.SMITHING_EXPERIENCE)), 13);
 				c.getPA().refreshSkill(13);
 				c.sendMessage("You make a " + c.getItems().getItemName(toadd)+ ".");
 				int chance = Misc.random(50);
@@ -1135,42 +1173,25 @@ public class Smithing {
 		}
 	}
 
-	public static void readInput(final int level, final String type, final Client c,
-			final int amounttomake) {
-
-		c.getItems();
-		if (c.getItems().getItemName(Integer.parseInt(type)).contains("Bronze")) {
+	public static void readInput(final int level, final String type, final Client c, final int amounttomake) {
+		if (c.debugMessage)
+			c.sendMessage("[SMITH] Reading Input. Level: " + level + " Type: " + type + " AmountToMake: " + amounttomake);
+		if (ItemAssistant.getItemName(Integer.parseInt(type)).contains("Bronze")) {
 			CheckBronze(c, level, amounttomake, type);
 		} else {
-			c.getItems();
-			if (c.getItems().getItemName(Integer.parseInt(type))
-					.contains("Iron")) {
+			if (ItemAssistant.getItemName(Integer.parseInt(type)).contains("Iron")) {
 				CheckIron(c, level, amounttomake, type);
 			} else {
-				c.getItems();
-				if (c.getItems().getItemName(Integer.parseInt(type))
-						.contains("Steel")) {
+				if (ItemAssistant.getItemName(Integer.parseInt(type)).contains("Steel")) {
 					CheckSteel(c, level, amounttomake, type);
 				} else {
-					c.getItems();
-					if (c.getItems().getItemName(Integer.parseInt(type))
-							.contains("Mith")) {
+					if (ItemAssistant.getItemName(Integer.parseInt(type)).contains("Mith")) {
 						CheckMith(c, level, amounttomake, type);
 					} else {
-						c.getItems();
-						c.getItems();
-						if (c.getItems().getItemName(Integer.parseInt(type))
-								.contains("Adam")
-								|| c.getItems().getItemName(Integer.parseInt(type))
-										.contains("Addy")) {
+						if (ItemAssistant.getItemName(Integer.parseInt(type)).contains("Adam") || ItemAssistant.getItemName(Integer.parseInt(type)).contains("Addy")) {
 							CheckAddy(c, level, amounttomake, type);
 						} else {
-							c.getItems();
-							c.getItems();
-							if (c.getItems().getItemName(Integer.parseInt(type))
-									.contains("Rune")
-									|| c.getItems().getItemName(Integer.parseInt(type))
-											.contains("Runite")) {
+							if (ItemAssistant.getItemName(Integer.parseInt(type)).contains("Rune") || ItemAssistant.getItemName(Integer.parseInt(type)).contains("Runite")) {
 								CheckRune(c, level, amounttomake, type);
 							}
 						}
@@ -1192,12 +1213,12 @@ public class Smithing {
 		if (c.smeltAmount > 0) {
 			c.getPA().closeAllWindows();
 			if (hasOres(barType)) {
-				c.getItems().deleteItem(oreId, c.getItems().getItemSlot(oreId),1);
+				c.getItems().deleteItem(oreId, c.getItems().getItemSlot(oreId), 1);
 				if (oreId2 > 0) {
 					c.getItems().deleteItem(oreId2,c.getItems().getItemSlot(oreId2), 1);
 				}
 				c.getItems().addItem(barId, 1);
-				c.getPA().addSkillXP(exp * Config.SMITHING_EXPERIENCE,c.playerSmithing);
+				c.getPA().addSkillXP(exp * (c.getRights().isIronman() ? Config.Ironman_exp_rate : Config.SMITHING_EXPERIENCE),c.playerSmithing);
 				c.getPA().refreshSkill(c.playerSmithing);
 				c.smeltAmount--;
 				c.smeltTimer = 1;

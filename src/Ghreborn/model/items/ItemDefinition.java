@@ -368,7 +368,7 @@ public final class ItemDefinition {
 	 * @return {@code true} if this item is a full helmet, {@code false}
 	 *         otherwise.
 	 */
-	public boolean isFullHelm() {
+	public boolean isFullHat() {
 		return fullHelm;
 	}
 

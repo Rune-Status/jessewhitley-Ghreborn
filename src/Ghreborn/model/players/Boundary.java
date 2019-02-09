@@ -191,6 +191,7 @@ public class Boundary {
 	/**
 	 * Diary locations
 	 */
+	public static final Boundary GODWARS_AREA = new Boundary(2819, 5255, 2942, 5375);
 	public static final Boundary VARROCK_BOUNDARY = new Boundary(3136, 3349, 3326, 3519);
 	public static final Boundary ARDOUGNE_BOUNDARY = new Boundary(2432, 3259, 2690, 3380);
 	public static final Boundary ARDOUGNE_ZOO_BRIDGE_BOUNDARY = new Boundary(2611, 3270, 2614, 3280);
@@ -207,6 +208,21 @@ public class Boundary {
 	public static final Boundary BRIMHAVEN_DUNGEON_BOUNDARY = new Boundary(2627, 9415, 2745, 9600);
 	public static final Boundary TZHAAR_CITY_BOUNDARY = new Boundary(2368, 5056, 2495, 5183);
 	public static final Boundary FOUNTAIN_OF_RUNE_BOUNDARY = new Boundary(3367, 3888, 3380, 3899);
+	public static final Boundary WYRM_BOUNDARY = new Boundary(1242, 10143, 1301, 10216);
+	public static final Boundary RCING_ALTARS = new Boundary(2174, 4794, 2871, 4871);
+	public static final Boundary HYRDA_BOUNDARY = new Boundary(1294, 10215, 1380, 10284);
+
+	public static final Boundary KARUULM_2ND_FLOOR = new Boundary(1217, 10113, 1405, 10303, 1);
+
+public static final Boundary KARUULM_3ND_FLOOR = new Boundary(1217, 10113, 1405, 10303, 2);
+
+	public static final Boundary[] KARUULM_SLAYER_DUNGEON = {
+		WYRM_BOUNDARY,
+		HYRDA_BOUNDARY,
+		KARUULM_2ND_FLOOR,
+		KARUULM_3ND_FLOOR 
+	};
+	public static final Boundary FALADOR_FARM = new Boundary(3008, 3263, 3070, 3327);
 	public static final Boundary DEMONIC_RUINS_BOUNDARY = new Boundary(3279, 3879, 3294, 3893);
 	public static final Boundary WILDERNESS_GOD_WARS_BOUNDARY = new Boundary(3008, 10112, 3071, 10175);
 	public static final Boundary RESOURCE_AREA_BOUNDARY = new Boundary(3173, 3923, 3197, 3945);
@@ -299,7 +315,17 @@ public class Boundary {
 	public static final Boundary PEST_CONTROL_AREA = new Boundary(2650, 2635, 2675, 2655);
 	public static final Boundary FIGHT_CAVE = new Boundary(2365, 5052, 2429, 5122);
 	public static final Boundary EDGEVILLE_PERIMETER = new Boundary(3073, 3465, 3108, 3518);
-	public static final Boundary CATACOMBS_OF_KOUREND = new Boundary(1569, 9984, 1760, 10111);
+	public static final Boundary[] CATACOMBS_OF_KOUREND = new Boundary[] {
+		    new Boundary(1590, 9982, 1745, 10065),
+		    new Boundary(1642, 10065, 1742, 10111),
+		    new Boundary(1619, 10063, 1640, 10067),
+		    new Boundary(1628, 10068, 1640, 10069),
+		    new Boundary(1634, 10070, 1641, 10071)
+		};
+	public static final Boundary[] TAVERLY_DUNGEON_SLAYER = new Boundary[] {
+		    new Boundary(2884, 9796, 2964, 9837, 1),
+		    new Boundary(2760, 9792, 2880, 9858, 1)
+				};
 	public static final Boundary NATURE_ALTAR = new Boundary(2369, 4803, 2426, 4862); 
 	
 	public static final Boundary[] DUEL_ARENAS = new Boundary[] {
@@ -348,6 +374,25 @@ public class Boundary {
 		public static final Boundary WITHIN_BOUNDARY_CERB = new Boundary(1234, 1246, 1246, 1256);
 		public static final Boundary[] CERBERUS_BOSSROOMS  = { BOSS_ROOM_NORTH, BOSS_ROOM_WEST, BOSS_ROOM_EAST };
 		public static final Boundary OLM = new Boundary(3217, 5728, 3250, 5760);
+			public static final Boundary[] DUEL_ARENA = new Boundary[] { new Boundary(3332, 3244, 3359, 3259), new Boundary(3364, 3244, 3389, 3259) };
+				public static final Boundary KRAKEN_CAVE = new Boundary(2240, 9984, 2303, 10047);
+				public static final Boundary SCORPIA_LAIR = new Boundary(3216, 10329, 3248, 10354);
+
+		/**
+		 * Returns the centre point of a boundary as a {@link Coordinate}
+		 * 
+		 * @param boundary The boundary of which we want the centre.
+		 * @return The centre point of the boundary, represented as a {@link Coordinate}.
+		 */
+		public static Coordinate centre(Boundary boundary) {
+			int x = (boundary.minX + boundary.highX) / 2;
+			int y = (boundary.minY + boundary.highY) / 2;
+			if (boundary.height >= 0) {
+				return new Coordinate(x, y, boundary.height);
+			} else {
+				return new Coordinate(x, y, 0);
+			}
+		}
 }
 		
 		

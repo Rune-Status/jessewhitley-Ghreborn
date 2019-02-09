@@ -40,6 +40,33 @@
 				"locations": [ "Lumbridge" ],
 				"teleport": [3259, 3261, 0]
 			},
+						{
+				"names": [ "wyrm" ],
+				"level": 62,
+				"experience": 133,
+				"minimum": 15,
+				"maximum": 50,
+				"locations": [ "Karuulm slayer dungeon" ],
+				"teleport": [1310, 10201, 0]
+			},
+									{
+				"names": [ "nieve" ],
+				"level": 62,
+				"experience": 133,
+				"minimum": 15,
+				"maximum": 50,
+				"locations": [ "Cbox" ],
+				"teleport": [1310, 10201, 0]
+			},
+						{
+				"names": [ "hydra", "alchemical hydra" ],
+				"level": 95,
+				"experience": 322,
+				"minimum": 15,
+				"maximum": 50,
+				"locations": [ "Karuulm slayer dungeon" ],
+				"teleport": [1310, 10201, 0]
+			},
 			{
 				"names": [ "crawling hand", "crushing hand" ],
 				"level": 5,
@@ -129,7 +156,7 @@
 				"teleport": [3054, 9578, 0]
             },
             {
-                "names": [ "baby blue dragon", "blue dragon" ],
+                "names": ["blue dragon" ,"baby blue dragon" ],
                 "level": 1,
                 "experience": 50,
                 "minimum": 11,

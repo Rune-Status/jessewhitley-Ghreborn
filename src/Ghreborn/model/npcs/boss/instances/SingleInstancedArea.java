@@ -35,12 +35,11 @@ public class SingleInstancedArea extends InstancedArea {
 	 * The player for this instanced area
 	 * @return	the player
 	 */
-	public Player getPlayer() {
+	public Client getPlayer() {
 		return player;
 	}
-Client c;
 	@Override
 	public void onDispose() {
-		c.sendMessage("Got here");
+		getPlayer().sendMessage("Got here");
 	}
 }

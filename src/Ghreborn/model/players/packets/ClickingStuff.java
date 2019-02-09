@@ -23,8 +23,7 @@ public class ClickingStuff implements PacketType {
 		if (c.tradeWith >= PlayerHandler.players.length || c.tradeWith < 0) {
 			return;
 		}
-		MultiplayerSession session = Server.getMultiplayerSessionListener().getMultiplayerSession(c,
-				MultiplayerSessionType.TRADE);
+		MultiplayerSession session = Server.getMultiplayerSessionListener().getMultiplayerSession(c, MultiplayerSessionType.TRADE);
 		if (session != null && Server.getMultiplayerSessionListener().inSession(c, MultiplayerSessionType.TRADE)) {
 			c.sendMessage("You have declined the trade.");
 			session.getOther(c).sendMessage(c.playerName + " has declined the trade.");

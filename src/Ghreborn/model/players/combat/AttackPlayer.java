@@ -18,6 +18,7 @@ import Ghreborn.model.players.Boundary;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.Player;
 import Ghreborn.core .PlayerHandler;
+import Ghreborn.model.players.combat.magic.MagicData;
 import Ghreborn.model.players.combat.range.RangeData;
 import Ghreborn.model.players.combat.range.RangeExtras;
 import Ghreborn.util.Misc;
@@ -211,12 +212,14 @@ public class AttackPlayer {
 		o.logoutDelay.reset();
 		o.underAttackBy = c.index;
 		o.killerId = c.index;
-		o.singleCombatDelay.reset();
+		o.singleCombatDelay = System.currentTimeMillis();
 		c.killedBy = PlayerHandler.players[i].index;
 		c.getCombat().applySmite(i, damage);
 		o.appendDamage(damage, hitmark);
 		o.addDamageReceived(c.playerName, damage);
 	}
+	static Damage damage;
+	
 	public static void playerDelayedHit(final Client c, final int i, final Damage d) {
 		if (PlayerHandler.players[i] != null) {
 			Client o = (Client) PlayerHandler.players[i];
@@ -310,7 +313,7 @@ public class AttackPlayer {
 				}
 				o.underAttackBy = c.index;
 				o.logoutDelay.reset();
-				o.singleCombatDelay.reset();
+				o.singleCombatDelay = System.currentTimeMillis();
 				o.killerId = c.index;
 				o.appendDamage(damage, d.getHitmark());
 				o.addDamageReceived(c.playerName, damage);
@@ -330,16 +333,16 @@ public class AttackPlayer {
 				if (damage > 0)
 					c.getCombat().applyRecoil(damage, i);
 				if (c.getCombat().getEndGfxHeight() == 100 && !c.magicFailed) { // end
-					PlayerHandler.players[i].gfx100(c.MAGIC_SPELLS[c.oldSpellId][5]);
+					PlayerHandler.players[i].gfx100(MagicData.MAGIC_SPELLS[c.oldSpellId][5]);
 				} else if (!c.magicFailed) {
-					PlayerHandler.players[i].gfx0(c.MAGIC_SPELLS[c.oldSpellId][5]);
+					PlayerHandler.players[i].gfx0(MagicData.MAGIC_SPELLS[c.oldSpellId][5]);
 				} else if (c.magicFailed) {
 					PlayerHandler.players[i].gfx100(85);
 				}
 				if (!c.magicFailed) {
 					if (System.currentTimeMillis() - PlayerHandler.players[i].reduceStat > 35000) {
 						PlayerHandler.players[i].reduceStat = System.currentTimeMillis();
-						switch (c.MAGIC_SPELLS[c.oldSpellId][0]) {
+						switch (MagicData.MAGIC_SPELLS[c.oldSpellId][0]) {
 						case 12987:
 						case 13011:
 						case 12999:
@@ -349,7 +352,7 @@ public class AttackPlayer {
 						}
 					}
 
-					switch (c.MAGIC_SPELLS[c.oldSpellId][0]) {
+					switch (MagicData.MAGIC_SPELLS[c.oldSpellId][0]) {
 
 					case 12901:
 					case 12919: // blood spells
@@ -413,7 +416,7 @@ public class AttackPlayer {
 				o.logoutDelay.reset();
 				o.underAttackBy = c.index;
 				o.killerId = c.index;
-				o.singleCombatDelay.reset();
+				o.singleCombatDelay = System.currentTimeMillis();
 				if (c.getCombat().magicMaxHit() != 0) {
 					o.addDamageReceived(c.playerName, damage);
 					if (!c.magicFailed) {
@@ -803,11 +806,11 @@ public class AttackPlayer {
 					return;
 				}
 				Player c2 = PlayerHandler.players[i];
-/*				if (c.connectedFrom.equals(c2.connectedFrom)  && (c.getRights().getValue() < 2 || c.getRights().getValue() > 3) && Server.serverlistenerPort != 5555) {
+				if (c.connectedFrom.equals(c2.connectedFrom)  && (c.getRights().getValue() < 2 || c.getRights().getValue() > 3) && Server.serverlistenerPort != 5555) {
 					c.sendMessage("You cannot attack players on the same connection.");
 					c.getCombat().resetPlayerAttack();
 					return;
-				}*/
+				}
 				if (c.playerEquipment[c.playerWeapon] == 9703) {
 					c.sendMessage("You cannot attack players with training sword.");
 					return;
@@ -917,7 +920,7 @@ public class AttackPlayer {
 					if (c.autocasting) {
 						c.spellId = c.autocastId;
 						c.usingMagic = true;
-						if (c.MAGIC_SPELLS[c.spellId][0] >= 12861 && c.MAGIC_SPELLS[c.spellId][0] <= 13023) {
+						if (MagicData.MAGIC_SPELLS[c.spellId][0] >= 12861 && MagicData.MAGIC_SPELLS[c.spellId][0] <= 13023) {
 							if (c.playerEquipment[c.playerWeapon] != 4675 && c.playerEquipment[c.playerWeapon] != 6914 && c.playerEquipment[c.playerWeapon] != 12904) {
 								c.sendMessage("You cannot autocast with your current weapon.");
 								c.getCombat().resetPlayerAttack();
@@ -1176,7 +1179,7 @@ public class AttackPlayer {
 							c.animation(c.getCombat().getWepAnim(c.getItems().getItemName(c.playerEquipment[c.playerWeapon]).toLowerCase()));
 							c.mageFollow = false;
 						} else {
-							c.animation(c.MAGIC_SPELLS[c.spellId][2]);
+							c.animation(MagicData.MAGIC_SPELLS[c.spellId][2]);
 							c.mageFollow = true;
 							c.followId = c.playerIndex;
 						}
@@ -1190,7 +1193,7 @@ public class AttackPlayer {
 					Client target = (Client) PlayerHandler.players[i];
 					target.underAttackBy = c.index;
 					target.logoutDelay.reset();
-					target.singleCombatDelay.reset();
+					target.singleCombatDelay = System.currentTimeMillis();
 					target.killerId = c.index;
 					c.lastArrowUsed = 0;
 					c.rangeItemUsed = 0;
@@ -1249,15 +1252,15 @@ public class AttackPlayer {
 						int offY = (pX - nX) * -1;
 						c.castingMagic = true;
 						c.projectileStage = 2;
-						if (c.MAGIC_SPELLS[c.spellId][3] > 0) {
+						if (MagicData.MAGIC_SPELLS[c.spellId][3] > 0) {
 							if (c.getCombat().getStartGfxHeight() == 100) {
-								c.gfx100(c.MAGIC_SPELLS[c.spellId][3]);
+								c.gfx100(MagicData.MAGIC_SPELLS[c.spellId][3]);
 							} else {
-								c.gfx0(c.MAGIC_SPELLS[c.spellId][3]);
+								c.gfx0(MagicData.MAGIC_SPELLS[c.spellId][3]);
 							}
 						}
-						if (c.MAGIC_SPELLS[c.spellId][4] > 0) {
-							c.getPA().createPlayersProjectile(pX, pY, offX, offY, 50, 78, c.MAGIC_SPELLS[c.spellId][4],
+						if (MagicData.MAGIC_SPELLS[c.spellId][4] > 0) {
+							c.getPA().createPlayersProjectile(pX, pY, offX, offY, 50, 78, MagicData.MAGIC_SPELLS[c.spellId][4],
 									c.getCombat().getStartHeight(), c.getCombat().getEndHeight(), -i - 1, c.getCombat().getStartDelay());
 						}
 						if (c.autocastId > 0) {
@@ -1268,7 +1271,7 @@ public class AttackPlayer {
 						c.oldPlayerIndex = i;
 						c.oldSpellId = c.spellId;
 						c.spellId = 0;
-						if (c.MAGIC_SPELLS[c.oldSpellId][0] == 12891 && target.isMoving) {
+						if (MagicData.MAGIC_SPELLS[c.oldSpellId][0] == 12891 && target.isMoving) {
 							c.getPA().createPlayersProjectile(pX, pY, offX, offY, 50, 85, 368, 25, 25, -i - 1, c.getCombat().getStartDelay());
 						}
 						int defence = Misc.random(target.getCombat().mageDef());
@@ -1291,7 +1294,7 @@ public class AttackPlayer {
 					    double defence1 = target.getCombat().getMagicDefenceRoll();
 					    double chance = c.getCombat().getChance(attack, defence1);
 					    c.magicFailed = !c.getCombat().isAccurateHit(chance);*/
-						if (c.MAGIC_SPELLS[c.oldSpellId][0] == 12445 && !c.magicFailed) {
+						if (MagicData.MAGIC_SPELLS[c.oldSpellId][0] == 12445 && !c.magicFailed) {
 							if (System.currentTimeMillis() - o.teleBlockDelay > o.teleBlockLength) {
 								o.teleBlockDelay = System.currentTimeMillis();
 								o.sendMessage("You have been teleblocked.");

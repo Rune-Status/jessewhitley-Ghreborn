@@ -4,321 +4,119 @@ import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
 import Ghreborn.model.players.Client;
+import Ghreborn.model.players.skills.agility.AgilityHandler;
 
 /**
+ * GnomeAgility
  * 
- * @author Micheal / 01053
- *
+ * @author Andrew (I'm A Boss on Rune-Server and Mr Extremez on Mopar & Runelocus)
  */
 
 public class GnomeAgility {
 
-	/**
-	 * Variables
-	 */
+	private static long clickTimer = 0;
 
-	private boolean WALKING_LOG, CLIMB_NET, CLIMB_BRANCH, WALKING_ROPE, BRANCH_DESCEND, CLIMB_RAIL, CRAWL_PIPE;
+	public static final int LOG_OBJECT = 23145, NET1_OBJECT = 23134, TREE_OBJECT = 23559, ROPE_OBJECT = 23557, TREE_BRANCH_OBJECT = 23560, NET2_OBJECT = 23135,
+			PIPES1_OBJECT = 23138, PIPES2_OBJECT = 23139;// gnome
+															// course
+															// objects
 
-	public boolean PERFORMING_ACTION;
-
-	private static boolean AGILITY_WALKING = false;
-
-	private int clicked = 0;
-
-	/**
-	 * Sets the player to a walking state for when using certain obstacles.
-	 * 
-	 * @param player
-	 */
-
-	private void SET_ANIMATION(final Client c, final int walkAnimation, final int x, final int y) {
-		c.isRunning = false;
-		c.getPA().sendFrame36(173, 0);
-		c.playerWalkIndex = walkAnimation;
-		c.getPA().requestUpdates();
-		c.getPA().walkTo5(x, y);
-		AGILITY_WALKING = true;
-	}
-
-	/**
-	 * Resets the agility walking animation after they've completed certain
-	 * obstacles
-	 * 
-	 * @param player
-	 */
-
-	private static void RESET_ANIMATION(final Client c) {
-		c.isRunning = true;
-		c.getPA().sendFrame36(173, 1);
-		c.playerWalkIndex = 0x333;
-		c.getPA().requestUpdates();
-		AGILITY_WALKING = false;
-	}
-
-	/**
-	 * 
-	 * @param player
-	 * @param objectType
-	 * 
-	 */
-
-	public void agilityCourse(final Client c, final int objectType) {
-		switch (objectType) {
-
-		/**
-		 * Walk across log
-		 */
-
-		case 23145:
-			if (clicked == 0 && c.absY == 3436) {
-				clicked = 1;
-				return;
-			} else if (clicked == 1 && c.absY == 3436) {
-				if (WALKING_LOG) {
-					c.sendMessage("You've already used the log and must complete the course.");
-					return;
+	public boolean gnomeCourse(Client c, int objectId) {
+		switch (objectId) {
+		case LOG_OBJECT:
+			if (c.getAgilityHandler().hotSpot(c, 2474, 3436) || c.getAgilityHandler().hotSpot(c, 2475, 3436) || c.getAgilityHandler().hotSpot(c, 2473, 3436)) {
+				if(c.absX != 2474) {
+					c.getPA().movePlayer(2474, 3436);
 				}
-				//if (c.stopPlayerPacket) {
-					//return;
-				//}
-				c.stopPlayerPacket = true;
-				while (c.absX != 2474 && c.absY != 3436) {
-					c.getPA().walkTo5(2474 - c.absX, 3436 - c.absY);
+				//c.getAgilityHandler().move(c, 0, -7, c.getAgilityHandler().getAnimation(objectId), -1);
+				c.setForceMovement(2474, 3429, 0, 200, "SOUTH", c.getAgilityHandler().getAnimation(objectId));
+			} else if (c.absX == 2474 && c.absY > 3429 && c.absY < 3436) {
+				c.getPA().movePlayer(2474, 3429, 0);
+				c.getAgilityHandler().stopEmote(c);
+			}
+			c.getAgilityHandler().resetAgilityProgress();
+			c.getAgilityHandler().agilityProgress[0] = true;
+			c.getAgilityHandler().lapProgress(c, 0, objectId);
+			return true;
+
+		case NET1_OBJECT:
+			AgilityHandler.delayEmote(c, "CLIMB_UP", c.getX(), c.getY() - 2, 1, 2);
+			if (c.getAgilityHandler().agilityProgress[0] == true) {
+				c.getAgilityHandler().lapProgress(c, 0, objectId);
+				c.getAgilityHandler().agilityProgress[1] = true;
+			}
+			return true;
+
+		case TREE_OBJECT:
+			AgilityHandler.delayEmote(c, "CLIMB_UP", c.getX(), c.getY() - 3, 2, 2);
+			if (c.getAgilityHandler().agilityProgress[1] == true) {
+				c.getAgilityHandler().lapProgress(c, 1, objectId);
+				c.getAgilityHandler().agilityProgress[2] = true;
+			}
+			return true;
+
+		case ROPE_OBJECT:
+			if (c.getAgilityHandler().hotSpot(c, 2477, 3420)) {
+			//	c.getAgilityHandler().move(c, 6, 0, c.getAgilityHandler().getAnimation(objectId), -1);
+				c.setForceMovement(2483, 3420, 0, 200, "EAST", c.getAgilityHandler().getAnimation(objectId));
+			} else if (c.absY == 3420 && c.absX > 2477 && c.absX < 2483) {
+				c.getPA().movePlayer(2483, 3420, 2);
+				c.getAgilityHandler().stopEmote(c);
+			}
+			if (c.getAgilityHandler().agilityProgress[2] == true) {
+				c.getAgilityHandler().lapProgress(c, 2, objectId);
+				c.getAgilityHandler().agilityProgress[3] = true;
+			}
+			return true;
+
+		case TREE_BRANCH_OBJECT:
+			AgilityHandler.delayEmote(c, "CLIMB_DOWN", c.getX(), c.getY(), 0, 2);
+
+			if (c.getAgilityHandler().agilityProgress[3] == true) {
+				c.getAgilityHandler().lapProgress(c, 3, objectId);
+				c.getAgilityHandler().agilityProgress[4] = true;
+			}
+			return true;
+
+		case NET2_OBJECT:
+			if (System.currentTimeMillis() - clickTimer < 1800) {
+				return false;
+			}
+			if (c.getY() == 3425 && System.currentTimeMillis() - clickTimer > 1800) {
+				AgilityHandler.delayEmote(c, "CLIMB_UP", c.getX(), c.getY() + 2, 0, 2);
+
+				clickTimer = System.currentTimeMillis();
+				if (c.getAgilityHandler().agilityProgress[4] == true) {
+					c.getAgilityHandler().lapProgress(c, 4, objectId);
+					c.getAgilityHandler().agilityProgress[5] = true;
 				}
-				SET_ANIMATION(c, 762, 0, -7);
-				if (AGILITY_WALKING && c.absY == 3436) {
-					WALKING_LOG = true;
-					PERFORMING_ACTION = true;
-				}
-				CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-					@Override
-					public void execute(CycleEventContainer container) {
-						if(c == null || c.disconnected || c.isDead) {
-							container.stop();
-							return;
-						}
-						c.stopPlayerPacket = false;
-						container.stop();
-						if (c.absX == 2474 && c.absY == 3429) {
-							c.getPA().addSkillXP(10500, c.playerAgility);
-							clicked = 0;
-							container.stop();
-						}
-					}
-
-					@Override
-					public void stop() {
-						if (c.absY == 3436) {
-							RESET_ANIMATION(c);
-							PERFORMING_ACTION = false;
-							WALKING_LOG = false;
-							clicked = 0;
-						} else
-							RESET_ANIMATION(c);
-						PERFORMING_ACTION = false;
-					}
-				}, 7);
 			}
-			break;
+			return true;
 
-		/**
-		 * Climb net
-		 */
-
-		case 23134:
-			if (CLIMB_NET) {
-				c.sendMessage("You've already used the net you must complete the course!");
-				return;
+		case PIPES1_OBJECT:
+			if (c.getAgilityHandler().hotSpot(c, 2484, 3430)) {
+				//c.getAgilityHandler().move(c, 0, 7, c.getAgilityHandler().getAnimation(objectId), 748);
+				c.setForceMovement(2484, 3437, 0, 200, "NORTH", 844);
+				//c.getDiaryManager().getWesternDiary().progress(WesternDiaryEntry.GNOME_AGILITY);
+				c.getAgilityHandler().lapFinished(c, 5, c.getRights().isIronman() ? 87 : 6000, 10000);
+			} else if (c.absY > 3430 && c.absY < 3436 && System.currentTimeMillis() - clickTimer > 1800) {
+				c.getPA().movePlayer(2484, 3437, 0);
+				c.getAgilityHandler().stopEmote(c);
 			}
-			CLIMB_NET = true;
-			c.animation(828);
-			c.getPA().movePlayer(c.absX, 3424, 1);
-			c.getPA().addSkillXP(4500, c.playerAgility);
-			CLIMB_NET = true;
-			break;
+			return true;
 
-		/**
-		 * Tree branch up
-		 */
-
-		case 23559:
-			if (CLIMB_BRANCH) {
-				c.sendMessage("You've already used the branch you must complete the course!");
-				return;
+		case PIPES2_OBJECT:
+			if (c.getAgilityHandler().hotSpot(c, 2487, 3430)) {
+				//c.getAgilityHandler().move(c, 0, 7, c.getAgilityHandler().getAnimation(objectId), 748);
+				c.setForceMovement(2487, 3437, 0, 200, "NORTH", 844);
+				//c.getDiaryManager().getWesternDiary().progress(WesternDiaryEntry.GNOME_AGILITY);
+				c.getAgilityHandler().lapFinished(c, 5, c.getRights().isIronman() ? 87 : 6000, 10000);
+			} else if (c.absY > 3430 && c.absY < 3436) {
+				c.getPA().movePlayer(2487, 3437, 0);
+				c.getAgilityHandler().stopEmote(c);
 			}
-			CLIMB_BRANCH = true;
-			c.animation(828);
-			c.getPA().movePlayer(2473, 3420, 2);
-			c.getPA().addSkillXP(4500, c.playerAgility);
-			break;
-
-		/**
-		 * Balance rope
-		 */
-
-		case 23557:
-			if (WALKING_ROPE) {
-				c.sendMessage("You've already used the walking rope you must complete the course!");
-				return;
-			}
-			if (clicked == 0 && c.absY == 3420 && c.heightLevel == 2) {
-				clicked = 1;
-				return;
-			} else if (clicked == 1 && c.absY == 3420 && c.heightLevel == 2) {
-				while (c.absX != 2477 && c.absY != 3420) {
-					c.getPA().walkTo(2477 - c.absX, 3420 - c.absY);
-				}
-				SET_ANIMATION(c, 762, 6, 0);
-				PERFORMING_ACTION = true;
-				if (AGILITY_WALKING && c.absY == 3420 && c.heightLevel == 2) {
-					WALKING_ROPE = true;
-					PERFORMING_ACTION = true;
-				}
-				CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-					@Override
-					public void execute(CycleEventContainer container) {
-						if(c == null || c.disconnected || c.isDead) {
-							container.stop();
-							return;
-						}
-						WALKING_ROPE = true;
-						if (c.absX == 2483 && c.absY == 3420) {
-							c.getPA().addSkillXP(10500, c.playerAgility);
-							clicked = 0;
-							container.stop();
-						}
-					}
-
-					@Override
-					public void stop() {
-						if (c.absY == 3420 && c.heightLevel == 2) {
-							RESET_ANIMATION(c);
-							PERFORMING_ACTION = false;
-							clicked = 0;
-						} else
-							RESET_ANIMATION(c);
-						PERFORMING_ACTION = false;
-					}
-				}, 7);
-			}
-			break;
-
-		/**
-		 * Tree branch down
-		 */
-
-		case 23560:
-		case 23561:
-			if (BRANCH_DESCEND) {
-				c.sendMessage("You've already used the net you must complete the course!");
-				return;
-			}
-			BRANCH_DESCEND = true;
-			c.animation(828);
-			c.getPA().movePlayer(c.absX, c.absY, 0);
-			c.getPA().addSkillXP(4500, c.playerAgility);
-			break;
-
-		/**
-		 * Climb railing
-		 */
-
-		case 23135:
-			if (CLIMB_RAIL) {
-				c.sendMessage("You've already used the net you must complete the course!");
-				return;
-			}
-			CLIMB_RAIL = true;
-			PERFORMING_ACTION = true;
-			c.animation(828);
-			CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-				@Override
-				public void execute(CycleEventContainer container) {
-					if(c == null || c.disconnected || c.isDead) {
-						container.stop();
-						return;
-					}
-					if(c == null || c.disconnected || c.isDead) {
-						container.stop();
-						return;
-					}
-					c.getPA().movePlayer(c.absX, 3427, 0);
-					container.stop();
-				}
-
-				@Override
-				public void stop() {
-					c.turnPlayerTo(c.absX, 3426);
-					c.getPA().addSkillXP(4500, c.playerAgility);
-					PERFORMING_ACTION = false;
-				}
-			}, 1);
-			break;
-
-		/**
-		 * Crawl through the pipe.
-		 */
-
-		case 23139:
-		case 23138:
-			if (CRAWL_PIPE) {
-				return;
-			}
-			if (clicked == 0 && c.absY == 3430) {
-				clicked = 1;
-				return;
-			} else if (clicked == 1 && c.absY == 3430) {
-
-				while (c.absX != 2484 && c.absY != c.objectY - 1) {
-					c.getPA().walkTo(2484 - c.absX, (c.objectY - 1) - c.absY);
-				}
-				c.animation(749);
-				SET_ANIMATION(c, 844, 0, 7);
-				if (AGILITY_WALKING && c.absY == 3430) {
-					PERFORMING_ACTION = true;
-					CRAWL_PIPE = true;
-				}
-				CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-					@Override
-					public void execute(CycleEventContainer container) {
-						if(c == null || c.disconnected || c.isDead) {
-							container.stop();
-							return;
-						}
-						if (c.absY == 3437) {
-							c.animation(748);
-							RESET_ANIMATION(c);
-							if (WALKING_LOG && CLIMB_NET && CLIMB_BRANCH && WALKING_ROPE && BRANCH_DESCEND && CLIMB_RAIL) {
-								c.getPA().addSkillXP(70000, c.playerAgility);
-		                       // Achievements.increase(c, AchievementType.AGILITY, 1);
-								c.sendMessage("You have completed the full gnome agility course.");
-								c.getItems().addItem(995, 35_000);
-								c.sendMessage("You receive 35,000 coins for completing the course!");
-							} else {
-								c.getPA().addSkillXP(250, c.playerAgility);
-								c.sendMessage("You must complete the course to get full experience from the crawl pipe.");
-							}
-							clicked = 0;
-							container.stop();
-						}
-					}
-
-					@Override
-					public void stop() {
-						RESET_ANIMATION(c);
-						PERFORMING_ACTION = false;
-						WALKING_LOG = false;
-						CLIMB_NET = false;
-						CLIMB_BRANCH = false;
-						WALKING_ROPE = false;
-						BRANCH_DESCEND = false;
-						CLIMB_RAIL = false;
-						CRAWL_PIPE = false;
-						clicked = 0;
-					}
-				}, 1);
-				break;
-			}
+			return true;
 		}
+		return false;
 	}
 }

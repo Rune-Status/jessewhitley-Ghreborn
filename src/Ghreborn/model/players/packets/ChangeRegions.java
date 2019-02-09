@@ -3,6 +3,7 @@ package Ghreborn.model.players.packets;
 import Ghreborn.Server;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.PacketType;
+import Ghreborn.model.players.skills.farming.Allotments;
 import Ghreborn.net.Packet;
 import Ghreborn.world.GlobalDropsHandler;
 
@@ -19,7 +20,8 @@ public class ChangeRegions implements PacketType {
 			c.getPA().resetOtherBank();
 		}
 		GlobalDropsHandler.load(c);
-		c.getMusic().updateRegionMusic(c.getRegionId());
+		c.getAllotment().updateAllotmentsStates();
+		//c.getMusic().updateRegionMusic(c.getRegionId());
 		c.getPA().removeObjects();
 		c.getPA().castleWarsObjects();
 		//c.getMusic().updateRegionMusic(c.getRegionId());

@@ -104,7 +104,7 @@ public class Skotizo extends SingleInstancedArea {
 					unique = true;
 					if (altarMapDirection[altarNumber-1] == "NORTH") {
 						player.sendMessage("<col=FF7F00>The north altar has just awakened!</col>");
-						//player.getPA().sendChangeSprite(59232, (byte) 1);
+						player.getPA().sendChangeSprite(59232, (byte) 1);
 						Server.getGlobalObjects().remove(28924, 1694, 9904, height); // Remove North - Empty Altar
 						Server.getGlobalObjects().add(new GlobalObject(28923, 1694, 9904, height, 2, 10, -1, -1)); // North - Awakened Altar
 						Server.npcHandler.spawnNpc(player, AWAKENED_ALTAR_NORTH, 1694, 9904, height, 0, 100, 10, 200, 200, false, false);
@@ -112,7 +112,7 @@ public class Skotizo extends SingleInstancedArea {
 						northAltar = true;
 					} else if (altarMapDirection[altarNumber-1] == "SOUTH") {
 						player.sendMessage("<col=FF7F00>The south altar has just awakened!</col>");
-						//player.getPA().sendChangeSprite(59233, (byte) 1);
+						player.getPA().sendChangeSprite(59233, (byte) 1);
 						Server.getGlobalObjects().remove(28924, 1696, 9871, height); // Remove South - Empty Altar
 						Server.getGlobalObjects().add(new GlobalObject(28923, 1696, 9871, height, 0, 10, -1, -1)); // South - Awakened Altar
 						Server.npcHandler.spawnNpc(player, AWAKENED_ALTAR_SOUTH, 1696, 9871, height, 0, 100, 10, 200, 200, false, false);
@@ -120,7 +120,7 @@ public class Skotizo extends SingleInstancedArea {
 						southAltar = true;
 					} else if (altarMapDirection[altarNumber-1] == "WEST") {
 						player.sendMessage("<col=FF7F00>The west altar has just awakened!</col>");
-						//player.getPA().sendChangeSprite(59234, (byte) 1);
+						player.getPA().sendChangeSprite(59234, (byte) 1);
 						Server.getGlobalObjects().remove(28924, 1678, 9888, height); // Remove West - Empty Altar
 						Server.getGlobalObjects().add(new GlobalObject(28923, 1678, 9888, height, 1, 10, -1, -1)); // West - Awakened Altar
 						Server.npcHandler.spawnNpc(player, AWAKENED_ALTAR_WEST, 1678, 9888, height, 0, 100, 10, 200, 200, false, false);
@@ -128,7 +128,7 @@ public class Skotizo extends SingleInstancedArea {
 						westAltar = true;
 					} else if (altarMapDirection[altarNumber-1] == "EAST") {
 						player.sendMessage("<col=FF7F00>The east altar has just awakened!</col>");
-						//player.getPA().sendChangeSprite(59235, (byte) 1);
+						player.getPA().sendChangeSprite(59235, (byte) 1);
 						Server.getGlobalObjects().remove(28924, 1714, 9888, height); // Remove East - Empty Altar
 						Server.getGlobalObjects().add(new GlobalObject(28923, 1714, 9888, height, 3, 10, -1, -1)); // East - Awakened Altar
 						Server.npcHandler.spawnNpc(player, AWAKENED_ALTAR_EAST, 1714, 9888, height, 0, 100, 10, 200, 200, false, false);
@@ -163,10 +163,10 @@ public class Skotizo extends SingleInstancedArea {
 		
 		player.getPA().movePlayer(START_X, START_Y, height);
 		
-		//player.getPA().sendChangeSprite(29232, (byte) 0);
-		//player.getPA().sendChangeSprite(29233, (byte) 0);
-		//player.getPA().sendChangeSprite(29234, (byte) 0);
-		//player.getPA().sendChangeSprite(29235, (byte) 0);
+		player.getPA().sendChangeSprite(29232, (byte) 0);
+		player.getPA().sendChangeSprite(29233, (byte) 0);
+		player.getPA().sendChangeSprite(29234, (byte) 0);
+		player.getPA().sendChangeSprite(29235, (byte) 0);
 		
 		Server.getGlobalObjects().add(new GlobalObject(28924, 1696, 9871, height, 0, 10, -1, -1)); // South - Empty Altar
 		Server.getGlobalObjects().add(new GlobalObject(28924, 1694, 9904, height, 2, 10, -1, -1)); // North - Empty Altar
@@ -204,7 +204,7 @@ public class Skotizo extends SingleInstancedArea {
 			if (southAltar) {
 				Server.getGlobalObjects().remove(28923, 1696, 9871, height); // Remove South - Awakened Altar
 				NPCHandler.kill(AWAKENED_ALTAR_SOUTH, height);
-				//player.getPA().sendChangeSprite(29233, (byte) 0);
+				player.getPA().sendChangeSprite(29233, (byte) 0);
 				altarMap.remove(2);
 				southAltar = false;
 			} else {
@@ -213,7 +213,7 @@ public class Skotizo extends SingleInstancedArea {
 			if (westAltar) {
 				Server.getGlobalObjects().remove(28923, 1678, 9888, height); // Remove West - Awakened Altar
 				NPCHandler.kill(AWAKENED_ALTAR_WEST, height);
-				//player.getPA().sendChangeSprite(29234, (byte) 0);
+				player.getPA().sendChangeSprite(29234, (byte) 0);
 				altarMap.remove(3);
 				westAltar = false;
 			} else {
@@ -222,14 +222,14 @@ public class Skotizo extends SingleInstancedArea {
 			if (eastAltar) {
 				Server.getGlobalObjects().remove(28923, 1714, 9888, height); // Remove East - Awakened Altar
 				NPCHandler.kill(AWAKENED_ALTAR_EAST, height);
-				//player.getPA().sendChangeSprite(29235, (byte) 0);
+				player.getPA().sendChangeSprite(29235, (byte) 0);
 				altarMap.remove(4);
 				eastAltar = false;
 			} else {
 				Server.getGlobalObjects().remove(28924, 1714, 9888, height); // Remove East - Empty Altar
 			}
-			//Server.getGlobalObjects().remove(28924, height);
-			//Server.getGlobalObjects().remove(28923, height);
+			Server.getGlobalObjects().remove(28924, height);
+			Server.getGlobalObjects().remove(28923, height);
 			
 		} else if (dispose == DisposeTypes.INCOMPLETE) {			
 			NPCHandler.kill(SKOTIZO_ID, height);
@@ -237,7 +237,7 @@ public class Skotizo extends SingleInstancedArea {
 				NPCHandler.kill(AWAKENED_ALTAR_NORTH, height);
 				Server.getGlobalObjects().remove(28923, 1694, 9904, height); // Remove North - Awakened Altar
 				Server.getGlobalObjects().add(new GlobalObject(28924, 1694, 9904, height, 2, 10, -1, -1)); // Add North - Empty Altar
-				//player.getPA().sendChangeSprite(29232, (byte) 0);
+				player.getPA().sendChangeSprite(29232, (byte) 0);
 				altarMap.remove(1);
 				northAltar = false;
 			} else {
@@ -247,7 +247,7 @@ public class Skotizo extends SingleInstancedArea {
 				NPCHandler.kill(AWAKENED_ALTAR_SOUTH, height);
 				Server.getGlobalObjects().remove(28923, 1696, 9871, height); // Remove South - Awakened Altar
 				Server.getGlobalObjects().add(new GlobalObject(28924, 1696, 9871, height, 0, 10, -1, -1)); // Add South - Empty Altar
-				//player.getPA().sendChangeSprite(29233, (byte) 0);
+				player.getPA().sendChangeSprite(29233, (byte) 0);
 				altarMap.remove(2);
 				southAltar = false;
 			} else {
@@ -267,7 +267,7 @@ public class Skotizo extends SingleInstancedArea {
 				NPCHandler.kill(AWAKENED_ALTAR_EAST, height);
 				Server.getGlobalObjects().remove(28923, 1714, 9888, height); // Remove East - Awakened Altar
 				Server.getGlobalObjects().add(new GlobalObject(28924, 1714, 9888, height, 3, 10, -1, -1)); // Add East - Empty Altar
-				//player.getPA().sendChangeSprite(29235, (byte) 0);
+				player.getPA().sendChangeSprite(29235, (byte) 0);
 				altarMap.remove(4);
 				eastAltar = false;
 			} else {
@@ -280,8 +280,8 @@ public class Skotizo extends SingleInstancedArea {
 			}
 			if (ankouSpawned)
 				NPCHandler.kill(DARK_ANKOU, height);
-			//Server.getGlobalObjects().remove(28924, height);
-			//Server.getGlobalObjects().remove(28923, height);
+			Server.getGlobalObjects().remove(28924, height);
+			Server.getGlobalObjects().remove(28923, height);
 			player.getPA().movePlayer(1665, 10046, 0);
 		}
 	}

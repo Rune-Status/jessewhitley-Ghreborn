@@ -27,7 +27,7 @@ public class SpawnKrakenStageZero extends KrakenStage {
 		else if (cycle == 13) {
 			Server.npcHandler.spawnNpc(player, 496, 2278, 10034, kraken.getInstancedKraken().getHeight(), -1, 1, 41, 500, 500, false, false);
 			Server.npcHandler.spawnNpc(player, 493, 2275, 10034, kraken.getInstancedKraken().getHeight(), -1, 1, 41, 500, 500, false, false);
-			Server.npcHandler.spawnNpc(player, 493, 2234, 10034, kraken.getInstancedKraken().getHeight(), -1, 1, 41, 500, 500, false, false);
+			Server.npcHandler.spawnNpc(player, 493, 2284, 10034, kraken.getInstancedKraken().getHeight(), -1, 1, 41, 500, 500, false, false);
 			Server.npcHandler.spawnNpc(player, 493, 2275, 10038, kraken.getInstancedKraken().getHeight(), -1, 1, 41, 500, 500, false, false);
 			Server.npcHandler.spawnNpc(player, 493, 2284, 10038, kraken.getInstancedKraken().getHeight(), -1, 1, 41, 500, 500, false, false);
 			player.KRAKEN_CLICKS = 0;

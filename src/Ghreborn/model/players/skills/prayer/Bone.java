@@ -27,7 +27,8 @@ public enum Bone {
 	WYVERN(6812, 72),
 	RAURG(4832, 96),
 	OURG(4834,140),
-	SUPERIOR(22124, 150);
+	SUPERIOR(22124, 150),
+	WYRM(22780, 30);
 	
 	/**
 	 * The item identification value for the bone

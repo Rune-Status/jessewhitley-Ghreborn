@@ -190,7 +190,7 @@ public class ItemDefinition_Sub1 {
         if(i == 15340)
         {
             class8.itemActions = (new String[] {
-                    null, "Wield", null, "Check", null
+                    null, "Wield", null, "Check", "Drop"
                 });
             class8.modifiedModelColors = new int[1];
             class8.originalModelColors = new int[1];
@@ -213,7 +213,7 @@ public class ItemDefinition_Sub1 {
         if(i == 15341)
         {
             class8.itemActions = (new String[] {
-                    null, "Wield", null, "Check", null
+                    null, "Wield", null, "Check", "Drop"
                 });
             class8.modifiedModelColors = new int[0];
             class8.originalModelColors = new int[0];
@@ -235,7 +235,7 @@ public class ItemDefinition_Sub1 {
         if(i == 15342)
         {
             class8.itemActions = (new String[] {
-                    null, "Wield", null, "Check", null
+                    null, "Wield", null, "Check", "Drop"
                 });
             class8.modifiedModelColors = new int[0];
             class8.originalModelColors = new int[0];
@@ -257,7 +257,7 @@ public class ItemDefinition_Sub1 {
         if(i == 25342)
         {
             class8.itemActions = (new String[] {
-                    null, "Wield", null, "Check", null
+                    null, "Wield", null, "Check", "Drop"
                 });
             class8.modifiedModelColors = new int[0];
             class8.originalModelColors = new int[0];
@@ -279,7 +279,7 @@ public class ItemDefinition_Sub1 {
         if(i == 15343)
         {
             class8.itemActions = (new String[] {
-                    null, "Wield", null, "Check", null
+                    null, "Wield", null, "Check", "Drop"
                 });
             class8.modifiedModelColors = new int[1];
             class8.originalModelColors = new int[1];
@@ -302,7 +302,7 @@ public class ItemDefinition_Sub1 {
         if(i == 25343)
         {
             class8.itemActions = (new String[] {
-                null, "Wield", null, "Check", null
+                null, "Wield", null, "Check", "Drop"
             });
             class8.modifiedModelColors = new int[0];
             class8.originalModelColors = new int[0];
@@ -324,7 +324,7 @@ public class ItemDefinition_Sub1 {
         if(i == 25344)
         {
             class8.itemActions = (new String[] {
-                    null, "Wield", null, "Check", null
+                    null, "Wield", null, "Check", "Drop"
                 });
             class8.modifiedModelColors = new int[0];
             class8.originalModelColors = new int[0];
@@ -346,7 +346,7 @@ public class ItemDefinition_Sub1 {
         if(i == 25345)
         {
             class8.itemActions = (new String[] {
-                    null, "Wield", null, "Check", null
+                    null, "Wield", null, "Check", "Drop"
                 });
             class8.modifiedModelColors = new int[0];
             class8.originalModelColors = new int[0];
@@ -368,7 +368,7 @@ public class ItemDefinition_Sub1 {
         if(i == 25346)
         {
             class8.itemActions = (new String[] {
-                    null, "Wear", null, "Check", null
+                    null, "Wear", null, "Check", "Drop"
                 });
             class8.modifiedModelColors = new int[0];
             class8.originalModelColors = new int[0];

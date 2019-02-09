@@ -170,7 +170,7 @@ public class Vorkath {
 
             @Override
             public void execute(CycleEventContainer container) {
-                if (container.getOwner() == null || player == null || player.isDead || player.animationRequest != -1) {
+                if (container.getOwner() == null || player == null || player.isDead || player.animId != -1) {
                     container.stop();
                     return;
                 }

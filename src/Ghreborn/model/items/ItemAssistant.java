@@ -74,6 +74,12 @@ public class ItemAssistant {
 	}
 	public int getItemCount(int itemID) {
 		int count = 0;
+		int counterpart = -1;
+		for (GameItem item : c.getZulrahLostItems()) {
+			if (item.getId() == itemID || counterpart > 0 && item.getId() == counterpart) {
+				count += item.getAmount();
+			}
+		}
 		for (int j = 0; j < c.playerItems.length; j++) {
 			if (c.playerItems[j] == itemID + 1) {
 				count += c.playerItemsN[j];
@@ -398,10 +404,10 @@ public class ItemAssistant {
 		if (item <= 0) {
 			return false;
 		}
-		if ((((freeSlots() >= 1) || playerHasItem(item, 1)) && ItemDefinition.forId(item).isStackable()
-				|| ((freeSlots() > 0) && !ItemDefinition.forId(item).isStackable()))) {
+		if ((((freeSlots() >= 1) || playerHasItem(item, 1)) && Item.itemStackable[item]
+				|| ((freeSlots() > 0) && !Item.itemStackable[item]))) {
 			for (int i = 0; i < c.playerItems.length; i++) {
-				if ((c.playerItems[i] == (item + 1)) && ItemDefinition.forId(item).isStackable()
+				if ((c.playerItems[i] == (item + 1)) && Item.itemStackable[item]
 						&& (c.playerItems[i] > 0)) {
 					c.playerItems[i] = (item + 1);
 					if (((c.playerItemsN[i] + amount) < Config.MAXITEM_AMOUNT) && ((c.playerItemsN[i] + amount) > -1)) {
@@ -935,6 +941,11 @@ public class ItemAssistant {
 		case 10887:
 		case 12424:
 		case 20997:
+		case 24041:
+		case 24042:
+		case 24043:
+		case 24044:
+		case 24045:
 			return true;
 		}
 		return false;
@@ -1408,10 +1419,10 @@ public class ItemAssistant {
 		if (item <= 0) {
 			return false;
 		}
-		if ((((freeSlots() >= 1) || playerHasItem(item, 1)) && ItemDefinition.forId(item).isStackable()
-				|| ((freeSlots() > 0) && !ItemDefinition.forId(item).isStackable()))) {
+		if ((((freeSlots() >= 1) || playerHasItem(item, 1)) && Item.itemStackable[item]
+				|| ((freeSlots() > 0) && !Item.itemStackable[item]))) {
 			for (int i = 0; i < c.playerItems.length; i++) {
-				if ((c.playerItems[i] == (item + 1)) && ItemDefinition.forId(item).isStackable()
+				if ((c.playerItems[i] == (item + 1)) && Item.itemStackable[item]
 						&& (c.playerItems[i] > 0)) {
 					c.playerItems[i] = (item + 1);
 					if (((c.playerItemsN[i] + amount) < Config.MAXITEM_AMOUNT) && ((c.playerItemsN[i] + amount) > -1)) {
@@ -1738,10 +1749,6 @@ public class ItemAssistant {
 		c.setAppearanceUpdateRequired(true);
 	}
 
-	/**
-	 * Move Items
-	 **/
-
 	public void moveItems(int from, int to, int moveWindow, boolean insertMode) {
 		if (moveWindow == 3214) {
 			int tempI;
@@ -1770,6 +1777,7 @@ public class ItemAssistant {
 			if (c.getBankPin().requiresUnlock()) {
 				resetBank();
 				c.isBanking = false;
+				//c.inSafeBox = false;
 				c.getBankPin().open(2);
 				return;
 			}
@@ -1791,16 +1799,19 @@ public class ItemAssistant {
 					resetBank();
 					return;
 				}
-				c.getBank().getCurrentBankTab().remove(item);
+				c.getBank().getCurrentBankTab().remove(item, 0, false);
 				c.getBank().getBankTab()[tabId].add(item);
 			} else {
-				if (from > c.getBank().getCurrentBankTab().size() - 1
-						|| to > c.getBank().getCurrentBankTab().size() - 1) {
+				if (from > c.getBank().getCurrentBankTab().size() - 1 || to > c.getBank().getCurrentBankTab().size() - 1) {
 					resetBank();
 					return;
 				}
 				if (!insertMode) {
 					BankItem item = c.getBank().getCurrentBankTab().getItem(from);
+					if (item == null) {
+						resetBank();
+						return;
+					}
 					c.getBank().getCurrentBankTab().setItem(from, c.getBank().getCurrentBankTab().getItem(to));
 					c.getBank().getCurrentBankTab().setItem(to, item);
 				} else {
@@ -2354,15 +2365,14 @@ public class ItemAssistant {
 	 * @return
 	 */
 
-	public boolean addToBank(int itemID, int amount, boolean updateView) {
-		try {
+	public boolean addToBank(int itemId, int amount, boolean updateView) {
 		if (c.getPA().viewingOtherBank) {
 			c.getPA().resetOtherBank();
 			return false;
 		}
 		if (!c.isBanking)
 			return false;
-		if (!c.getItems().playerHasItem(itemID))
+		if (!c.getItems().playerHasItem(itemId))
 			return false;
 		if (c.getBank().getBankSearch().isSearching()) {
 			c.getBank().getBankSearch().reset();
@@ -2374,37 +2384,28 @@ public class ItemAssistant {
 			return false;
 		}
 		BankTab tab = c.getBank().getCurrentBankTab();
-		BankItem item = new BankItem(itemID + 1, amount);
+		BankItem item = new BankItem(itemId + 1, amount);
+		if (Item.itemIsNote[itemId]) {
+			item = new BankItem(Server.itemHandler.getCounterpart(itemId) + 1, amount);
+		}
 		Iterator<BankTab> iterator = Arrays.asList(c.getBank().getBankTab()).iterator();
-		while (iterator.hasNext()) {
+		outer: while (iterator.hasNext()) {
 			BankTab t = iterator.next();
 			if (t != null && t.size() > 0) {
-				Iterator<BankItem> iterator2 = t.getItems().iterator();
-				while (iterator2.hasNext()) {
-					BankItem i = iterator2.next();
-					if (i.getId() == item.getId() && !isNotable(itemID)) {
-						if (t.getTabId() != tab.getTabId()) {
-							tab = t;
-						}
-					} else {
-						if (ItemDefinition.DEFINITIONS[itemID].isNoteable() && i.getId() == item.getId()) {
-							item = new BankItem(itemID, amount);
-							if (t.getTabId() != tab.getTabId()) {
-								tab = t;
-							}
+				for (BankItem i : t.getItems()) {
+					if (i.getId()==item.getId()) {
+						if (t.getTabId()!=tab.getTabId()) {
+							tab=t;
+							break outer;
 						}
 					}
 				}
 			}
 		}
-		if (isNotable(itemID)) {
-			item = new BankItem(itemID, amount);
-		}
-		if (item.getAmount() > getItemAmount(itemID))
-			item.setAmount(getItemAmount(itemID));
+		if (item.getAmount() > getItemAmount(itemId))
+			item.setAmount(getItemAmount(itemId));
 		if (tab.getItemAmount(item) == Integer.MAX_VALUE) {
-			c.sendMessage("Your bank is already holding the maximum amount of " + getItemName(itemID).toLowerCase()
-					+ " possible.");
+			c.sendMessage("Your bank is already holding the maximum amount of " + getItemName(itemId).toLowerCase() + " possible.");
 			return false;
 		}
 		if (tab.freeSlots() == 0 && !tab.contains(item)) {
@@ -2415,20 +2416,16 @@ public class ItemAssistant {
 		if (totalAmount >= Integer.MAX_VALUE) {
 			int difference = Integer.MAX_VALUE - tab.getItemAmount(item);
 			item.setAmount(difference);
-			deleteItem2(itemID, difference);
+			deleteItem2(itemId, difference);
 		} else {
-			deleteItem2(itemID, item.getAmount());
+			deleteItem2(itemId, item.getAmount());
 		}
 		tab.add(item);
 		if (updateView) {
 			resetTempItems();
 			resetBank();
 		}
-		}catch(NullPointerException exception) {
-			c.sendMessage("That item cant be banked rn. id: "+itemID+".", 255);
-		}
 		return true;
-
 	}
 
 	public boolean bankContains(int itemId) {
@@ -2471,6 +2468,10 @@ public class ItemAssistant {
 		if (tab == null) {
 			return false;
 		}
+		if (freeSlots() == 0 && !playerHasItem(itemId)) {
+			c.sendMessage("There is not enough space in your inventory.");
+			return false;
+		}
 		if (itemAmount <= 0)
 			return false;
 		if (!tab.contains(item))
@@ -2480,7 +2481,7 @@ public class ItemAssistant {
 		}
 		if (item.getAmount() < 0)
 			item.setAmount(0);
-		tab.remove(item);
+			tab.remove(item, 0, c.placeHolders);
 		if (tab.size() == 0) {
 			c.getBank().setCurrentBankTab(c.getBank().getBankTab(0));
 		}
@@ -2490,69 +2491,31 @@ public class ItemAssistant {
 		c.getItems().resetItems(5064);
 		return true;
 	}
-	public void addItemToBank(int itemId, int amount) {
-		BankTab tab = c.getBank().getCurrentBankTab();
-		BankItem item = new BankItem(itemId + 1, amount);
-		Iterator<BankTab> iterator = Arrays.asList(c.getBank().getBankTab()).iterator();
-		while (iterator.hasNext()) {
-			BankTab t = iterator.next();
-			if (t != null && t.size() > 0) {
-				Iterator<BankItem> iterator2 = t.getItems().iterator();
-				while (iterator2.hasNext()) {
-					BankItem i = iterator2.next();
-					if (i.getId() == item.getId() && !isNotable(itemId)) {
-						if (t.getTabId() != tab.getTabId()) {
-							tab = t;
-						}
-					} else {
-						if (isNotable(itemId) && i.getId() == item.getId() - 1) {
-							item = new BankItem(itemId, amount);
-							if (t.getTabId() != tab.getTabId()) {
-								tab = t;
-							}
-						}
-					}
-				}
-			}
-		}
-		if (isNotable(itemId))
-			item = new BankItem(itemId, amount);
-		if (tab.freeSlots() == 0) {
-			c.sendMessage("The item has been dropped on the floor.");
-			Server.itemHandler.createGroundItem(c, itemId, c.absX, c.absY, c.heightLevel, amount, c.index);
-			return;
-		}
-		long totalAmount = ((long) tab.getItemAmount(item) + (long) item.getAmount());
-		if (totalAmount >= Integer.MAX_VALUE) {
-			c.sendMessage("The item has been dropped on the floor.");
-			Server.itemHandler.createGroundItem(c, itemId, c.absX, c.absY, c.heightLevel, amount, c.index);
-			return;
-		}
-		tab.add(item);
-		resetTempItems();
-		if (c.isBanking)
-			resetBank();
-		//c.sendMessage(getItemName(itemId) + " x" + item.getAmount() + " has been added to your bank.");
-	}
+
 	public void removeFromBank(int itemId, int itemAmount, boolean updateView) {
 		BankTab tab = c.getBank().getCurrentBankTab();
 		BankItem item = new BankItem(itemId + 1, itemAmount);
 		boolean noted = false;
+		// boolean notable = isNoted(itemId + 1);		//does this work to remove items?
 		if (!c.isBanking)
 			return;
+		if (freeSlots() == 0 && !playerHasItem(itemId)) {
+			c.sendMessage("Not enough space in your inventory.");
+			return;
+		}
 		if (c.getPA().viewingOtherBank) {
 			c.getPA().resetOtherBank();
 			return;
 		}
+		
 		if (itemAmount <= 0)
 			return;
+		
 		if (c.getBankPin().requiresUnlock()) {
 			resetBank();
 			c.getBankPin().open(2);
 			return;
 		}
-		if (System.currentTimeMillis() - c.lastBankDeposit < 100)
-			return;
 		if (Server.getMultiplayerSessionListener().inAnySession(c)) {
 			c.getPA().closeAllWindows();
 			return;
@@ -2560,21 +2523,21 @@ public class ItemAssistant {
 		if (!tab.contains(item))
 			return;
 		if (c.takeAsNote) {
-			if (ItemDefinition.DEFINITIONS[itemId + 1].isNoted()) {
+			if (freeSlots() == 0 && !playerHasItem(itemId + 1)) {
+				c.sendMessage("Not enough space in your inventory.");
+				return;
+			}
+			if (!Item.itemIsNote[itemId] && Server.itemHandler.getCounterpart(itemId) > 0) {
 				noted = true;
 			} else
 				c.sendMessage("This item cannot be taken out as noted.");
 		}
-		if (freeSlots() == 0 && !playerHasItem(itemId)) {
-			c.sendMessage("There is not enough space in your inventory.");
-			return;
-		}
 		if (getItemAmount(itemId) == Integer.MAX_VALUE) {
-			c.sendMessage("Your inventory is already holding the maximum amount of " + getItemName(itemId).toLowerCase()
-					+ " possible.");
+			c.sendMessage("Your inventory is already holding the maximum amount of " + getItemName(itemId).toLowerCase() + " possible.");
 			return;
 		}
-		if (isStackable(item.getId() - 1) || noted) {
+		boolean stackable = isStackable(item.getId() - 1);
+		if (stackable || noted) {
 			long totalAmount = (long) getItemAmount(itemId) + (long) itemAmount;
 			if (totalAmount > Integer.MAX_VALUE)
 				item.setAmount(tab.getItemAmount(item) - getItemAmount(itemId));
@@ -2582,17 +2545,126 @@ public class ItemAssistant {
 		if (tab.getItemAmount(item) < itemAmount) {
 			item.setAmount(tab.getItemAmount(item));
 		}
-		if (!isStackable(item.getId() - 1) && !noted) {
+		if (!stackable && !noted) {
 			if (freeSlots() < item.getAmount())
 				item.setAmount(freeSlots());
 		}
+		
+		if (item.getAmount() == 0) {
+			if (!c.placeHolderWarning) {
+				c.lastPlaceHolderWarning = item.getId();
+				c.sendMessage("@cr10@@red@Are you sure you want to release the placeholder of " + Item.getItemName(item.getId() - 1) + "?");
+				c.sendMessage("@cr10@@red@If so, click the item once more.");
+				c.placeHolderWarning = true;
+				return;
+			} else {
+				if (item.getId() != c.lastPlaceHolderWarning) {
+					c.placeHolderWarning = false;
+					return;
+				}
+				c.placeHolderWarning = false;
+			}
+		} else {
+			if (c.placeHolderWarning) {
+				c.placeHolderWarning = false;
+			}
+		}
+		
 		if (item.getAmount() < 0)
 			item.setAmount(0);
+		
 		if (!noted)
 			addItem(item.getId() - 1, item.getAmount());
 		else
-			addItem(item.getId(), item.getAmount());
-		tab.remove(item);
+			addItem(Server.itemHandler.getCounterpart(item.getId() - 1), item.getAmount());
+		
+		int type = 0;
+		if (item.getAmount() <= 0) // if already a placeholder aka amt 0
+			type = 1;
+		tab.remove(item, type, c.placeHolders);
+		
+		
+		if (tab.size() == 0) {
+			c.getBank().setCurrentBankTab(c.getBank().getBankTab(0));
+		}
+		if (updateView) {
+			resetBank();
+		}
+		c.getItems().resetItems(5064);
+	}
+	
+	public void removeFromBankPlaceholder(int itemId, int itemAmount, boolean updateView) {
+		BankTab tab = c.getBank().getCurrentBankTab();
+		BankItem item = new BankItem(itemId + 1, itemAmount);
+		boolean noted = false;
+		// boolean notable = isNoted(itemId + 1);		//does this work to remove items?
+		
+		if (!c.isBanking)
+			return;
+		if (freeSlots() == 0 && !playerHasItem(itemId)) {
+			c.sendMessage("Not enough space in your inventory.");
+			return;
+		}
+		if (c.getPA().viewingOtherBank) {
+			c.getPA().resetOtherBank();
+			return;
+		}
+		
+		if (itemAmount <= 0)
+			return;
+		
+		if (c.getBankPin().requiresUnlock()) {
+			resetBank();
+			c.getBankPin().open(2);
+			return;
+		}
+		if (Server.getMultiplayerSessionListener().inAnySession(c)) {
+			c.getPA().closeAllWindows();
+			return;
+		}
+		if (!tab.contains(item))
+			return;
+		if (c.takeAsNote) {
+			if (freeSlots() == 0 && !playerHasItem(itemId + 1)) {
+				c.sendMessage("Not enough space in your inventory.");
+				return;
+			}
+			if (!Item.itemIsNote[itemId] && Server.itemHandler.getCounterpart(itemId) > 0) {
+				noted = true;
+			} else
+				c.sendMessage("This item cannot be taken out as noted.");
+		}
+		if (getItemAmount(itemId) == Integer.MAX_VALUE) {
+			c.sendMessage("Your inventory is already holding the maximum amount of " + getItemName(itemId).toLowerCase() + " possible.");
+			return;
+		}
+		boolean stackable = isStackable(item.getId() - 1);
+		if (stackable || noted) {
+			long totalAmount = (long) getItemAmount(itemId) + (long) itemAmount;
+			if (totalAmount > Integer.MAX_VALUE)
+				item.setAmount(tab.getItemAmount(item) - getItemAmount(itemId));
+		}
+		if (tab.getItemAmount(item) < itemAmount) {
+			item.setAmount(tab.getItemAmount(item));
+		}
+		if (!stackable && !noted) {
+			if (freeSlots() < item.getAmount())
+				item.setAmount(freeSlots());
+		}
+		
+		if (item.getAmount() < 0)
+			item.setAmount(0);
+		
+		if (!noted)
+			addItem(item.getId() - 1, item.getAmount());
+		else
+			addItem(Server.itemHandler.getCounterpart(item.getId() - 1), item.getAmount());
+		
+		int type = 0;
+		if (item.getAmount() <= 0) // if already a placeholder aka amt 0
+			type = 1;
+		tab.remove(item, type, true);		
+		
 		if (tab.size() == 0) {
 			c.getBank().setCurrentBankTab(c.getBank().getBankTab(0));
 		}
@@ -2602,50 +2674,39 @@ public class ItemAssistant {
 		c.getItems().resetItems(5064);
 	}
 
-	public boolean addEquipmentToBank(int itemID, int slot, int amount, boolean updateView) {
+	public boolean addEquipmentToBank(int itemId, int slot, int amount, boolean updateView) {
 		if (c.getPA().viewingOtherBank) {
 			c.getPA().resetOtherBank();
 			return false;
 		}
 		if (!c.isBanking)
 			return false;
-		if (c.playerEquipment[slot] != itemID || c.playerEquipmentN[slot] <= 0)
+		if (c.playerEquipment[slot] != itemId || c.playerEquipmentN[slot] <= 0)
 			return false;
 		BankTab tab = c.getBank().getCurrentBankTab();
-		BankItem item = new BankItem(itemID + 1, amount);
+		BankItem item = new BankItem(itemId + 1, amount);
+		if (Item.itemIsNote[itemId]) {
+			item = new BankItem(Server.itemHandler.getCounterpart(itemId) + 1, amount);
+		}
 		Iterator<BankTab> iterator = Arrays.asList(c.getBank().getBankTab()).iterator();
-		while (iterator.hasNext()) {
+		outer: while (iterator.hasNext()) {
 			BankTab t = iterator.next();
 			if (t != null && t.size() > 0) {
-				Iterator<BankItem> iterator2 = t.getItems().iterator();
-				while (iterator2.hasNext()) {
-					BankItem i = iterator2.next();
-					if (i.getId() == item.getId() && !isNotable(itemID)) {
-						if (t.getTabId() != tab.getTabId()) {
-							tab = t;
-							c.getBank().setCurrentBankTab(tab);
-							resetBank();
-						}
-					} else {
-						if (isNotable(itemID) && i.getId() == item.getId() - 1) {
-							item = new BankItem(itemID, amount);
-							if (t.getTabId() != tab.getTabId()) {
-								tab = t;
-								c.getBank().setCurrentBankTab(tab);
-								resetBank();
-							}
+				for (BankItem i : t.getItems()) {
+					if (i.getId()==item.getId()) {
+						if (t.getTabId()!=tab.getTabId()) {
+							tab=t;
+							break outer;
 						}
 					}
 				}
 			}
 		}
-		if (isNotable(itemID))
-			item = new BankItem(itemID, amount);
+
 		if (item.getAmount() > c.playerEquipmentN[slot])
 			item.setAmount(c.playerEquipmentN[slot]);
 		if (tab.getItemAmount(item) == Integer.MAX_VALUE) {
-			c.sendMessage("Your bank is already holding the maximum amount of " + getItemName(itemID).toLowerCase()
-					+ " possible.");
+			c.sendMessage("Your bank is already holding the maximum amount of " + getItemName(itemId).toLowerCase() + " possible.");
 			return false;
 		}
 		if (tab.freeSlots() == 0 && !tab.contains(item)) {
@@ -2716,6 +2777,32 @@ public class ItemAssistant {
 		c.flushOutStream();
 	}
 	public boolean updateInventory = false;
+	/**
+	 * Trimmed and untrimmed skillcapes.
+	 */
+	public int[][] skillcapes = { { 9747, 9748 }, // Attack
+			{ 9753, 9754 }, // Defence
+			{ 9750, 9751 }, // Strength
+			{ 9768, 9769 }, // Hitpoints
+			{ 9756, 9757 }, // Range
+			{ 9759, 9760 }, // Prayer
+			{ 9762, 9763 }, // Magic
+			{ 9801, 9802 }, // Cooking
+			{ 9807, 9808 }, // Woodcutting
+			{ 9783, 9784 }, // Fletching
+			{ 9798, 9799 }, // Fishing
+			{ 9804, 9805 }, // Firemaking
+			{ 9780, 9781 }, // Crafting
+			{ 9795, 9796 }, // Smithing
+			{ 9792, 9793 }, // Mining
+			{ 9774, 9775 }, // Herblore
+			{ 9771, 9772 }, // Agility
+			{ 9777, 9778 }, // Thieving
+			{ 9786, 9787 }, // Slayer
+			{ 9810, 9811 }, // Farming
+			{ 9765, 9766 } // Runecraft
+	};
+
 
 	public void updateInventory() {
 		updateInventory = false;
@@ -2888,11 +2975,13 @@ public class ItemAssistant {
 	 */
 	public void addItemUnderAnyCircumstance(int itemId, int amount) {
 		if (!addItem(itemId, amount)) {
+/*			if (c.getMode().isUltimateIronman()) {
 				Server.itemHandler.createGroundItem(c, itemId, c.getX(), c.getY(), c.heightLevel, amount);
-				c.sendMessage("<col=DD5C3E>Your box has been dropped to the ground!");
+				c.sendMessage("@red@Your box has been dropped to the ground!");
 				return;
-			}
+			}*/
 			sendItemToAnyTabOrDrop(new BankItem(itemId, amount), c.getX(), c.getY());
+		}
 	}
 
 	/**
@@ -2920,6 +3009,56 @@ public class ItemAssistant {
 			}
 		}
 		addItemToBank(itemId, amount);
+	}
+	public void addItemToBank(int itemId, int amount) {
+		BankTab tab = c.getBank().getCurrentBankTab();
+		BankItem item = new BankItem(itemId + 1, amount);
+		if (Item.itemIsNote[itemId]) {
+			item = new BankItem(Server.itemHandler.getCounterpart(itemId) + 1, amount);
+		}
+		Iterator<BankTab> iterator = Arrays.asList(c.getBank().getBankTab()).iterator();
+		outer: while (iterator.hasNext()) {
+			BankTab t = iterator.next();
+			if (t != null && t.size() > 0) {
+				for (BankItem i : t.getItems()) {
+					if (i.getId()==item.getId()) {
+						if (t.getTabId()!=tab.getTabId()) {
+							tab=t;
+							break outer;
+						}
+					}
+				}
+			}
+		}
+		if (isNoted(itemId)) {
+			item = new BankItem(Server.itemHandler.ItemList[itemId].getCounterpartId() + 1, amount);
+		}
+		if (tab.freeSlots() == 0) {
+			c.sendMessage("The item has been dropped on the floor.");
+			Server.itemHandler.createGroundItem(c, itemId, c.absX, c.absY, c.heightLevel, amount, c.getIndex());
+			return;
+		}
+		long totalAmount = ((long) tab.getItemAmount(item) + (long) item.getAmount());
+		if (totalAmount >= Integer.MAX_VALUE) {
+			c.sendMessage("The item has been dropped on the floor.");
+			Server.itemHandler.createGroundItem(c, itemId, c.absX, c.absY, c.heightLevel, amount, c.getIndex());
+			return;
+		}
+		tab.add(item);
+		resetTempItems();
+		if (c.isBanking) {
+			resetBank();
+		}
+		c.sendMessage(getItemName(itemId) + " x" + item.getAmount() + " has been added to your bank.");
+	}
+	public boolean isNoted(int itemId) {
+
+		if (itemId<0) {
+			return false;
+		}
+		ItemList list=Server.itemHandler.ItemList[itemId];
+		return list!=null&&list.itemDescription!=null&&list.itemDescription.startsWith("Swap this note at any bank");
+
 	}
 	/**
 	 * Determines if the player is wearing a specific item at a particular slot

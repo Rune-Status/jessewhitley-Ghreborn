@@ -50,7 +50,7 @@ public class GlassBlowing extends GlassData {
 							c.getItems().deleteItem(1775, 1);
 							c.getItems().addItem(g.getNewId(), 1);
 							c.sendMessage("You make a " + Item.getItemName(g.getNewId()) + ".");
-							c.getPA().addSkillXP(g.getXP() * Config.CRAFTING_EXPERIENCE, 12);
+							c.getPA().addSkillXP(g.getXP() * (c.getRights().isIronman() ? Config.Ironman_exp_rate : Config.CRAFTING_EXPERIENCE), 12);
 							c.animation(884);
 							amount--;
 						} else {

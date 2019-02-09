@@ -49,6 +49,16 @@ public class NPCCacheDefinition {
 		npcDef.name = "Tormented demon";
 		npcDef.boundDim = 3;
 	}
+    if(i == 8809) {//Npc ID
+  	  npcDef.name = "Evil Chicken Boss";//Npc Name
+  	  npcDef.actions = new String[]{null, "Attack", null, null, null};
+  	  npcDef.boundDim = 3;
+  	  }
+    if(i == 8347) {//Npc ID
+  	  npcDef.name = "Dark Corporeal";//Npc Name
+  	  npcDef.actions = new String[]{null, "Attack", null, null, null};
+  	  npcDef.boundDim = 5;
+  	  }
         return npcDef;
     }
 	

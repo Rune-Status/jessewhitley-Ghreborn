@@ -33,42 +33,37 @@ public class ClickObject implements PacketType {
 	@Override
 	public void processPacket(final Client client, Packet packet) {
 		client.clickObjectType = client.objectX = client.objectId = client.objectY = 0;
-		//client.objectYOffset = //client.objectXOffset = 0;
+		client.objectYOffset = client.objectXOffset = 0;
 		client.getPA().resetFollow();
 		if (!client.canUsePackets) {
 			return;
 		}
 		switch (packet.getOpcode()) {
 		case FIRST_CLICK:
-			client.setClickX(packet.getLEShortA());
-			client.setClickId(packet.getUnsignedShort());
-			client.setClickY(packet.getUnsignedShortA());
-			client.setClickZ(client.getPosition().getZ());
+			client.objectX = packet.getLEShortA();
+			client.objectId = packet.getUnsignedShort();
+			client.objectY = packet.getUnsignedShortA();
 			client.objectDistance = 1;
-				if (!goodPath(client)) {
-					return;
-				}
-				 if (!Region.isWorldObject(client.getClickId(), client.getClickX(), client.getClickY(), client.getClickZ())) {
+			//client.setClickZ(client.getPosition().getZ());
+				//if (!goodPath(client)) {
+				//	return;
+			//	}
+/*				 if (!Region.isWorldObject(client.objectId, client.objectX, client.objectY, client.heightLevel)) {
 				 client.sendMessage("Warning: The object could not be verified by the server. If you feel this is");
 				 client.sendMessage("incorrect, please contact a staff member to have this resolved.");
 				 return;
-				 }
-				if (Math.abs(client.getX() - client.getClickX()) > 25 || Math.abs(client.getY() - client.getClickY()) > 25) {
-					client.resetWalkingQueue();
-					break;
-				}
-				client.setWalkInteractionTask(() -> client.getActions().firstClickObject(client.getClickId(), client.getClickX(), client.getClickY()));
-				switch (client.getClickId()) {
+				 }*/
+				switch (client.objectId) {
+				case 31990:
+							if(client.getVorkath().getVorkathInstance() == null) {
+								client.getVorkath().jump();
+							}
+							break;
 				case 25016:
 				case 25017:
 				case 25018:
 				case 25029:
 					PuroPuro.magicalWheat(client);
-					break;
-				case 31990:
-					if(client.getVorkath().getVorkathInstance() == null) {
-						client.getVorkath().jump();
-					}
 					break;
 				case 9398:// deposit
 					client.getPA().sendFrame126("The Bank of Ghreborn - Deposit Box", 7421);
@@ -106,7 +101,13 @@ public class ClickObject implements PacketType {
 					client.objectYOffset = -1;
 					client.objectDistance = 0;
 					break;
-
+				case 15477:
+				case 15478:
+				case 15479:
+						client.objectDistance = 1;
+						client.objectXOffset = 2;
+						client.objectYOffset = 5;
+		break;
 				case 272:
 					client.objectYOffset = 1;
 					client.objectDistance = 0;
@@ -128,7 +129,17 @@ public class ClickObject implements PacketType {
 				case 4496:
 					client.objectDistance = 5;
 					break;
-
+				case 1753:
+				case 1756:
+				case 1758:
+				case 1759:
+				case 1760:
+				case 1761:
+					client.objectDistance = 3;
+					break;
+				case 24009:
+					client.objectDistance = 3;
+					break;
 				case 6522:
 				case 10229:
 				case 26709:
@@ -282,7 +293,45 @@ public class ClickObject implements PacketType {
 				case 5960:
 					client.objectDistance = 0;
 					break;
-
+				case 14897:
+					client.objectDistance = 1;
+					break;
+				case 14898:
+					client.objectDistance = 1;
+					break;
+				case 14899:
+					client.objectDistance = 1;
+					break;
+				case 14900:
+					client.objectDistance = 1;
+					break;
+				case 14901:
+					client.objectDistance = 1;
+					break;
+				case 14902:
+					client.objectDistance = 1;
+					break;
+				case 14903:
+					client.objectDistance = 1;
+					break;
+				case 14904:
+					client.objectDistance = 1;
+					break;
+				case 14906:
+					client.objectDistance = 1;
+					break;
+				case 14905:
+					client.objectDistance = 1;
+					client.objectXOffset = -3;
+					client.objectYOffset = 3;
+					break;
+				case 14911:
+				case 25035:
+					client.objectDistance = 1;
+					break;
+			case 7471:
+					client.objectDistance = 1;
+					break;
 				case 9293:
 					client.objectDistance = 2;
 					break;
@@ -362,11 +411,15 @@ public class ClickObject implements PacketType {
 				case 6702:
 					client.objectXOffset = -1;
 					break;
-
 				case 6821:
 					client.objectDistance = 2;
 					client.objectXOffset = 1;
 					client.objectYOffset = 1;
+					break;
+				case 2114:
+					client.objectDistance = 1;
+					client.objectXOffset = 4;
+					client.objectYOffset = 2;
 					break;
 
 				case 1276:
@@ -387,25 +440,41 @@ public class ClickObject implements PacketType {
 					client.objectYOffset = 0;
 					break;
 				}
+				if (client.destinationReached()) {
+					client.face(client.objectX, client.objectY);
+					client.getActions().firstClickObject(client.objectId, client.objectX, client.objectY);
+				} else {
+					client.clickObjectType = 1;
+					CycleEventHandler.getSingleton().addEvent(client, new CycleEvent() {
+						@Override
+						public void execute(CycleEventContainer container) {
+
+							if (client.clickObjectType == 1 && client.destinationReached()) {
+								client.face(client.objectX, client.objectY);
+								client.getActions().firstClickObject(client.objectId, client.objectX, client.objectY);
+								container.stop();
+							}
+							if (client.clickObjectType < 1 || client.clickObjectType > 1)
+								container.stop();
+						}
+
+						@Override
+						public void stop() {
+
+							client.clickObjectType = 0;
+						}
+					}, 1);
+				}
 			break;
 
 		case SECOND_CLICK:
 			client.objectId = packet.getLEShortA(); //getUnsignedShortA
 			client.objectY = packet.getLEShort();
 			client.objectX = packet.getUnsignedShortA();
-			//client.objectDistance = 1;
-			client.face(client.objectY, client.objectY);
+			client.objectDistance = 1;
+			//client.face(client.objectX, client.objectY);
 			if (!goodPath(client)) {
 				return;
-			}
-			 if (!Region.isWorldObject(client.objectId, client.objectX, client.objectY, client.heightLevel)) {
-			 client.sendMessage("Warning: The object could not be verified by the server. If you feel this is");
-			 client.sendMessage("incorrect, please contact a staff member to have this resolved.");
-			 return;
-			 }
-			 client.setWalkInteractionTask(() -> client.getActions().secondClickObject(client.objectId, client.objectX, client.objectY));
-			if (true) {
-				break;
 			}
 			if (PlayerCannon.CannonPart.isObjCannon(client.objectId)) {
 				return;
@@ -419,12 +488,40 @@ public class ClickObject implements PacketType {
 			case 6166:
 				//client.objectDistance = 2;
 				break;
+			case 24009:
+				client.objectDistance = 1;
+				client.objectXOffset = 3;
+				client.objectYOffset = 2;
+				break;
 				
 			default:
-				//client.objectDistance = 1;
-				//client.objectXOffset = 0;
-				//client.objectYOffset = 0;
+				client.objectDistance = 1;
+				client.objectXOffset = 0;
+				client.objectYOffset = 0;
 				break;
+			}
+			if (client.destinationReached()) {
+				client.getActions().secondClickObject(client.objectId, client.objectX, client.objectY);
+			} else {
+				client.clickObjectType = 2;
+				CycleEventHandler.getSingleton().addEvent(client, new CycleEvent() {
+					@Override
+					public void execute(CycleEventContainer container) {
+
+						if (client.clickObjectType == 2 && client.destinationReached()) {
+							client.getActions().secondClickObject(client.objectId, client.objectX, client.objectY);
+							container.stop();
+						}
+						if (client.clickObjectType < 2 || client.clickObjectType > 2)
+							container.stop();
+					}
+
+					@Override
+					public void stop() {
+
+						client.clickObjectType = 0;
+					}
+				}, 1);
 			}
 			break;
 
@@ -458,11 +555,6 @@ public class ClickObject implements PacketType {
 		if (!goodPath(client)) {
 			return;
 		}
-		 if (!Region.isWorldObject(client.objectId, client.objectX, client.objectY, client.heightLevel)) {
-		 client.sendMessage("Warning: The object could not be verified by the server. If you feel this is");
-		 client.sendMessage("incorrect, please contact a staff member to have this resolved.");
-		 return;
-		 }
 		 client.setWalkInteractionTask(() -> client.getActions().fourthClickObject(client.objectId, client.objectX, client.objectY));
 		if (true) {
 			break;
@@ -487,11 +579,6 @@ case FIFTH_CLICK:
 	if (!goodPath(client)) {
 		return;
 	}
-	 if (!Region.isWorldObject(client.objectId, client.objectX, client.objectY, client.heightLevel)) {
-	 client.sendMessage("Warning: The object could not be verified by the server. If you feel this is");
-	 client.sendMessage("incorrect, please contact a staff member to have this resolved.");
-	 return;
-	 }
  client.getActions().fifthClickObject(client.objectId, client.objectX, client.objectY);
 	if (true) {
 		break;

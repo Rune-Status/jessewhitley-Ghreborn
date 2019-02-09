@@ -47,11 +47,6 @@ public class House {
 		room1.setRotation(3);
 		room1.setPosition(new int[] {5, 6});
 		rooms[5][6][0] = room1;
-		Room room2;
-		room2 = new PortalNexus();
-		room2.setRotation(3);
-		room2.setPosition(new int[] {5, 5});
-		rooms[5][5][0] = room2;
 
 		this.owner = player;
 		this.height = owner.index * 4;
@@ -104,12 +99,11 @@ public class House {
 		guests.add(client);
 		
 		//client.getPA().sendFrame126("Entering house...", 12285);
-		client.getPA().showInterface(31992);
-		client.getPA().movePlayer(32, 32, height);
 		CycleEventHandler.getSingleton().addEvent(client, new CycleEvent() {
 
 			@Override
 			public void execute(CycleEventContainer container) {
+				//client.getPA().movePlayer(32, 32, height);
 				client.outStream.createFrameVarSizeWord(241);
 				client.outStream.writeWordA(client.mapRegionY + 6);
 				client.outStream.initBitAccess();
@@ -137,6 +131,7 @@ public class House {
 								continue;
 							
 							room.onLoad(client);
+							client.getPA().showInterface(31992);
 						}
 					}
 				}

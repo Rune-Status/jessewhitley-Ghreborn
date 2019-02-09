@@ -13,7 +13,7 @@ public class Config {
 	public static int MAX_NPCS = Server.npcHandler.maxNPCs;
 	public static final boolean PLACEHOLDER_ECONOMY = false;
 	
-	public static final int CLIENT_VERSION = 2;
+	public static final int CLIENT_VERSION = 3;
 	public static final boolean SOUND = false;
 	public static final int TOKENS_ID = 13204;
 	
@@ -75,6 +75,7 @@ public class Config {
 	public static final int MELEE_EXP_RATE = 150; // damage * exp rate
 	public static final int RANGE_EXP_RATE = 150;
 	public static final int MAGIC_EXP_RATE = 300;
+	public static final int Ironman_exp_rate = 5;
 	public static  double SERVER_EXP_BONUS = 1;
 	public static boolean doubleEXPWeekend = false;
 	public static boolean superiorSlayerActivated = true;
@@ -94,7 +95,10 @@ public class Config {
 	public static final boolean CRYSTAL_BOW_DEGRADES = true; // magic rune required?
 
 	public static final int SAVE_TIMER = 120; // save every 1 minute
-	public static final int NPC_RANDOM_WALK_DISTANCE = 50; // the square created , 3x3 so npc can't move out of that box when randomly walking
+	public static final int NPC_RANDOM_WALK_DISTANCE = 5; // 5x5 square, NPCs
+	// would be able to
+	// walk 25 squares
+	// around.
 	public static final int NPC_FOLLOW_DISTANCE = 10; // how far can the npc follow you from it's spawn point, 													
 	public static final int[] UNDEAD_NPCS = {90,91,92,93,94,103,104,73,74,75,76,77}; // undead npcs
 
@@ -221,8 +225,8 @@ public class Config {
 	public static final int RUNECRAFTING_EXPERIENCE = 20;
 	public static final int CRAFTING_EXPERIENCE = 20;
 	public static final int THIEVING_EXPERIENCE = 20;
-	public static final int SLAYER_EXPERIENCE = 280;
-	public static final int COOKING_EXPERIENCE = 40;
+	public static final int SLAYER_EXPERIENCE = 5;
+	public static final int COOKING_EXPERIENCE = 20;
 	public static final int FLETCHING_EXPERIENCE = 20;
 	public static final int HUNTER_EXPERIENCE = 20;
 	public static final int CONSTRUCTION_EXPERIENCE = 200;

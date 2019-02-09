@@ -2,6 +2,7 @@ package Ghreborn.model.npcs.boss.vorkath.impl;
 
 import Ghreborn.Server;
 import Ghreborn.event.CycleEventContainer;
+import Ghreborn.model.npcs.boss.vorkath.Stage;
 import Ghreborn.model.npcs.boss.vorkath.Vorkath;
 import Ghreborn.model.npcs.boss.vorkath.VorkathConstants;
 import Ghreborn.model.npcs.boss.vorkath.VorkathState;
@@ -36,7 +37,7 @@ public class WakeUpStage extends Stage {
         }
         if(alreadyAlive) {
             if(cycle == 3) {
-                vorkath.getNpc().hp = VorkathConstants.VORKATH_LIFE_POINTS;
+                vorkath.getNpc().HP = VorkathConstants.VORKATH_LIFE_POINTS;
             }
             if(cycle == 6) {
                 vorkath.getNpc().animation(7950);
@@ -58,7 +59,7 @@ public class WakeUpStage extends Stage {
             if(cycle == 2) {
                 vorkath.getNpc().animation(7950);
                 player.turnPlayerTo(vorkath.getNpc().getX(), vorkath.getNpc().getY() - 3);
-                vorkath.getNpc().hp = VorkathConstants.VORKATH_LIFE_POINTS;
+                vorkath.getNpc().HP = VorkathConstants.VORKATH_LIFE_POINTS;
             }
             if(cycle == 9) {
                 vorkath.getNpc().requestTransform(VorkathConstants.AWAKENED_VORKATH_ID);

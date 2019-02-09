@@ -2,6 +2,7 @@ package Ghreborn.model.players.skills.cooking;
 
 import java.util.Random;
 
+import Ghreborn.Config;
 import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
@@ -159,7 +160,7 @@ public class Cooking extends SkillHandler {
 		}
 
 		c.playerSkillProp[7][0] = itemID;
-		c.playerSkillProp[7][1] = xpRecieved * COOKING_XP;
+		c.playerSkillProp[7][1] = xpRecieved * (c.getRights().isIronman() ? Config.Ironman_exp_rate : Config.COOKING_EXPERIENCE);
 		c.playerSkillProp[7][2] = levelRequired;
 		c.playerSkillProp[7][3] = burntFish;
 		c.playerSkillProp[7][4] = cookedFish;

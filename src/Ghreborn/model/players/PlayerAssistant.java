@@ -24,6 +24,7 @@ import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
 import Ghreborn.event.Task;
 import Ghreborn.model.content.clan.Clan;
+import Ghreborn.model.content.dialogue.impl.StarterDialogue;
 import Ghreborn.model.items.GameItem;
 import Ghreborn.model.items.Item;
 import Ghreborn.model.items.Item2;
@@ -45,6 +46,8 @@ import Ghreborn.model.npcs.boss.instances.InstancedAreaManager;
 import Ghreborn.model.npcs.boss.zulrah.Zulrah;
 import Ghreborn.model.players.combat.Degrade;
 import Ghreborn.model.players.combat.Degrade.DegradableItem;
+import Ghreborn.model.players.combat.magic.MagicData;
+import Ghreborn.model.players.skills.Smelting;
 import Ghreborn.model.players.skills.crafting.Enchantment;
 import Ghreborn.model.sounds.Sound;
 import Ghreborn.util.Misc;
@@ -233,6 +236,17 @@ public boolean playerNameExists(String name) {
     					29166);
     			sendFrame126("<col=FF7F00>Donator Points:</col> <col=ffffff>"+c.DonatorPoints,
     					29167);
+    			sendFrame126("<col=FF7F00>Vote Points:</col> <col=ffffff>"+c.votePoints,
+    					29168);
+    			if(c.getSlayer().getTask().isPresent()) {
+    			sendFrame126("<col=FF7F00>Slayer Monster:</col> <col=ffffff>"+c.getSlayer().getTask().get().getPrimaryName()+".",
+    					29169);
+    			} else if(!c.getSlayer().getTask().isPresent()) {
+	    			sendFrame126("<col=FF7F00>Slayer Monster:</col> <col=ffffff> None.",
+	    					29169);
+				}
+    			sendFrame126("<col=FF7F00>Task Amount:</col> <col=ffffff>"+c.getSlayer().getTaskAmount()+".",
+    					29170);
     			sendFrame126("<col=ffffff>NPC Statistics:</col> <col=FF7F00>[</col><col=ffffff>Click Here</col><col=FF7F00>]", 29177);
     		}
 
@@ -428,7 +442,10 @@ public boolean playerNameExists(String name) {
 			c.flushOutStream();
 		}
 	}
-
+	public static void stopSkilling(Client c) {
+		if (c.smeltAmount > 0)
+			Smelting.resetSmelting(c);
+	}
 	public void sendChatInterface(int Frame) {
 		if (c.getOutStream() != null && c != null) {
 			c.getOutStream().createFrame(164);
@@ -806,6 +823,7 @@ public boolean playerNameExists(String name) {
 	}
 
 	public void openUpBank() {
+		c.getPA().sendChangeSprite(58014, c.placeHolders ? (byte) 1 : (byte) 0);
 		resetVariables();
 		if (c.getBankPin().isLocked() && c.getBankPin().getPin().trim().length() > 0) {
 			c.getBankPin().open(2);
@@ -995,11 +1013,11 @@ public boolean playerNameExists(String name) {
 				c.getItems().deleteItem(itemId, slot, 1);
 				c.getItems().addItem(995,
 						ItemDefinition.forId(itemId).getLowAlchValue() / 3);
-				c.animation(c.MAGIC_SPELLS[49][2]);
-				c.gfx100(c.MAGIC_SPELLS[49][3]);
+				c.animation(MagicData.MAGIC_SPELLS[49][2]);
+				c.gfx100(MagicData.MAGIC_SPELLS[49][3]);
 				c.alchDelay = System.currentTimeMillis();
 				sendFrame106(6);
-				addSkillXP(c.MAGIC_SPELLS[49][7] * Config.MAGIC_EXP_RATE, 6);
+				addSkillXP(MagicData.MAGIC_SPELLS[49][7] * (c.getRights().isIronman() ? 4 : Config.MAGIC_EXP_RATE), 6);
 				refreshSkill(6);
 			}
 			break;
@@ -1015,11 +1033,11 @@ public boolean playerNameExists(String name) {
 				}
 				c.getItems().deleteItem(itemId, slot, 1);
 				c.getItems().addItem(995, (int) (ItemDefinition.forId(itemId).getHighAlchValue()));
-				c.animation(c.MAGIC_SPELLS[50][2]);
-				c.gfx100(c.MAGIC_SPELLS[50][3]);
+				c.animation(MagicData.MAGIC_SPELLS[50][2]);
+				c.gfx100(MagicData.MAGIC_SPELLS[50][3]);
 				c.alchDelay = System.currentTimeMillis();
 				sendFrame106(6);
-				addSkillXP(c.MAGIC_SPELLS[50][7] * Config.MAGIC_EXP_RATE, 6);
+				addSkillXP(MagicData.MAGIC_SPELLS[50][7] * (c.getRights().isIronman() ? 4 : Config.MAGIC_EXP_RATE), 6);
 				refreshSkill(6);
 			}
 			break;
@@ -1095,7 +1113,8 @@ public boolean playerNameExists(String name) {
 	 **/
 
 	public void applyDead() {
-		c.isFullHelm = Item.isFullHelm(c.playerEquipment[c.playerHat]);
+		c.getPA().sendFrame126(":quicks:off", -1);
+		c.isFullHat = Item.isFullHat(c.playerEquipment[c.playerHat]);
 		c.isFullMask = Item.isFullMask(c.playerEquipment[c.playerHat]);
 		c.isFullBody = Item.isFullBody(c.playerEquipment[c.playerChest]);
 		c.getPA().requestUpdates();
@@ -1239,6 +1258,11 @@ public boolean playerNameExists(String name) {
 		c.face(null);
 		c.freezeTimer = 0;
 		PetHandler.ownerDeath(c);
+		if(c.getRights().isHardcoreIronman()) {
+			c.setRights(Rights.IRONMAN);
+			c.getPA().requestUpdates();
+			messageall(c.playerName+" has Died as a hardcore ironman");
+		}
 		//c.hasInteracted = 0;
 		if (!c.inDuelArena()  && !Boundary.isIn(c, Boundary.DUEL_ARENAS)
 				&& !Boundary.isIn(c, Boundary.FIGHT_CAVE)
@@ -1410,6 +1434,8 @@ public boolean playerNameExists(String name) {
 			if (instance5 != null) {
 				InstancedAreaManager.getSingleton().disposeOf(instance5);
 				c.getZulrahEvent().DISPOSE_EVENT();
+				c.getZulrahLostItems().store();
+				c.sendMessage("Talk to Zul-Areth to get your items back.");
 			}
 		} else if (Boundary.isIn(c, Boundary.FIGHT_CAVE)) {
 			c.getFightCave().handleDeath();
@@ -2509,6 +2535,21 @@ public boolean playerNameExists(String name) {
 			}
 			return false;
 		}
+		if (c.playerEquipment[c.playerRing] == 24171) {
+			amount *= Config.SERVER_EXP_BONUS * 2;
+		} else {
+			amount *= Config.SERVER_EXP_BONUS;
+		}
+		if (c.playerEquipment[c.playerRing] == 24172) {
+			amount *= Config.SERVER_EXP_BONUS * 3;
+		} else {
+			amount *= Config.SERVER_EXP_BONUS;
+		}
+		if (c.playerEquipment[c.playerRing] == 24173) {
+			amount *= Config.SERVER_EXP_BONUS * 4;
+		} else {
+			amount *= Config.SERVER_EXP_BONUS;
+		}
 		if(c.getRights().isRainbow()) {
 			amount *= Config.SERVER_EXP_BONUS * 2;
 		} else {
@@ -2761,40 +2802,7 @@ public boolean playerNameExists(String name) {
 	}
 
 	public void addStarter() {
-		if (!Connection.hasRecieved1stStarter(Server.playerHandler.players[c.index].connectedFrom)) {
-			c.getItems().addItem(995, 100000);
-			c.getItems().addItem(1731, 1);
-			c.getItems().addItem(554, 200);
-			c.getItems().addItem(555, 200);
-			c.getItems().addItem(556, 200);
-			c.getItems().addItem(558, 600);
-			c.getItems().addItem(1381, 1);
-			c.getItems().addItem(1323, 1);
-			c.getItems().addItem(841, 1);
-			c.getItems().addItem(882, 500);
-			c.getItems().addItem(380, 100);
-			c.getItems().addItem(Item2.randomGH(), 1);
-			Connection.addIpToStarterList1(Server.playerHandler.players[c.index].connectedFrom);
-			Connection.addIpToStarter1(Server.playerHandler.players[c.index].connectedFrom);
-			c.sendMessage("You have recieved 1 out of 2 starter packages on this IP address.");
-		} else if (Connection.hasRecieved1stStarter(Server.playerHandler.players[c.index].connectedFrom) && !Connection.hasRecieved2ndStarter(Server.playerHandler.players[c.index].connectedFrom)) {
-			c.getItems().addItem(995, 100000);
-			c.getItems().addItem(1731, 1);
-			c.getItems().addItem(554, 200);
-			c.getItems().addItem(555, 200);
-			c.getItems().addItem(556, 200);
-			c.getItems().addItem(558, 600);
-			c.getItems().addItem(1381, 1);
-			c.getItems().addItem(1323, 1);
-			c.getItems().addItem(841, 1);
-			c.getItems().addItem(882, 500);
-			c.getItems().addItem(380, 100);
-			c.sendMessage("You have recieved 2 out of 2 starter packages on this IP address.");
-			Connection.addIpToStarterList2(Server.playerHandler.players[c.index].connectedFrom);
-			Connection.addIpToStarter2(Server.playerHandler.players[c.index].connectedFrom);
-		} else if (Connection.hasRecieved1stStarter(Server.playerHandler.players[c.index].connectedFrom) && Connection.hasRecieved2ndStarter(Server.playerHandler.players[c.index].connectedFrom)) {
-			c.sendMessage("You have already recieved 2 starters!");
-		}
+		c.start(new StarterDialogue());
 	}
 
 	public int getWearingAmount() {
@@ -3073,7 +3081,7 @@ public boolean playerNameExists(String name) {
 			c.getPA().sendFrame126("Sand Crabs", 33389);
 			c.getPA().sendFrame126("Tormented Demons", 33390);
 			c.getPA().sendFrame126("<col=3CB71E>- New Boss Teleports -", 33391);
-			c.getPA().sendFrame126("Zulrah", 33392);
+			c.getPA().sendFrame126("Zul-Andra", 33392);
 			c.getPA().sendFrame126("Skotizo", 33393);
 			c.getPA().sendFrame126("Kalphite Queen", 33394);
 			c.getPA().sendFrame126("<col=3CB71E>- New Monster Teleports -", 33395);
@@ -3081,9 +3089,9 @@ public boolean playerNameExists(String name) {
 			c.getPA().sendFrame126("Inferno", 33397);
 			c.getPA().sendFrame126("Catacombs of Kourend", 33398);
 			c.getPA().sendFrame126("Wyvern cave", 33399);
-			c.getPA().sendFrame126("", 33400);
-			c.getPA().sendFrame126("", 33401);
-			c.getPA().sendFrame126("", 33402);
+			c.getPA().sendFrame126("Karuulm slayer dungeon", 33400);
+			c.getPA().sendFrame126("Vorkath", 33401);
+			c.getPA().sendFrame126("Kalphite Lair", 33402);
 			c.getPA().sendFrame126("", 33403);
 	}
 
@@ -3607,6 +3615,41 @@ public boolean playerNameExists(String name) {
 			c.outStream.writeDWord(amount);
 			c.outStream.endFrameVarSizeWord();
 		}
+		public void movePlayer(Coordinate coord) {
+			movePlayer(coord.getX(), coord.getY(), coord.getH());
+		}
+		public void sendFrame34P2(int item, int slot, int frame, int amount) {
+			c.outStream.createFrameVarSizeWord(34);
+			c.outStream.writeWord(frame);
+			c.outStream.writeByte(slot);
+			c.outStream.writeWord(item + 1);
+			c.outStream.writeByte(255);
+			c.outStream.writeDWord(amount);
+			c.outStream.endFrameVarSizeWord();
+		}
+		public static void noteItems(Client player, int item) {
+			ItemDefinition definition = ItemDefinition.forId(item);
+			ItemDefinition notedDefinition = ItemDefinition.forId(item + 1);
+			if (definition == null || notedDefinition == null
+					|| !notedDefinition.getName().contains(definition.getName())) {
+				player.sendMessage("You cannot note this item, it is unnotable.");
+				return;
+			}
+			if (!player.getItems().playerHasItem(item, 1)) {
+				return;
+			}
+			for (int index = 0; index < player.playerItems.length; index++) {
+				int amount = player.playerItemsN[index];
+				if (player.playerItems[index] == item + 1 && amount > 0) {
+					player.getItems().deleteItem(item, index, amount);
+					player.getItems().addItem(item + 1, amount);
+				}
+			}
+			player.getDH().sendStatement("You note all your " + definition.getName() + ".");
+			player.nextChat = -1;
+		}
+
+
 
 
 

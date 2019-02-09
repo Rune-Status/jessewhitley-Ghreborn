@@ -12,16 +12,8 @@ import Ghreborn.util.Misc;
 
 public class RandomEvent {
 	
-	public RandomEvent(Player player, int npcId) {
-		int slot = -1;
-		for (int i = 1; i < Server.npcHandler.maxNPCs; i++) {
-			if (Server.npcHandler.npcs[i] == null) {
-				slot = i;
-				break;
-			}
-		}
-
-		NPC npc = new NPC(slot, npcId);
+	public RandomEvent(Client player, int npcId) {
+		final NPC npc = new NPC(npcId,	NPCHandler.npcs[npcId].npcType);
 		Server.npcHandler.spawnNpc(player, npcId, player.absX, player.absY,
 				player.heightLevel, 0, 120, 7, 70, 70, false, false);
 		npc.forceChat(player.getRandomInterfaceClick().getEvents(npcId).cycleMessages()[0].replaceAll("%", Misc.formatPlayerName(player.getName())));
@@ -30,7 +22,7 @@ public class RandomEvent {
 
 	}
 
-	public static void resetEvents(Player player) {
+	public static void resetEvents(Client player) {
 		player.getRandomInterfaceClick().completed = false;
 	}
 

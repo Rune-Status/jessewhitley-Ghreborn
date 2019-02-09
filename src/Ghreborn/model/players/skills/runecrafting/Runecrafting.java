@@ -95,8 +95,8 @@ public class Runecrafting extends SkillHandler {
 				player.getItems().deleteItem2(1436, essence);
 				player.gfx100(186);
 				player.animation(791);
-				double percentOfXp = data.getExperience() * count * 2.5;
-				player.getPA().addSkillXP(Config.RUNECRAFTING_EXPERIENCE + (player.getItems().isWearingItem(20008) ? percentOfXp : 0), 20);
+				double percentOfXp = data.getExperience()* multiply * count * 2.5;
+				player.getPA().addSkillXP((int) (((double) (data.getExperience()) * count) * (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.RUNECRAFTING_EXPERIENCE) + (player.getItems().isWearingItem(20008) ? percentOfXp : 0)), 20);
 				player.getItems().addItem(data.getRuneId(), multiply);
 				player.sendMessage("You bind the temple's power into " + essence + " " + name + " runes.");
 				player.getPA().requestUpdates();

@@ -5,6 +5,7 @@ import Ghreborn.Server;
 import Ghreborn.definitions.ItemCacheDefinition;
 import Ghreborn.model.items.ItemDefinition;
 import Ghreborn.model.npcs.PetHandler;
+import Ghreborn.model.npcs.PetHandler.Pets;
 import Ghreborn.model.players.Boundary;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.PacketType;
@@ -40,7 +41,11 @@ public class DropItem implements PacketType {
 			c.getPA().sendChatInterface(14170);
 			return;
 		}
-		if(PetHandler.spawnPet(c, itemId, slot, false)) {
+		Pets pet = PetHandler.forItem(itemId);
+
+		if (pet != null) {
+			c.animation(827);
+			PetHandler.spawn(c, pet, false, false);
 			return;
 		}
 		if (Boundary.isIn(c, Boundary.DUEL_ARENAS)) {

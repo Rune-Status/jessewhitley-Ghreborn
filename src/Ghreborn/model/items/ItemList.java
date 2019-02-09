@@ -8,8 +8,21 @@ public class ItemList {
 	public double LowAlch;
 	public double HighAlch;
 	public int[] Bonuses = new int[100];
+	/**
+	 * The identification value that represents either the noted version of this item or the un-noted version.
+	 */
+	private int counterpartId;
 
 	public ItemList(int _itemId) {
 		itemId = _itemId;
+	}
+
+
+	public int getCounterpartId() {
+		return counterpartId;
+	}
+
+	public void setCounterpartId(int counterpartId) {
+		this.counterpartId = counterpartId;
 	}
 }

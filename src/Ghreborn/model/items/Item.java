@@ -3,6 +3,9 @@ package Ghreborn.model.items;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 
 import Ghreborn.Config;
 import Ghreborn.Server;
@@ -15,29 +18,39 @@ public class Item {
     public static int twohanded[] = { 11785, 10431, 7158, 1319, 3202, 6528, 15333, 15335, 15332};
     public static int isHelm[] = { 0000};
     
-	public static boolean isPlate(int itemId) {
+	public static boolean isFullBody(int itemId) {
 		if(itemId == -1)
 			return false;
-		String[] data = { "vesta's chainbody", "jacket", "Ladies chainbody", "Torva platebody", "top", "shirt", "platebody", "ahrims robetop","karils leathertop"," brassard", "robe top", "robetop", "platebody (t)",
-				"platebody (g)", "Owner Plate", "chestplate", "Black Platebody (W)", " torso", "Torso", "hauberk", "dragon chainbody", "pernix", "morrigan" };
-		String item = getItemName(itemId);
-		if (item == null) {
+		String[] data = {"Platebody", "Pyromancer garb","platebody", "plate", "top", "wings", "blouse", "monk's robe", "shirt",
+				"robetop", "robe top", "tabard", "jacket", "tunic", "chestplate", "leathertop", "brassard", "torso",
+				"robe (g)", "robe (t)", "zamorak robe", "hauberk", "coat", "Mummy", "varrock", "decorative", "garb", "zamorak robe", "Justiciar chestguard" };
+		String armour = getItemName(itemId);
+		if (armour == null)
 			return false;
+
+		switch (itemId) {
+			case 11899:
+			case 11896:
+				return true;
 		}
-		boolean item1 = false;
-		for (String element : data) {
-			if (item.endsWith(element) || item.contains(element)) {
-				item1 = true;
+		for (int i = 0; i < data.length; i++) {
+			if (armour.contains(data[i])) {
+				return true;
 			}
 		}
-		return item1;
+		return false;
 	}
-	
-    public static boolean isFullHelm(int itemId) {
+
+    public static boolean isFullHat(int itemId) {
 		if(itemId == -1)
 			return false;
-		String[] data = {"med helm", "coif", "Larupia hat","Kyatt hat","Owner Hat", "dharok's helm", "hood", "tnitiate helm", "coif", "helm of neitiznot", "armadyl helmet", "berserker helm", 
-				"archer helm", "farseer helm", "warrior helm", "mage hat", "lizard skull"};
+		String[] data = {"splitbark helm", "mystic", "black mask", "highwayman mask", "mime mask",
+				"facemask", "ironman helm", "grim reaper", "imp mask", "mage hat", "med helm", "coif",
+				"Dharok's helm", "hood", "Initiate helm", "Coif", "Helm of neitiznot", "Armadyl helmet", "Berserker helm",
+				"Archer helm", "Farseer helm", "Warrior helm", "Void", "reindeer", "cowl", "Void ranger helm",
+				"Blacksmith's_helm", "black mask", "kandarin headgear", "Robin hood hat",
+				"pith helmet", "spiny helmet", "gold helmet", "mining helmet", "camo helmet", "crab helmet",
+				"3rd age full helmet", "dwarven helmet", "kandarin headgear", "camo"};
 		String item = getItemName(itemId);
 		if (item == null) {
 			return false;
@@ -54,7 +67,12 @@ public class Item {
     public static boolean isFullMask(int itemId) {
 		if(itemId == -1)
 			return false;
-		String[] data = {"Star-face","full helm","Larupia hat","Kyatt hat", "Owner Hat", "Light Helmet", "mask", "verac's helm", "guthan's helm", "karil's coif", "mask", "Mask","torag's helm", "void", "sallet", "pernix", "katagon full helm"};
+		String[] data = {"Star-face","helm", "helmet_imbued", "helm_(g)", "Bronze_full_helm", "Iron_full_helm",
+				"Mithril_full_helm", "helm_(t)", "full_helm(g)", "full", "heraldic", "heraldic_helm", "full_helm",
+				"Verac's_helm", "Guthan's_helm", "Karil's_coif", "ween_mask", "Torag's_helm", "Void", "sallet",
+				"slayer helmet", "Void_ranger_helm", "Shayzien", "Graceful", "gas_mask", "serpentine_helm", "magma_helm",
+				"ankou", "demon", "mummy", "head", "Banshee", "Goblin mask", "Jack_lantern_mask", "h'ween",
+				"slayer helmet (i)", "rogue mask", "santa mask", "antisanta mask", "Splitbark helm", "Justiciar faceguard"};
 		String item = getItemName(itemId);
 		if (item == null) {
 			return false;
@@ -119,7 +137,7 @@ public class Item {
 	}
 
 	public static boolean playerShield(int itemId) {
-		String[] data = { "kiteshield", "Lit bug lantern", "Unlit bug lantern", "book", "Kiteshield", "shield",
+		String[] data = { "kiteshield", "off-hand",  "Off-Hand","Tome of fire", "Dragonfire ward", "Lit bug lantern", "Unlit bug lantern", "book", "Kiteshield", "shield",
 				"Shield", "Kite", "kite", "defender", "ket-xil", "Book", "Off-hand" };
 		String item = getItemName(itemId);
 		if (item == null) {
@@ -137,7 +155,7 @@ public class Item {
 	public static boolean playerAmulet(int itemId) {
 		String[] data = { "amulet", "Amulet", "necklace", "Necklace",
 				"Pendant", "pendant", "Symbol", "symbol", "scarf", "Scarf",
-				"scarve", "Scarve", "stole", "Stole", "Saradomin halo" };
+				"scarve", "Scarve", "stole", "Slenderman Tenticles", "Stole", "Saradomin halo" };
 		String item = getItemName(itemId);
 		if (item == null) {
 			return false;
@@ -183,12 +201,12 @@ public class Item {
 	}
 
 	public static boolean playerHats(int itemId) {
-		String[] data = { "boater", "Light Helmet", "cowl", "peg", "coif", "helm", "Coif",
+		String[] data = { "boater", "Justiciar faceguard", "Light Helmet", "cowl", "peg", "coif", "helm", "Coif",
 				"mask", "Mask", "hat", "headband", "hood", "Hood", "Halo", "halo", "disguise",
 				"cavalier", "full helm", "tiara", "helmet", "Hat", "ears",
 				"partyhat", "helm(t)", "helm(g)", "beret", "facemask",
 				"sallet", "hat(g)", "hat(t)", "bandana", "Helm", "mitre",
-				"Mitre", "afro", "skull", "Crown", "Star-face"};
+				"Mitre", "afro", "skull", "Crown", "Royal crown" ,"Star-face"};
 		String item = getItemName(itemId);
 		if (item == null) {
 			return false;
@@ -204,7 +222,7 @@ public class Item {
 	}
 
 	public static boolean playerLegs(int itemId) {
-		String[] data = { "tassets", "Ladies Platelegs", "Seth Chaps", "Light Legs", "Owner Legs", "chaps", "bottoms", "gown", "trousers",
+		String[] data = { "tassets", "Ladies Platelegs", "Justiciar legguards","Seth Chaps", "Light Legs", "Owner Legs", "chaps", "bottoms", "gown", "trousers",
 				"platelegs", "pantaloons", "robe", "plateskirt", "legs", "leggings",
 				"shorts", "Shorts", "Skirt", "greaves","Knightmare legs", "Torva Platelegs", "Priml Platelegs", "skirt", "cuisse", "Trousers", };
 		String item = getItemName(itemId);
@@ -223,7 +241,7 @@ public class Item {
 	}
 
 	public static boolean playerBody(int itemId) {
-		String[] data = { "body", "Demon Plate", "Torva Platebody", "Black Platebody (W)", "Light Plate", "top", "Owner Plate", "Priest gown", "apron", "shirt",
+		String[] data = { "body", "Pyromancer garb","Demon Plate", "Justiciar chestguard", "Torva Platebody", "Black Platebody (W)", "Light Plate", "top", "Owner Plate", "Priest gown", "apron", "shirt",
 				"platebody", "robetop", "body(g)", "body(t)",
 				"Wizard robe (t)", "jacket", "body", "Body", "brassard", "blouse",
 				"tunic", "leathertop", "Saradomin plate", "chainbody",
@@ -250,57 +268,25 @@ public class Item {
 	public static boolean[] itemStackable = new boolean[Config.ITEM_LIMIT];
 	public static boolean[] itemIsNote = new boolean[Config.ITEM_LIMIT];
 	public static int[] targetSlots = new int[Config.ITEM_LIMIT];
-	public static void load() {
-		int counter = 0;
-		int c;
-		
+	static {
 		try {
-			FileInputStream dataIn = new FileInputStream(new File("./Data/data/stackable.dat"));
-			while ((c = dataIn.read()) != -1) {
-				if (c == 0) {
-					itemStackable[15243] = true;
-					itemStackable[15263] = true;
-					itemStackable[12437] = true;
-					itemStackable[12434] = true;
-					itemStackable[12825] = true;
-					itemStackable[12435] = true;
-					itemStackable[9187] = true;
-					itemStackable[9188] = true;
-					itemStackable[9189] = true;
-					itemStackable[9190] = true;
-					itemStackable[9191] = true;
-					itemStackable[9192] = true;
-					itemStackable[9140] = true; 
-					itemStackable[9141] = true; 
-					itemStackable[9142] = true; 
-					itemStackable[9143] = true; 
-					itemStackable[9144] = true; 
-					itemStackable[9194] = true;
-					itemStackable[6571] = false;
-					itemStackable[9193] = true;
-					itemStackable[12437] = true;
-					itemStackable[11230] = true;
-					itemStackable[11237] = true;
-					itemIsNote[15273] = true;
-					itemStackable[7219] = true;
-					itemStackable[11212] = true;
-					itemStackable[11232] = true;
-					itemStackable[9341] = true;
-					itemStackable[15273] = true;
-					itemStackable[counter] = false;
-				} else {
-					itemStackable[counter] = true;
-				}
-				counter++;
+			List<String> stackableData = Files.readAllLines(Paths.get("./Data/", "data", "stackables.dat"));
+			for (String data : stackableData) {
+				int id = Integer.parseInt(data.split("\t")[0]);
+				boolean stackable = Boolean.parseBoolean(data.split("\t")[1]);
+				itemStackable[id] = stackable;
+				itemStackable[21880] = true;
+				itemStackable[6646] = true;
+				itemStackable[6651] = true;
+				itemStackable[21930] = true;
+				itemStackable[7776] = true;
 			}
-			dataIn.close();
 		} catch (IOException e) {
-			System.out.println("Critical error while loading stackabledata! Trace:");
 			e.printStackTrace();
 		}
 
-		counter = 0;
-		
+		int counter = 0;
+		int c = 0;
 		try {
 			FileInputStream dataIn = new FileInputStream(new File("./Data/data/notes.dat"));
 			while ((c = dataIn.read()) != -1) {
@@ -312,11 +298,12 @@ public class Item {
 				counter++;
 			}
 			dataIn.close();
+			System.out.println("Loaded " + counter + " noted configurations");
 		} catch (IOException e) {
 			System.out.println("Critical error while loading notedata! Trace:");
 			e.printStackTrace();
 		}
-		
+
 		counter = 0;
 		try {
 			FileInputStream dataIn = new FileInputStream(new File("./Data/data/equipment.dat"));
@@ -324,6 +311,7 @@ public class Item {
 				targetSlots[counter++] = c;
 			}
 			dataIn.close();
+			System.out.println("Loaded " + counter + " equipment configurations");
 		} catch (IOException e) {
 			System.out.println("Critical error while loading notedata! Trace:");
 			e.printStackTrace();
@@ -362,12 +350,6 @@ public class Item {
 
 	public void setAmount(int value) {
 		amount = value;
-	}
-
-	public static boolean isFullBody(int itemId) {
-		if(itemId == -1)
-			return false;
-		return ItemDefinition.forId(itemId).isPlatebody();
 	}
 
 }

@@ -14,7 +14,7 @@ public class RequestHelp {
 	public static String otherPlayer = "";
 	
 	public static void sendOnlineStaff(Client c) {
-		String[][] Staff_Config = { {"Sgsrocks", "28000", "28001"}, {"Twistndshout", "28002", "28003"}, {"Swoc", "28004", "28005"} , {"Lp316", "28006", "28007"}, {"Lolly", "28008", "28009"}, {"Father", "28010", "28011"}, {"Open", "28012", "28013"}, {"Open", "28014", "28015"}, {"Open", "28016", "28017"}   };
+		String[][] Staff_Config = { {"Sgsrocks", "28000", "28001"}, {"Twistndshout", "28002", "28003"}, {"Open", "28004", "28005"} , {"Lp316", "28006", "28007"}, {"Open", "28008", "28009"}, {"Open", "28010", "28011"}, {"Open", "28012", "28013"}, {"Open", "28014", "28015"}, {"Open", "28016", "28017"}   };
 		for (int i = 0; i < Staff_Config.length; i++) {
 			c.getPA().sendFrame126(Staff_Config[i][0], Integer.parseInt(Staff_Config[i][1]));
 			if(PlayerHandler.isPlayerOn(Staff_Config[i][0])) {

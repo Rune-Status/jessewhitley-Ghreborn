@@ -70,24 +70,35 @@ public class Fishing {
 						container.stop();
 						return;
 					}
-					if(player.fishingNpc == -1 || NPCHandler.npcs[player.fishingNpc] == null) {
-						player.alreadyFishing = false;
-						container.stop();
-						return;
-					} else if(NPCHandler.npcs[player.fishingNpc].absX != x || NPCHandler.npcs[player.fishingNpc].absY != y) {
-						player.alreadyFishing = false;
-						container.stop();
-						return;
-					}
 					if (!player.alreadyFishing) {
 						container.stop();
 						return;
 					}
-					if (!player.stopPlayerPacket) {
-						container.stop();
-						return;
-					}
+
 					int cont = Misc.random(10);
+					if (npcId == fishing.getIdentifier()) {
+						int r = random.nextInt(fishing.getFish().length);
+						if(fishing.getFish()[r] == 383) {
+							DailyTasks.increase(player, PossibleTasks.SHARKS);
+						}
+						//Achievements.increase(player, AchievementType.FISHING, 1);
+						player.getItems().addItem(fishing.getFish()[r], 1);
+						if (player.playerEquipment[player.playerHat] == 13258 && player.playerEquipment[player.playerChest] == 13259 && player.playerEquipment[player.playerLegs] == 13260 && player.playerEquipment[player.playerFeet] == 13261) {
+							player.getPA().addSkillXP(fishing.getExperience() * (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.FISHING_EXPERIENCE) * 1.2, 10);
+						} else {
+							player.getPA().addSkillXP(fishing.getExperience() * (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.FISHING_EXPERIENCE), 10);
+						}
+						if(!(fishing.getBait() == 314 && player.getItems().playerHasItem(2950)) || fishing.getBait() != 314)
+							player.getItems().deleteItem(fishing.getBait(), 1);
+						player.sendMessage("You catch a <col=0000FF>" + player.getItems().getItemName(fishing.getFish()[r]) + "<col=000000>.");
+						player.stopAnimation();
+						player.alreadyFishing = false;
+						int index = player.fishingNpc;
+						container.stop();
+						if (cont != 0) {
+							startFishing(player, npcId, index, true);
+						}
+					}
 					int chance = Misc.random(50);
 					int petchance = Misc.random(4500);
 					int petchance1 = Misc.random(3000);
@@ -122,29 +133,6 @@ public class Fishing {
 											"<col=006600>" + player.playerName + " received a skilling pet: 1 x Heron.");
 								}
 							}
-						}
-					}
-					if (npcId == fishing.getIdentifier()) {
-						int r = random.nextInt(fishing.getFish().length);
-						if(fishing.getFish()[r] == 383) {
-							DailyTasks.increase(player, PossibleTasks.SHARKS);
-						}
-						//Achievements.increase(player, AchievementType.FISHING, 1);
-						player.getItems().addItem(fishing.getFish()[r], 1);
-						if (player.playerEquipment[player.playerHat] == 13258 && player.playerEquipment[player.playerChest] == 13259 && player.playerEquipment[player.playerLegs] == 13260 && player.playerEquipment[player.playerFeet] == 13261) {
-							player.getPA().addSkillXP(fishing.getExperience() * Config.FISHING_EXPERIENCE * 1.2, 10);
-						} else {
-							player.getPA().addSkillXP(fishing.getExperience() * Config.FISHING_EXPERIENCE, 10);
-						}
-						if(!(fishing.getBait() == 314 && player.getItems().playerHasItem(2950)) || fishing.getBait() != 314)
-							player.getItems().deleteItem(fishing.getBait(), 1);
-						player.sendMessage("You catch a <col=0000FF>" + player.getItems().getItemName(fishing.getFish()[r]) + "<col=000000>.");
-						player.stopAnimation();
-						player.alreadyFishing = false;
-						int index = player.fishingNpc;
-						container.stop();
-						if (cont != 0) {
-							startFishing(player, npcId, index, true);
 						}
 						
 					}

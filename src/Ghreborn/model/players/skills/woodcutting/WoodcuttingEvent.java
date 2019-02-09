@@ -14,8 +14,8 @@ import Ghreborn.model.items.GroundItem;
 import Ghreborn.model.items.Item;
 import Ghreborn.model.items.ItemDefinition;
 import Ghreborn.model.players.Client;
-import Ghreborn.model.players.skills.Firemaking;
 import Ghreborn.model.players.skills.Skill;
+import Ghreborn.model.players.skills.firemake.Firemaking;
 import Ghreborn.util.Misc;
 import Ghreborn.world.WorldObject;
 import Ghreborn.world.objects.GlobalObject;
@@ -27,6 +27,7 @@ public class WoodcuttingEvent extends CycleEvent {
 	private Tree tree;
 	private Hatchet hatchet;
 	private int objectId, x, y, chops;
+	private int[] lumberjackOutfit = { 10933, 10939, 10940, 10941 };
 	
 	public WoodcuttingEvent(Client player, Tree tree, Hatchet hatchet, int objectId, int x, int y) {
 		this.player = player;
@@ -57,6 +58,12 @@ public class WoodcuttingEvent extends CycleEvent {
 
 	@Override
 	public void execute(CycleEventContainer container) {
+		double osrsExperience;
+		double experience;
+		int pieces = 0;
+		pieces=handleOutfit(pieces);
+		osrsExperience = tree.getExperience() + tree.getExperience() / 10 * pieces;
+		experience = tree.getExperience() * Config.WOODCUTTING_EXPERIENCE + tree.getExperience() * Config.WOODCUTTING_EXPERIENCE / 10 * pieces;
 		if(player == null || player.disconnected || player.teleporting || player.isDead || container.getOwner() == null) {
 			container.stop();
 			return;
@@ -97,11 +104,7 @@ public class WoodcuttingEvent extends CycleEvent {
 				Server.getGlobalObjects().add(new GlobalObject(tree.getStumpId(), x, y, player.heightLevel, face, 10, tree.getRespawnTime(), objectId));
 			}
 			player.getItems().addItem(tree.getWood(), 1);
-			if (player.playerEquipment[player.playerHat] == 10941 && player.playerEquipment[player.playerChest] == 10939 && player.playerEquipment[player.playerLegs] == 10940 && player.playerEquipment[player.playerFeet] == 10933) {
-				player.getPA().addSkillXP(tree.getExperience() * Config.WOODCUTTING_EXPERIENCE * 1.2, Skill.WOODCUTTING.getId());
-			} else {
-				player.getPA().addSkillXP(tree.getExperience() * Config.WOODCUTTING_EXPERIENCE, Skill.WOODCUTTING.getId());
-			}
+				player.getPA().addSkillXP((int) (player.getRights().isIronman() ? osrsExperience : experience), Skill.WOODCUTTING.getId());
 			//Achievements.increase(player, AchievementType.WOODCUTTING, 1);
 			player.sendMessage("The tree has run out of logs.");
 			container.stop();
@@ -113,24 +116,14 @@ public class WoodcuttingEvent extends CycleEvent {
 							player.heightLevel, 1, player.index);
 		}
 			if (Misc.random(chopChance) == 0 || chops >= tree.getChopsRequired()) {
-				int chance20 = Misc.random(3);
+				int random2 = Misc.random(4);
 				chops = 0;
 				handleDiary(tree);
 				player.getItems().addItem(tree.getWood(), 1);
 				player.sendMessage("You got some "+ItemDefinition.forId(tree.getWood()).getName()+".");
-				if (chance20 == 1 && player.lightWood < 1 && player.getItems().playerHasItem(13241) || player.playerEquipment[player.playerWeapon] == 13241) {
-					int r = random25.nextInt(Firemaking.logsdata.length);
-					player.getPA().addSkillXP(Firemaking.logsdata[r][2] * Config.FIREMAKING_EXPERIENCE, 11);
-					player.getItems().deleteItem(tree.getWood(), 1);
-					player.gfx0(1180);
-					player.lightWood++;
-					player.sendMessage("You have instantly incinerated the log.");
-				}
-				if (player.playerEquipment[player.playerHat] == 10941 && player.playerEquipment[player.playerChest] == 10939 && player.playerEquipment[player.playerLegs] == 10940 && player.playerEquipment[player.playerFeet] == 10933) {
-					player.getPA().addSkillXP(tree.getExperience() * Config.WOODCUTTING_EXPERIENCE * 1.2, Skill.WOODCUTTING.getId());
-				} else {
-					player.getPA().addSkillXP(tree.getExperience() * Config.WOODCUTTING_EXPERIENCE, Skill.WOODCUTTING.getId());
-				}
+				osrsExperience = tree.getExperience() + tree.getExperience() / 10 * pieces;
+				experience = tree.getExperience() * Config.WOODCUTTING_EXPERIENCE + tree.getExperience() * Config.WOODCUTTING_EXPERIENCE / 10 * pieces;
+					player.getPA().addSkillXP((int) (player.getRights().isIronman() ? osrsExperience : experience), Skill.WOODCUTTING.getId());
 				player.lightWood = 0;
 				//Achievements.increase(player, AchievementType.WOODCUTTING, 1);
 				if (tree.equals(Tree.NORMAL)) {
@@ -223,5 +216,15 @@ public class WoodcuttingEvent extends CycleEvent {
 			player.animation(65535);
 		}
 	}
+	private int handleOutfit(int pieces) {
+
+		for (int aLumberjackOutfit : lumberjackOutfit) {
+			if (player.getItems().isWearingItem(aLumberjackOutfit)) {
+				pieces+=2;
+			}
+		}
+		return pieces;
+	}
+
 }
 

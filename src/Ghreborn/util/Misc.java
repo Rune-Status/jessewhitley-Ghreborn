@@ -552,7 +552,46 @@ public class Misc {
 		}
 		return bldr.toString();
 	}
+	public static final boolean goodDistance(Position pos1, Position pos2, int distance) {
+		if (pos1 == null || pos2 == null) {
+			return false;
+		}
+		return goodDistance(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), distance) && pos1.getZ() == pos2.getZ();
+	}
 
+	public static final boolean goodDistance(int objectX, int objectY, int playerX, int playerY, int distance) {
+        int deltaX = objectX - playerX;
+        int deltaY = objectY - playerY;
+        int trueDistance = ((int) Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2)));
+        return trueDistance <= distance;
+	}
+	public static int linearSearch(int[] elements, int value) {
+		for (int index = 0; index < elements.length; index++) {
+			if (elements[index] == value) {
+				return index;
+			}
+		}
+		return -1;
+	}
+
+	public static <T> int linearSearch(T[] elements, T value) {
+		for (int index = 0; index < elements.length; index++) {
+			if (elements[index].equals(value)) {
+				return index;
+			}
+		}
+		return -1;
+	}
+	public static boolean passedProbability(Range<Integer> range, int checkpoint, boolean ignoreMaximum) throws IllegalStateException {
+		if (checkpoint < range.getMinimum() || checkpoint > range.getMaximum() && !ignoreMaximum) {
+			throw new IllegalStateException();
+		}
+		return random(range) >= checkpoint;
+	}
+
+	public static boolean passedProbability(Range<Integer> range, int checkpoint) throws IllegalStateException {
+		return passedProbability(range, checkpoint, false);
+	}
 
 
 

@@ -7,6 +7,7 @@ import Ghreborn.model.players.Player;
 public class JewelryMaking extends CraftingData {
 	
 	private final static int[][] RINGS = { // Ring, Gem, Level, XP
+			{ 1635, -1, 5, 15 }, 
 			{ 1637, 1607, 20, 40 }, 
 			{ 1639, 1605, 27, 55 }, 
 			{ 1641, 1603, 34, 70 }, 
@@ -148,14 +149,22 @@ public class JewelryMaking extends CraftingData {
 					c.getItems().deleteItem(gem, 1);
 					c.getItems().deleteItem(GOLD_BAR, 1);
 					c.getItems().addItem(itemAdd, 1);
-					c.getPA().addSkillXP(xp * Config.CRAFTING_EXPERIENCE, Player.playerCrafting);
+					c.getPA().addSkillXP(xp * (c.getRights().isIronman() ? Config.Ironman_exp_rate : Config.CRAFTING_EXPERIENCE), Player.playerCrafting);
 					c.getPA().refreshSkill(Player.playerCrafting);
 					done++;
 				}
 				if(done == 1) {
+					if(gem != -1) {
 					c.sendMessage("You craft the gold and gem together to form a " + c.getItems().getItemName(itemAdd) + ".");
+					}else {
+						c.sendMessage("You craft the gold to form a " + c.getItems().getItemName(itemAdd) + ".");
+					}
 				} else if(done > 1) {
+					if(gem != -1) {
 					c.sendMessage("You craft the gold and gem together to form " + done + " " + c.getItems().getItemName(itemAdd) + "'s.");
+					} else {
+						c.sendMessage("You craft the gold to form " + done + " " + c.getItems().getItemName(itemAdd) + "'s.");
+					}
 				}
 			} else {
 				c.sendMessage("You need a Crafting level of "+lvl+" to craft this.");

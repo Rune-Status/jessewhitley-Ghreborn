@@ -109,7 +109,7 @@ public class Crafting {
 		c.getItems().deleteItem2(6571, 1);
 		c.getItems().deleteItem2(19529, 1);
 		c.getItems().addItem(19496, 1);
-		c.getPA().addSkillXP(1000 * Config.CRAFTING_EXPERIENCE, Player.playerCrafting);
+		c.getPA().addSkillXP(1000 * (c.getRights().isIronman() ? Config.Ironman_exp_rate : Config.CRAFTING_EXPERIENCE), Player.playerCrafting);
 	}
 
 	public void handleLeather(int item1, int item2) {

@@ -4,10 +4,12 @@ package Ghreborn.model.players.packets;
 import Ghreborn.Server;
 import Ghreborn.clip.Region;
 import Ghreborn.core.PlayerHandler;
+import Ghreborn.model.content.PlayerEmotes.SKILLCAPE_ANIMATION_DATA;
 import Ghreborn.model.content.teleport.Position;
 import Ghreborn.model.multiplayer_session.MultiplayerSessionType;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.PacketType;
+import Ghreborn.model.players.PathFinder;
 import Ghreborn.model.players.skills.SkillHandler;
 import Ghreborn.net.Packet;
 /**
@@ -33,6 +35,8 @@ public class Walking implements PacketType {
 		if (c.getSkilling().isSkilling()) {
 			c.getSkilling().stop();
 		}
+		if (c.walkingToObject)
+			c.walkingToObject = false;
 		if (c.teleporting == false) {
 			c.canWalk = true;
 		}
@@ -45,6 +49,7 @@ public class Walking implements PacketType {
 		if (c.getInferno() != null && c.getInferno().cutsceneWalkBlock)
 			return;
 		c.getPA().resetVariables();
+		c.getPA().stopSkilling(c);
 		SkillHandler.isSkilling[12] = false;
 		/*
 		 * if (c.teleporting == true) { c.animation(65535); c.teleporting =
@@ -70,7 +75,7 @@ public class Walking implements PacketType {
 			if (c.followId > 0 || c.followId2 > 0)
 				c.getPA().resetFollow();
 		}
-		if (c.getGnomeAgility().PERFORMING_ACTION) {
+		if (c.isForceMovementActive()) {
 			return;
 		}
 		c.getPA().removeAllWindows();
@@ -102,8 +107,13 @@ public class Walking implements PacketType {
 			c.playerIndex = 0;
 			return;
 		}
+		if (System.currentTimeMillis() - c.lastPerformedEmote < 3000) {
+			c.playerIndex = 0;
+			return;
+		}
 		if (packet.getOpcode() == 98) {
 			c.mageAllowed = true;
+			c.walkingToObject = true;
 		}
 		if (!c.lastSpear.elapsed(4000)) {
 			c.sendMessage("You have been stunned.");
@@ -139,13 +149,15 @@ public class Walking implements PacketType {
 		for (int i1 = 0; i1 < c.newWalkCmdSteps; i1++) {
 			lastX = absX + c.getNewWalkCmdX()[i1];
 			lastY = absY + c.getNewWalkCmdY()[i1];
-			c.getNewWalkCmdX()[i1] += firstStepX;
-			c.getNewWalkCmdY()[i1] += firstStepY;
+			c.finalDestX = c.getNewWalkCmdX()[i1] += firstStepX;
+			c.finalDestY = c.getNewWalkCmdY()[i1] += firstStepY;
 		}
 
-		c.setWalkingDestination(new Position(lastX, lastY, c.heightLevel));
-			//c.getMusic().updateRegionMusic(c.getRegionId());
-		
+		if (c.newWalkCmdSteps > 0)
+		PathFinder.getPathFinder().findRoute(c, c.getNewWalkCmdX()[(c.newWalkCmdSteps - 1)], c.getNewWalkCmdY()[(c.newWalkCmdSteps - 1)], true, 16, 16);
+		else {
+			PathFinder.getPathFinder().findRoute(c, firstStepX, firstStepY, true, 16, 16);
+		}
 		}
 
 	

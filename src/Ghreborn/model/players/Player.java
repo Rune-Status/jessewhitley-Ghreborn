@@ -23,6 +23,8 @@ import Ghreborn.model.content.dailytasks.DailyTasks.PossibleTasks;
 import Ghreborn.model.content.randomevents.InterfaceClicking.impl.InterfaceClickHandler;
 import Ghreborn.model.content.clan.Clan;
 import Ghreborn.model.content.dailytasks.TaskTypes;
+import Ghreborn.model.content.godwars.God;
+import Ghreborn.model.content.godwars.GodwarsEquipment;
 import Ghreborn.model.content.teleport.Position;
 import Ghreborn.model.items.Item;
 import Ghreborn.model.items.ItemAssistant;
@@ -42,6 +44,7 @@ import Ghreborn.model.players.combat.Damage;
 import Ghreborn.model.players.combat.Degrade;
 import Ghreborn.model.players.combat.Hitmark;
 import Ghreborn.model.players.skills.Prayer;
+import Ghreborn.model.players.skills.Smelting;
 import Ghreborn.model.players.skills.agility.AgilityHandler;
 import Ghreborn.model.players.skills.construction.Room;
 import Ghreborn.model.players.skills.farming.Allotments;
@@ -56,19 +59,35 @@ public abstract class Player extends Entity {
 
 	public ArrayList<String> killedPlayers = new ArrayList<String>();
 	public ArrayList<Integer> attackedPlayers = new ArrayList<Integer>();
-	private InterfaceClickHandler randomInterfaceClick = new InterfaceClickHandler(this);
 	public Rights rights = Rights.PLAYER;
-	public long lastButton, cerbDelay;
+	public long lastButton, cerbDelay, lastPerformedEmote;
+	/* Thieving variable */
+	public boolean isCracking;
+	public long miscTimer;
+	public long lastObstacleFail;
 	public boolean ironman = false;
 	private Raids raid = new Raids(this);
 	public Clan clan;
 	public int totalLevel;
+	/**
+	 * Player Smelting Variables
+	 */
+	public int
+		smeltAmount = 0,smeltEventId = 5567;
+	public String
+		barType = "";
+	public Smelting.Bars
+		bar = null;
+	public boolean
+		isSmelting = false;
+	public long
+		lastSmelt = 0;
 	public ArrayList<int[]> coordinates;
 	public String displayName = "notset";
-	public boolean isCooking = false;
-	public int raidsDamageCounters[] = new int[10];
+	public boolean isCooking = false, settingUnnoteAmount = false;
+	public int raidsDamageCounters[] = new int[10], counters[] = new int[20];
 	public boolean HasXmasItems;
-	public int clickX = -1;
+	public int clickX = -1, unNoteItemId = 0;
 	public int clickY = -1;
 	public int clickZ = -1;
 	public int clickId = -1;
@@ -77,7 +96,7 @@ public abstract class Player extends Entity {
 	public boolean playerIsCrafting;
 	public boolean isFullBody = false;
 	public List<Integer> searchList = new ArrayList<>();
-	public boolean isFullHelm = false;
+	public boolean isFullHat = false;
 	public int dropSize = 0;
 	public boolean isFullMask = false;
 	public boolean insure;
@@ -102,6 +121,7 @@ public abstract class Player extends Entity {
 	public ArrayList<String> lastKilledPlayers = new ArrayList<String>();
 	public boolean isRunning2 = true;
 	public boolean DonatorPod = false;
+	public double arceussFavor, hosidiusFavor, lovakengjFavor, piscarilliusFavor, shazienFavor; 
 	public boolean isAnimatedArmourSpawned;
 	public double secondsPlayed;
 	public long minutesPlayed;
@@ -129,6 +149,7 @@ public abstract class Player extends Entity {
 	public int CAST_KNOCK = 0;
 	public boolean ARMADYL_INSTANCE = false;;
 	public boolean BANDOS_INSTANCE = false;
+	public boolean HYDRA_INSTANCE = false;
 	public boolean KALPHITE_INSTANCE = false;
 	public boolean SARADOMIN_INSTANCE = false;
 	public boolean ZAMORAK_INSTANCE = false;
@@ -138,6 +159,7 @@ public abstract class Player extends Entity {
 	public static boolean protRange;
 	public static int protMeleeTimer = 16;
 	public static int protRangeTimer;
+	private List<God> equippedGodItems;
 	public int lightWood;
 	public static int protMageTimer;
 	public int[] degradableItem = new int[Degrade.MAXIMUM_ITEMS];
@@ -170,6 +192,14 @@ public abstract class Player extends Entity {
 	public void setATTACK_TYPE(String aTTACK_TYPE) {
 		CERBERUS_ATTACK_TYPE = aTTACK_TYPE;
 	}
+	public boolean inGodwars() {
+		return Boundary.isIn(this, Boundary.GODWARS_AREA);
+	}
+	public int finalDestX, finalDestY;
+	public boolean walkingToObject;
+	public boolean destinationReached() {
+		return absX-getMapRegionX()*8 == finalDestX && absY-getMapRegionY()*8 == finalDestY && walkingToObject;
+	}
 
 	public int getTitleId() {
 		return titleId;
@@ -200,6 +230,7 @@ public boolean HasXmasItems(){
 	public boolean dailyEnabled = false, completedDailyTask;
 	public int dailyTaskDate, totalDailyDone = 0, unfPotHerb, unfPotAmount;
 	public long lastFire;
+	//public boolean isSmelting = false;
 	public long lastAntifirePotion;
 	public long antifireDelay, lastWheatPass,lastPickup;
 	public int height;
@@ -221,6 +252,7 @@ public boolean HasXmasItems(){
 	public int ZULRAH_CLICKS = 0;
 	public int BANDOS_CLICKS = 0;
 	public int ARMADYL_CLICKS = 0;
+	public int HYDRA_CLICKS = 0;
 	public int ZAMORAK_CLICKS = 0;
 	public int SARADOMIN_CLICKS = 0;
 	public int KRAKEN_CLICKS = 0;
@@ -250,8 +282,10 @@ public int specRestore = 0;
 		//}
 		return false;
 	}
-	private int xOffsetWalk, yOffsetWalk;
-	private boolean forceMovement, forceMovementActive = false;
+	protected int xOffsetWalk;
+	protected int yOffsetWalk;
+	protected boolean forceMovement;
+	protected boolean forceMovementActive = false;
 	
 	/**
 	 * @return the forceMovement
@@ -422,6 +456,9 @@ public int specRestore = 0;
 	public int dropChance2;
 	public long lastBankDeposit;
 	public int dropChance3;
+	public boolean placeHolderWarning = false;
+	public int lastPlaceHolderWarning = 0;
+	public boolean placeHolders;
 
 	public boolean needsNewTask = false;
 	public int slayerPoints,
@@ -458,8 +495,8 @@ public int specRestore = 0;
 	public Stopwatch specDelay = new Stopwatch();
 	public Stopwatch lastSpear = new Stopwatch();
 	public Stopwatch lastProtItem = new Stopwatch();
-	public Stopwatch singleCombatDelay = new Stopwatch();
-	public Stopwatch singleCombatDelay2 = new Stopwatch();
+	public long singleCombatDelay;
+	public long singleCombatDelay2;
 	public boolean canChangeAppearance = false;
 	public boolean mageAllowed;
 	public byte poisonMask = 0;
@@ -472,7 +509,7 @@ public int specRestore = 0;
 	public static boolean transforming;
 	public int Donatortime = 0;
 	public final int[] BOWS = { 19481, 19478, 12788, 9185, 11785, 21012, 839, 845, 847, 851, 855, 859, 841, 843, 849, 853, 857, 12424, 861, 4212, 4214, 4215, 12765, 12766, 12767, 12768, 11235, 4216,
-			4217, 4218, 4219, 4220, 4221, 4222, 4223, 4734, 6724, 20997 };
+			4217, 4218, 4219, 4220, 4221, 4222, 4223, 4734, 6724, 20997, 24041, 24042, 24043, 24044, 24045 };
 	public final int[] ARROWS = { 9341, 4160, 11959, 10033, 10034, 882, 883, 884, 885, 886, 887, 888, 889, 890, 891, 892, 893, 4740, 5616, 5617, 5618, 5619, 5620, 5621, 5622, 5623, 5624, 5625,
 			5626, 5627, 9139, 9140, 9141, 9142, 9143, 11875, 21316, 21326, 9144, 9145, 9240, 9241, 9242, 9243, 9244, 9245, 9286, 9287, 9288, 9289, 9290, 9291, 9292, 9293, 9294, 9295, 9296, 9297, 9298,
 			9299, 9300, 9301, 9302, 9303, 9304, 9305, 9306, 11212, 11227, 11228, 11229 };
@@ -828,14 +865,17 @@ public int specRestore = 0;
 	public boolean magicFailed, oldMagicFailed;
 	public int bowSpecShot;
 	public int clickNpcType;
+	public int level1 = 0, level2 = 0, level3 = 0;
 	public boolean inSpecMode;
 	public int clickObjectType;
+	public int[] masterClueRequirement = new int[4];
 	public int objectId;
 	public int objectX;
 	public int objectY;
 	public int objectXOffset;
 	public int objectYOffset;
 	public int objectDistance;
+	public boolean buyingX;
 	public int pItemX, pItemY, pItemId;
 	public boolean isMoving, walkingToItem;
 	public boolean isShopping, updateShop;
@@ -901,7 +941,7 @@ public int specRestore = 0;
 	public int fishTimer = 0;
 	public int smeltType; // 1 = bronze, 2 = iron, 3 = steel, 4 = gold, 5 =
 							// mith, 6 = addy, 7 = rune
-	public int smeltAmount;
+	//public int smeltAmount;
 	public int smeltTimer = 0;
 	public boolean smeltInterface;
 	public boolean patchCleared;
@@ -956,13 +996,7 @@ public int specRestore = 0;
 		return this.antifireTime;
 	}
 
-	public int getLocalX() {
-		return getX() - 8 * getMapRegionX();
-	}
 
-	public int getLocalY() {
-		return getY() - 8 * getMapRegionY();
-	}
 
 	public int setAntifireTime(int value) {
 		return this.antifireTime = value;
@@ -1358,8 +1392,7 @@ public int specRestore = 0;
 		return (int) Math.sqrt(Math.pow(absX - pointX, 2) + Math.pow(absY - pointY, 2));
 	}
 
-	public int mapRegionX, mapRegionY;
-	public int currentX, currentY;
+
 
 	public int playerSE = 0x328;
 	public int playerSEW = 0x333;
@@ -1716,7 +1749,7 @@ public int specRestore = 0;
 	public boolean appearanceUpdateRequired = true;
 	public boolean isNpc = false;
 	public int npcId2 = 0;
-	public int playerIsVisible = 1; // Gnarly: Player is visible, 1 = true, 0 = false.
+	public boolean playerIsVisible = false; // Gnarly: Player is visible, 1 = true, 0 = false.
 	private Hitmark hitmark = null;
 	private Hitmark secondHitmark = null;
 	protected static Stream playerProps;
@@ -1770,7 +1803,7 @@ public int specRestore = 0;
 				playerProps.writeByte(0);
 			}
 
-			if (!Item.isPlate(playerEquipment[playerChest])) {
+			if (!Item.isFullBody(playerEquipment[playerChest])) {
 				playerProps.writeWord(0x100 + playerAppearance[3]);
 			} else {
 				playerProps.writeByte(0);
@@ -1782,7 +1815,7 @@ public int specRestore = 0;
 				playerProps.writeWord(0x100 + playerAppearance[5]);
 			}
 
-			if (!Item.isFullHelm(playerEquipment[playerHat]) && !Item.isFullMask(playerEquipment[playerHat])) {
+			if (!Item.isFullHat(playerEquipment[playerHat]) && !Item.isFullMask(playerEquipment[playerHat])) {
 				playerProps.writeWord(0x100 + playerAppearance[1]);
 			} else {
 				playerProps.writeByte(0);
@@ -1826,7 +1859,7 @@ public int specRestore = 0;
 		playerProps.writeByte(combatLevel); // combat level
 		playerProps.writeWord(getTitleId());
 		//playerProps.writeWord(0);
-		playerProps.writeWord(playerIsVisible);
+		playerProps.writeByte(playerIsVisible ? 1 : 0);
 		str.writeByteC(playerProps.currentOffset);
 		str.writeBytes(playerProps.buffer, playerProps.currentOffset, 0);
 	}
@@ -2005,15 +2038,15 @@ public int specRestore = 0;
 		str.writeByteS(2);
 	}
 
-	private int x1 = -1;
-	private int y1 = -1;
-	private int x2 = -1;
-	private int y2 = -1;
-	private int speed1 = -1;
+	int x1 = -1;
+	 int y1 = -1;
+	 int x2 = -1;
+	 int y2 = -1;
+	 int speed1 = -1;
 	public int makeTimes;
 	public int event;
-	private int speed2 = -1;
-	private int direction = -1;
+	 int speed2 = -1;
+	 int direction = -1;
 	public boolean canWalk = true;
 
 	/**
@@ -2186,11 +2219,6 @@ public int specRestore = 0;
 	}
 
 	public void stopMovement() {
-		if (lastTeleport[0] == currentX && lastTeleport[1] == currentY) {
-			newWalkCmdSteps = 0;
-			getNewWalkCmdX()[0] = getNewWalkCmdY()[0] = travelBackX[0] = travelBackY[0] = 0;
-			return;
-		}
 		if (teleportToX <= 0 && teleportToY <= 0) {
 			teleportToX = absX;
 			teleportToY = absY;
@@ -2306,25 +2334,6 @@ public int specRestore = 0;
 
 			isRunning = isNewWalkCmdIsRunning() || isRunning2;
 		}
-	}
-	public int getMapRegionX() {
-		return mapRegionX;
-	}
-
-	public int getRegionX() {
-		return (absX >> 6);
-	}
-
-	public int getRegionY() {
-		return (absY >> 6);
-	}
-
-	public int getRegionID() {
-		return ((getLocalX() << 8) + getLocalY());
-	}
-
-	public int getMapRegionY() {
-		return mapRegionY;
 	}
 
 	public int getId() {
@@ -2466,7 +2475,7 @@ public int specRestore = 0;
 	public void putInCombat(int attacker) {
 		underAttackBy = attacker;
 		logoutDelay.reset();
-		singleCombatDelay.reset();
+		singleCombatDelay = System.currentTimeMillis();
 	}
 
 	public int appendDamage(int damage, Hitmark h) {
@@ -2649,8 +2658,12 @@ public int specRestore = 0;
 		// TODO Auto-generated method stub
 		return index;
 	}
-	public InterfaceClickHandler getRandomInterfaceClick() {
-		return randomInterfaceClick;
+	public int getBarrowsChestCounter() {
+		return counters[4];
+	}
+
+	public void setBarrowsChestCounter(int counters) {
+		this.counters[4] = counters;
 	}
 	public void setRaidPoints(int raidPoints) {
 		this.raidPoints = raidPoints;
@@ -2669,5 +2682,62 @@ public int specRestore = 0;
 		}
 		return c.slayer;
 	}
+
+	public void updateGodItems() {
+		equippedGodItems = new ArrayList<>();
+		for (God god : God.values()) {
+			for (Integer itemId : GodwarsEquipment.EQUIPMENT.get(god)) {
+				if (getItems().isWearingItem(itemId)) {
+					equippedGodItems.add(god);
+					break;
+				}
+			}
+		}
+	}
+
+	public List<God> getEquippedGodItems() {
+		return equippedGodItems;
+	}
+	public int getEasyClueCounter() {
+		return counters[0];
+	}
+
+	public void setEasyClueCounter(int counters) {
+		this.counters[0] = counters;
+	}
+
+	public int getMediumClueCounter() {
+		return counters[1];
+	}
+
+	public void setMediumClueCounter(int counters) {
+		this.counters[1] = counters;
+	}
+
+	public int getHardClueCounter() {
+		return counters[2];
+	}
+
+	public void setHardClueCounter(int counters) {
+		this.counters[2] = counters;
+	}
+
+	public int getMasterClueCounter() {
+		return counters[3];
+	}
+
+	public void setMasterClueCounter(int counters) {
+		this.counters[3] = counters;
+	}
+
+	public boolean isInvisible() {
+		return playerIsVisible;
+	}
+
+	public void setInvisible(boolean invisible) {
+		this.playerIsVisible = invisible;
+	}
+
+
 
 }

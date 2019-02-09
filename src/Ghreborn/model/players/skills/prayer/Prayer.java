@@ -72,7 +72,7 @@ public class Prayer {
 		player.getSkilling().setSkill(Skill.PRAYER);
 		ItemDefinition definition = ItemDefinition.forId(bone.getItemId());
 		player.sendMessage("You bury the " + (definition == null ? "bone" : definition.getName()) + ".");
-		player.getPA().addSkillXP(bone.getExperience() * Config.PRAYER_EXPERIENCE, Skill.PRAYER.getId());
+		player.getPA().addSkillXP(bone.getExperience() * (player.getRights().isIronman() ? Config.Ironman_exp_rate * 3 : Config.PRAYER_EXPERIENCE * 3), Skill.PRAYER.getId());
 		player.getItems().deleteItem2(bone.getItemId(), 1);
 		player.animation(827);
 		lastAction.reset();
@@ -93,7 +93,7 @@ public class Prayer {
 		}
 		ItemDefinition definition = ItemDefinition.forId(bone.getItemId());
 		player.getPA().stillGfx(624, player.getX(), player.getY(), player.heightLevel, 1);
-		player.getPA().addSkillXP(bone.getExperience() * Config.PRAYER_EXPERIENCE * 3, Skill.PRAYER.getId());
+		player.getPA().addSkillXP(bone.getExperience() * (player.getRights().isIronman() ? Config.Ironman_exp_rate * 3 : Config.PRAYER_EXPERIENCE * 3), Skill.PRAYER.getId());
 		player.getItems().deleteItem2(bone.getItemId(), 1);
 		player.animation(713);
 		lastAction.reset();

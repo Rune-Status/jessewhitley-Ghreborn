@@ -26,6 +26,7 @@ import Ghreborn.data.ServerData;
 import Ghreborn.definitions.ObjectDef;
 import Ghreborn.event.CycleEventHandler;
 import Ghreborn.event.TaskScheduler;
+import Ghreborn.event.event.EventHandler;
 import Ghreborn.model.content.clan.ClanManager;
 import Ghreborn.model.minigames.FightPits;
 import Ghreborn.model.multiplayer_session.MultiplayerSessionListener;
@@ -80,6 +81,11 @@ public class Server {
 	public static DropList droplist = new DropList();
 	public static ObjectDef Obj = new ObjectDef();
 	/**
+	 * A class that will manage game events
+	 */
+	static final EventHandler events = new EventHandler();
+
+	/**
 	 * Contains data which is saved between sessions.
 	 */
 	public static ServerData serverData = new ServerData();
@@ -113,7 +119,7 @@ public class Server {
 		return droplist;
 	}
 	public static void main(String[] args) throws Exception {
-		com.everythingrs.playersonline.PlayersOnline.service.scheduleAtFixedRate(new Runnable() {
+/*		com.everythingrs.playersonline.PlayersOnline.service.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				int online = 0;
@@ -124,7 +130,7 @@ public class Server {
 				}
 				com.everythingrs.playersonline.PlayersOnline.insert("1yas9sbywkw3j71agw4iiicnmi251x4tx8auv1vcz8c2d0io1orma598wc2jvhvgxtmhu4k7qfr", online, false);
 			}
-		}, 0, 30, TimeUnit.SECONDS);
+		}, 0, 30, TimeUnit.SECONDS);*/
 		new Server().run();
 	}
 
@@ -156,6 +162,7 @@ public class Server {
 						}
 					}					
 				});
+				events.process();
 				CycleEventHandler.getSingleton().process();
 				World.getWorld().submit(new Task() {
 					@Override
@@ -275,5 +282,8 @@ public class Server {
 	}
 	public static MultiplayerSessionListener getMultiplayerSessionListener() {
 		return multiplayerSessionListener;
+	}
+	public static EventHandler getEventHandler() {
+		return events;
 	}
 }

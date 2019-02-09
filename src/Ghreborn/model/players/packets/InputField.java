@@ -13,9 +13,6 @@ public class InputField implements PacketType {
 		String text = packet.getRS2String();
 		//System.out.println("ID: " + id);
 		switch (id) {
-		case 39806:
-			Server.getDropList().search(c, text);
-			break;
 		case 58063:
 			if (c.getPA().viewingOtherBank) {
 				c.getPA().resetOtherBank();

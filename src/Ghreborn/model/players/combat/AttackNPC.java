@@ -3,7 +3,7 @@ package Ghreborn.model.players.combat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
+import java.util.Optional;
 
 import Ghreborn.Config;
 import Ghreborn.Server;
@@ -11,6 +11,7 @@ import Ghreborn.clip.PathChecker;
 import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
+import Ghreborn.model.content.barrows.brothers.Brother;
 import Ghreborn.model.items.ItemAssistant;
 import Ghreborn.model.minigames.PestControl;
 import Ghreborn.model.minigames.warriors_guild.WarriorsGuild;
@@ -24,9 +25,13 @@ import Ghreborn.model.players.Boundary;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.Player;
 import Ghreborn.core .PlayerHandler;
+import Ghreborn.model.players.combat.magic.MagicData;
 import Ghreborn.model.players.combat.range.RangeData;
 import Ghreborn.model.players.combat.range.RangeExtras;
+import Ghreborn.model.players.skills.Skill;
 import Ghreborn.model.players.skills.mining.Pickaxe;
+import Ghreborn.model.players.skills.slayer.SlayerMaster;
+import Ghreborn.model.players.skills.slayer.Task;
 import Ghreborn.util.Misc;
 
 public class AttackNPC {
@@ -86,6 +91,7 @@ public class AttackNPC {
 				damage = 0;
 			}
 		}
+		
 		if (NPCHandler.npcs[i].npcType == Skotizo.SKOTIZO_ID) {
 			damage = c.getSkotizo().calculateSkotizoHit(c, damage);
 		}
@@ -177,17 +183,17 @@ public class AttackNPC {
 			damage = NPCHandler.npcs[i].HP;
 		}
 		if (c.fightMode == 3) {
-			c.getPA().addSkillXP((damage * Config.MELEE_EXP_RATE / 3), 3);
-			c.getPA().addSkillXP((damage * Config.MELEE_EXP_RATE / 3), 0);
-			c.getPA().addSkillXP((damage * Config.MELEE_EXP_RATE / 3), 1);
-			c.getPA().addSkillXP((damage * Config.MELEE_EXP_RATE / 3), 2);
+			c.getPA().addSkillXP((damage * (c.getRights().isIronman() ? 3 : Config.MELEE_EXP_RATE / 3)), 3);
+			c.getPA().addSkillXP((damage * (c.getRights().isIronman() ? 3 : Config.MELEE_EXP_RATE / 3)), 0);
+			c.getPA().addSkillXP((damage * (c.getRights().isIronman() ? 3 : Config.MELEE_EXP_RATE / 3)), 1);
+			c.getPA().addSkillXP((damage * (c.getRights().isIronman() ? 3 : Config.MELEE_EXP_RATE / 3)), 2);
 			c.getPA().refreshSkill(0);
 			c.getPA().refreshSkill(1);
 			c.getPA().refreshSkill(2);
 			c.getPA().refreshSkill(3);
 		} else {
-			c.getPA().addSkillXP((damage * Config.MELEE_EXP_RATE / 3), 3);
-			c.getPA().addSkillXP((damage * Config.MELEE_EXP_RATE), c.fightMode);
+			c.getPA().addSkillXP((damage * (c.getRights().isIronman() ? 3 : Config.MELEE_EXP_RATE / 3)), 3);
+			c.getPA().addSkillXP((damage * (c.getRights().isIronman() ? 3 : Config.MELEE_EXP_RATE)), c.fightMode);
 			c.getPA().refreshSkill(c.fightMode);
 			c.getPA().refreshSkill(3);
 		}
@@ -408,30 +414,6 @@ public class AttackNPC {
 			} else if (NPCHandler.npcs[i].underAttackBy < 0 && !Server.npcHandler.getsPulled(i)) {
 				NPCHandler.npcs[i].killerId = c.index;
 			}
-			/*if (c.projectileStage == 0 
-					&& !c.usingMagic 
-					&& !c.castingMagic 
-					&& NPCHandler.npcs[i].npcType == 8349 
-					&& Player.protMelee
-					&& Player.protMeleeTimer >= 1) {
-				c.getCombat().applyNpcMeleeDamage(i, 1, 0, defence);
-				c.sendMessage("The demon is immune to melee attacks right now!");
-			}
-			if (c.projectileStage == 0 && !c.usingMagic && !c.castingMagic) { // melee
-				// hit
-				// damage
-				if (!c.usingClaws 
-						&& !c.usingMagic 
-						&& !c.castingMagic
-						&& NPCHandler.npcs[i].npcType != 8349 )
-					c.getCombat().applyNpcMeleeDamage(i, 1,Misc.random(c.getCombat().calculateMeleeMaxHit()), defence);
-				if (NPCHandler.npcs[i].npcType == 8349 
-						&& !Player.protMelee
-						&& !Player.protMelee) {
-					c.getCombat().applyNpcMeleeDamage(i, 1,
-							Misc.random(c.getCombat().calculateMeleeMaxHit()), defence);
-				}
-			}*/
 			c.lastNpcAttacked = i;
 
 			if (c.projectileStage == 0 && !c.usingMagic) {
@@ -479,17 +461,32 @@ public class AttackNPC {
 					// Slayer Helm (i)
 					damage *= 1.15;
 				}
-				if (Player.protRange 
-						&& !c.usingMagic 
-						&& NPCHandler.npcs[i].npcType == 8349) {
-					damage = 0;
-					damage2 = 0;
-					c.sendMessage("The demon is immune to range attacks right now!");
-
-				}
 				if (c.lastWeaponUsed == 11235 || c.lastWeaponUsed == 12765 || c.lastWeaponUsed == 12766
 						|| c.lastWeaponUsed == 12767 || c.lastWeaponUsed == 12768 || c.bowSpecShot == 1)
 					damage2 = Misc.random(c.getCombat().rangeMaxHit());
+				switch (npc.npcType) {
+				case 494:
+					if (Boundary.isIn(c, Boundary.KRAKEN_CAVE)) {
+						if (!c.getSlayer().getTask().isPresent()) {
+							c.sendMessage("You must have an active kraken task in order to do this.");
+							c.getCombat().resetPlayerAttack();
+						}
+							
+						if (!c.getSlayer().getTask().get().getPrimaryName().contains("kraken")) {
+							c.sendMessage("You must have an active kraken task in order to do this.");
+							c.getCombat().resetPlayerAttack();
+							return;
+						}
+					}
+					break;
+				}
+				Optional<Brother> brother = c.getBarrows().getActive();
+				if (brother.isPresent() && npc.npcType == brother.get().getId()) {
+					damage *= brother.get().getEffectiveness(CombatType.RANGE);
+					if (damage2 > 0) {
+						damage2 *= brother.get().getEffectiveness(CombatType.RANGE);
+					}
+				}
 				if (damage > 0 && RangeExtras.wearingCrossbow(c)) {
 					if (RangeExtras.wearingBolt(c)) {
 						if (RangeExtras.boltSpecialAvailable(c)) {
@@ -497,7 +494,6 @@ public class AttackNPC {
 						}
 					}
 				}
-
 				if (NPCHandler.npcs[i].npcType == 7151) {
 					damage = damage / 4;
 				} else if (damage < 0) {
@@ -550,15 +546,15 @@ public class AttackNPC {
 					}
 				}
 				if (c.fightMode == 3) {
-					c.getPA().addSkillXP((damage * Config.RANGE_EXP_RATE / 3), 4);
-					c.getPA().addSkillXP((damage * Config.RANGE_EXP_RATE / 3), 1);
-					c.getPA().addSkillXP((damage * Config.RANGE_EXP_RATE / 3), 3);
+					c.getPA().addSkillXP((damage * (c.getRights().isIronman() ? 4 : Config.RANGE_EXP_RATE) / 3), 4);
+					c.getPA().addSkillXP((damage * (c.getRights().isIronman() ? 4 : Config.RANGE_EXP_RATE) / 3), 1);
+					c.getPA().addSkillXP((damage * (c.getRights().isIronman() ? 4 : Config.RANGE_EXP_RATE) / 3), 3);
 					c.getPA().refreshSkill(1);
 					c.getPA().refreshSkill(3);
 					c.getPA().refreshSkill(4);
 				} else {
-					c.getPA().addSkillXP((damage * Config.RANGE_EXP_RATE), 4);
-					c.getPA().addSkillXP((damage * Config.RANGE_EXP_RATE / 3), 3);
+					c.getPA().addSkillXP((damage * (c.getRights().isIronman() ? 4 : Config.RANGE_EXP_RATE)), 4);
+					c.getPA().addSkillXP((damage * (c.getRights().isIronman() ? 4 : Config.RANGE_EXP_RATE) / 3), 3);
 					c.getPA().refreshSkill(3);
 					c.getPA().refreshSkill(4);
 				}
@@ -580,8 +576,10 @@ public class AttackNPC {
 						c.getItems().dropArrowNpc();
 					}
 				}
-				if (npc.defenceAnimation > 0 && npc.attackTimer > 3) {
-					npc.doAnimation(npc.defenceAnimation);
+				if (Server.npcHandler.getNPCs()[i].attackTimer > 3) {
+					if (npc.npcType != 2042 && npc.npcType != 2043 & npc.npcType != 2044 && npc.npcType != 3127 && npc.npcType != 319) {
+						npc.animation(c.getCombat().npcDefenceAnim(i), i);
+					}
 				}
 				c.rangeEndGFX = RangeData.getRangeEndGFX(c);
 
@@ -678,6 +676,13 @@ public class AttackNPC {
 					damage = 0;
 					magicFailed = true;
 				}
+/*				Optional<Brother> brother = c.getBarrows().getActive();
+				if (brother.isPresent() && npc.npcType == brother.get().getId()) {
+					damage *= brother.get().getEffectiveness(CombatType.MAGE);
+					if (damage2 > 0) {
+						damage2 *= brother.get().getEffectiveness(CombatType.MAGE);
+					}
+				}*/
 				if (c.playerEquipment[c.playerHat] == 11865 && c.slayerTask == NPCHandler.npcs[i].npcType) {
 					// Slayer Helm (i)
 					damage *= 1.15;
@@ -709,37 +714,27 @@ public class AttackNPC {
 					c.getPA().addSkillXP((damage * Config.MELEE_EXP_RATE / 2), 1);
 					c.getPA().refreshSkill(1);
 				}
-				c.getPA().addSkillXP((c.MAGIC_SPELLS[c.oldSpellId][7] + damage * Config.MAGIC_EXP_RATE), 6);
-				c.getPA().addSkillXP((c.MAGIC_SPELLS[c.oldSpellId][7] + damage * Config.MAGIC_EXP_RATE / 3), 3);
+				c.getPA().addSkillXP((MagicData.MAGIC_SPELLS[c.oldSpellId][7] + damage * (c.getRights().isIronman() ? 4 : Config.MAGIC_EXP_RATE)), 6);
+				c.getPA().addSkillXP((MagicData.MAGIC_SPELLS[c.oldSpellId][7] + damage * (c.getRights().isIronman() ? 4 : Config.MAGIC_EXP_RATE / 3)), 3);
 				c.getPA().refreshSkill(3);
 				c.getPA().refreshSkill(6);
 				if (c.getCombat().getEndGfxHeight() == 100 && !magicFailed) { // end
 																				// GFX
-					NPCHandler.npcs[i].gfx100(c.MAGIC_SPELLS[c.oldSpellId][5]);
-					/*
-					 * if (Server.npcHandler.getNPCs()[i].attackTimer > 3) { if
-					 * (npc.npcType != 2042 && npc.npcType != 2043 & npc.npcType
-					 * != 2044 && npc.npcType != 3127) {
-					 * NPCHandler.startAnimation(c.getCombat().npcDefenceAnim(i)
-					 * , i); //TODO c.sendMessage("We've made it 2"); } }
-					 */
-					if (npc.defenceAnimation > 0 && npc.attackTimer > 3) {
-						npc.doAnimation(npc.defenceAnimation);
+					NPCHandler.npcs[i].gfx100(MagicData.MAGIC_SPELLS[c.oldSpellId][5]);
+					if (Server.npcHandler.getNPCs()[i].attackTimer > 3) {
+						if (npc.npcType != 2042 && npc.npcType != 2043 & npc.npcType != 2044 && npc.npcType != 3127 && npc.npcType != 7413) {
+							npc.animation(c.getCombat().npcDefenceAnim(i), i);
+						}
 					}
 				} else if (!magicFailed) {
-					NPCHandler.npcs[i].gfx0(c.MAGIC_SPELLS[c.oldSpellId][5]);
+					NPCHandler.npcs[i].gfx0(MagicData.MAGIC_SPELLS[c.oldSpellId][5]);
 				}
 
 				if (magicFailed) {
-					/*
-					 * if (Server.npcHandler.getNPCs()[i].attackTimer > 3) { if
-					 * (npc.npcType != 2042 && npc.npcType != 2043 & npc.npcType
-					 * != 2044) {
-					 * NPCHandler.startAnimation(c.getCombat().npcDefenceAnim(i)
-					 * , i); //TODO c.sendMessage("We've made it 3"); } }
-					 */
-					if (npc.defenceAnimation > 0 && npc.attackTimer > 3) {
-						npc.doAnimation(npc.defenceAnimation);
+					if (Server.npcHandler.getNPCs()[i].attackTimer > 3) {
+						if (npc.npcType != 2042 && npc.npcType != 2043 & npc.npcType != 2044) {
+							npc.animation(c.getCombat().npcDefenceAnim(i), i);
+						}
 					}
 					NPCHandler.npcs[i].gfx100(85);
 				}
@@ -748,7 +743,7 @@ public class AttackNPC {
 					if (freezeDelay > 0 && NPCHandler.npcs[i].freezeTimer == 0) {
 						NPCHandler.npcs[i].freezeTimer = freezeDelay;
 					}
-					switch (c.MAGIC_SPELLS[c.oldSpellId][0]) {
+					switch (MagicData.MAGIC_SPELLS[c.oldSpellId][0]) {
 					case 12901:
 					case 12919: // blood spells
 					case 12911:
@@ -822,6 +817,381 @@ public class AttackNPC {
 		NPC npc = NPCHandler.npcs[i];
 		if (npc.npcType == 5867 || npc.npcType == 5868 || npc.npcType == 5869) {
 			return;
+		}
+		//if(NPC)
+		if(npc.npcType ==  8610) {
+			npc.requestTransform(8611);
+			npc.animation(8268);
+		}
+		if(npc.definition().getName().equalsIgnoreCase("crawling Hand")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 5) {
+				c.sendMessage("You need a slayer level of 5 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Cave bug")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 7) {
+				c.sendMessage("You need a slayer level of 7 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Cave crawler")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 10) {
+				c.sendMessage("You need a slayer level of 10 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Banshee")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 15) {
+				c.sendMessage("You need a slayer level of 15 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Twisted Banshee")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 15) {
+				c.sendMessage("You need a slayer level of 15 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Cave slime")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 17) {
+				c.sendMessage("You need a slayer level of 17 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+
+		if(npc.definition().getName().equalsIgnoreCase("Rockslug")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 20) {
+				c.sendMessage("You need a slayer level of 20 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+
+		if(npc.definition().getName().equalsIgnoreCase("Desert lizard")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 22) {
+				c.sendMessage("You need a slayer level of 22 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+
+		if(npc.definition().getName().equalsIgnoreCase("Cockatrice")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 25) {
+				c.sendMessage("You need a slayer level of 25 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Pyrefiend")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 30) {
+				c.sendMessage("You need a slayer level of 30 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Mogre")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 32) {
+				c.sendMessage("You need a slayer level of 32 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+
+		if(npc.definition().getName().equalsIgnoreCase("Harpie Bug Swarm")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 33) {
+				c.sendMessage("You need a slayer level of 33 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+
+		if(npc.definition().getName().equalsIgnoreCase("Wall beast")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 35) {
+				c.sendMessage("You need a slayer level of 35 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+
+		if(npc.definition().getName().equalsIgnoreCase("Killerwatt")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 37) {
+				c.sendMessage("You need a slayer level of 37 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+
+		if(npc.definition().getName().equalsIgnoreCase("Molanisk")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 39) {
+				c.sendMessage("You need a slayer level of 39 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Basilisk")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 40) {
+				c.sendMessage("You need a slayer level of 40 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Terror dog")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 40) {
+				c.sendMessage("You need a slayer level of 40 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Sea snake")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 40) {
+				c.sendMessage("You need a slayer level of 40 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Fever spider")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 42) {
+				c.sendMessage("You need a slayer level of 42 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Infernal Mage")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 45) {
+				c.sendMessage("You need a slayer level of 45 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Brine rat")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 47) {
+				c.sendMessage("You need a slayer level of 47 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Bloodveld")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 50) {
+				c.sendMessage("You need a slayer level of 50 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Mutated Bloodveld")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 50) {
+				c.sendMessage("You need a slayer level of 50 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Jelly")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 52) {
+				c.sendMessage("You need a slayer level of 52 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Warped Jelly")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 50) {
+				c.sendMessage("You need a slayer level of 50 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Turoth")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 55) {
+				c.sendMessage("You need a slayer level of 55 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Mutated Zygomite")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 57) {
+				c.sendMessage("You need a slayer level of 57 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Ancient Zygomite")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 57) {
+				c.sendMessage("You need a slayer level of 57 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Cave horror")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 58) {
+				c.sendMessage("You need a slayer level of 58 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Aberrant spectre")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 60) {
+				c.sendMessage("You need a slayer level of 60 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Deviant spectre")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 60) {
+				c.sendMessage("You need a slayer level of 60 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+
+		if(npc.definition().getName().equalsIgnoreCase("Spiritual ranger")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 63) {
+				c.sendMessage("You need a slayer level of 63 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+
+		if(npc.definition().getName().equalsIgnoreCase("Dust Devil")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 65) {
+				c.sendMessage("You need a slayer level of 65 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+
+		if(npc.definition().getName().equalsIgnoreCase("Spitting Wyvern")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 66) {
+				c.sendMessage("You need a slayer level of 66 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Long-tailed Wyvern")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 66) {
+				c.sendMessage("You need a slayer level of 66 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Taloned Wyvern")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 66) {
+				c.sendMessage("You need a slayer level of 66 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Spiritual Warrior")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 68) {
+				c.sendMessage("You need a slayer level of 68 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Kurask")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 70) {
+				c.sendMessage("You need a slayer level of 70 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Skeletal Wyvern")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 72) {
+				c.sendMessage("You need a slayer level of 72 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Gargoyle")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 75) {
+				c.sendMessage("You need a slayer level of 75 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Gargoyle")) {
+			if (npc.HP <= 9) {
+				c.sendMessage("You need a rock hammer to finish off this npc");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Brutal black dragon")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 78) {
+				c.sendMessage("You need a slayer level of 78 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Nechryael")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 80) {
+				c.sendMessage("You need a slayer level of 80 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Greater Nechryael")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 80) {
+				c.sendMessage("You need a slayer level of 80 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Ancient Wyvern")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 82) {
+				c.sendMessage("You need a slayer level of 82 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Spiritual mage")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 83) {
+				c.sendMessage("You need a slayer level of 83 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Abyssal demon")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 85) {
+				c.sendMessage("You need a slayer level of 85 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Cave kraken")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 87) {
+				c.sendMessage("You need a slayer level of 87 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Dark beast")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 90) {
+				c.sendMessage("You need a slayer level of 90 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+		if(npc.definition().getName().equalsIgnoreCase("Smoke devil")) {
+			if (c.playerLevel[Skill.SLAYER.getId()] < 93) {
+				c.sendMessage("You need a slayer level of 93 to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
+		}
+
+		Optional<Task> task = SlayerMaster.get(npc.definition().getName().replaceAll("_", " "));
+		if (task.isPresent()) {
+			int level = task.get().getLevel();
+			if (c.playerLevel[Skill.SLAYER.getId()] < task.get().getLevel()) {
+				c.sendMessage("You need a slayer level of " + level + " to attack this npc.");
+				c.getCombat().resetPlayerAttack();
+				return;
+			}
 		}
 		if (NPCHandler.npcs[i].npcType == 7544) {
 			if (!Boundary.isIn(c, Boundary.TEKTON_ATTACK_BOUNDARY)) {
@@ -1138,54 +1508,37 @@ public class AttackNPC {
 					c.sendMessage("You need to melee attack this monster!");
 					return;
 				}
-
-				double distance = 1;
-				if (c.getCombat().usingHally() && !c.usingOtherRangeWeapons && !c.usingBow && !c.usingMagic)
+				NPC theNPC = NPCHandler.npcs[i];
+				double distanceToNpc = theNPC.getDistance(c.absX, c.absY);
+				int distance = 1;
+				if (c.getCombat().usingHally() && !c.usingOtherRangeWeapons && !c.usingBallista && !c.usingBow && !c.usingMagic)
 					distance = 2;
 				if (c.usingOtherRangeWeapons && !c.usingBow && !c.usingMagic)
 					distance = 4;
-				if (c.usingBow || c.usingMagic)
+				if (c.usingBallista)
+					distance = 6;
+				if (c.usingBow || c.usingMagic || c.autocasting || c.playerEquipment[c.playerWeapon] == 11907 || c.playerEquipment[c.playerWeapon] == 12899)
 					distance = 8;
-
-				NPC theNPC = NPCHandler.npcs[i];
-
-				if (theNPC.getDistance(c.getX(), c.getY()) > distance) {
+				if (distanceToNpc > distance + 2) {
 					c.attackTimer = 1;
 					return;
 				}
-
-				/*
-				 * if ((!c.goodDistance(c.getX(), c.getY(),
-				 * NPCHandler.npcs[i].getX(), NPCHandler.npcs[i].getY(), 2) &&
-				 * (c.getCombat().usingHally() && !c.usingOtherRangeWeapons &&
-				 * !c.usingBow && !c.usingMagic)) || (!c.goodDistance(c.getX(),
-				 * c.getY(), NPCHandler.npcs[i].getX(),
-				 * NPCHandler.npcs[i].getY(), 4) && (c.usingOtherRangeWeapons &&
-				 * !c.usingBow && !c.usingMagic)) || (!c.goodDistance(c.getX(),
-				 * c.getY(), NPCHandler.npcs[i].getX(),
-				 * NPCHandler.npcs[i].getY(), 1) && (!c.usingOtherRangeWeapons
-				 * && !c.getCombat().usingHally() && !c.usingBow &&
-				 * !c.usingMagic)) || ((!c.goodDistance(c.getX(), c.getY(),
-				 * NPCHandler.npcs[i].getX(), NPCHandler.npcs[i].getY(), 8) &&
-				 * (c.usingBow || c.usingMagic)))) { c.attackTimer = 2; return;
-				 * }
-				 */
-
-				if (c.usingOtherRangeWeapons || c.usingBow || c.usingMagic) {
-					if (!NPCHandler.allowUnclippedDamage(i) && (!PathChecker.isProjectilePathClear(c.getX(), c.getY(),
-							c.heightLevel, theNPC.getX(), theNPC.getY())
-							|| !PathChecker.isProjectilePathClear(theNPC.getX(), theNPC.getY(), c.heightLevel, c.getX(),
-									c.getY()))) {
-						c.attackTimer = 1;
-						return;
-					}
+				if(NPCHandler.npcs[i].npcType == 7706 && c.usingBow || c.usingMagic || c.autocasting || c.playerEquipment[c.playerWeapon] == 11907 || c.playerEquipment[c.playerWeapon] == 12899){
+					distance = 20;
 				}
-
-				if (!c.usingCross && !c.usingArrows && c.usingBow
-						&& (c.playerEquipment[c.playerWeapon] < 4212 || c.playerEquipment[c.playerWeapon] > 4223)) {
+				
+				if (!PathChecker.isProjectilePathClear(c.absX, c.absY, c.heightLevel, theNPC.absX, theNPC.absY) && !Boundary.isIn(c, Boundary.PEST_CONTROL_AREA) & theNPC.npcType != Skotizo.AWAKENED_ALTAR_NORTH && theNPC.npcType != Skotizo.AWAKENED_ALTAR_SOUTH && theNPC.npcType != Skotizo.AWAKENED_ALTAR_WEST && theNPC.npcType != Skotizo.AWAKENED_ALTAR_EAST&& theNPC.npcType != 7559&& theNPC.npcType != 7560) {
+					c.attackTimer = 1;
+					return;
+				}
+				if (!c.usingBallista && !c.usingCross && !c.usingArrows && c.usingBow && (c.playerEquipment[c.playerWeapon] < 4212 || c.playerEquipment[c.playerWeapon] > 4223)) {
 					c.sendMessage("You have run out of arrows!");
 					c.stopMovement();
 					c.npcIndex = 0;
+					return;
+				}
+				if (c.getCombat().usingCrystalBow() && c.usingArrows && c.getCombat().properBolts()) {
+					c.sendMessage("You cannot use ammo with a crystal bow.");
 					return;
 				}
 				if (!c.getCombat().correctBowAndArrows() && Config.CORRECT_ARROWS && c.usingBow && !c.getCombat().usingCrystalBow() && c.playerEquipment[c.playerWeapon] != 9185
@@ -1196,22 +1549,20 @@ public class AttackNPC {
 					c.npcIndex = 0;
 					return;
 				}
-				if (c.playerEquipment[c.playerWeapon] == 9185 && !c.getCombat().properBolts()
-						|| c.playerEquipment[c.playerWeapon] == 11785 && !c.getCombat().properBolts()
-						|| c.playerEquipment[c.playerWeapon] == 8880 && !c.getCombat().properBolts()) {
+				if (c.playerEquipment[c.playerWeapon] == 9185 && !c.getCombat().properBolts() || c.playerEquipment[c.playerWeapon] == 11785 && !c.getCombat().properBolts() || c.playerEquipment[c.playerWeapon] == 21012 && !c.getCombat().properBolts()) {
 					c.sendMessage("You must use bolts with a crossbow.");
 					c.stopMovement();
 					c.getCombat().resetPlayerAttack();
 					return;
 				}
-				if (c.playerEquipment[c.playerWeapon] == 19481 && !c.getCombat().usingJavelins()) {
+				if (c.playerEquipment[c.playerWeapon] == 19478 && !c.getCombat().properJavelins() || c.playerEquipment[c.playerWeapon] == 19481 && !c.getCombat().properJavelins()) {
 					c.sendMessage("You must use javelins with a ballista.");
 					c.stopMovement();
 					c.getCombat().resetPlayerAttack();
 					return;
 				}
-				if (c.usingBow || c.castingMagic || c.usingOtherRangeWeapons || (c.getCombat().usingHally() && c
-						.goodDistance(c.getX(), c.getY(), NPCHandler.npcs[i].getX(), NPCHandler.npcs[i].getY(), 2))) {
+				if (c.usingBow || c.usingMagic || c.usingOtherRangeWeapons || c.usingBallista
+						|| (c.getCombat().usingHally() || c.playerEquipment[c.playerWeapon] == 11907 || c.playerEquipment[c.playerWeapon] == 12899 && distanceToNpc <= 2)) {
 					c.stopMovement();
 				}
 				if (!c.getCombat().checkMagicReqs(c.spellId)) {
@@ -1252,21 +1603,14 @@ public class AttackNPC {
 				c.specMaxHitIncrease = 0;
 				if (c.playerLevel[3] > 0 && !c.isDead && NPCHandler.npcs[i].maximumHealth > 0) {
 					if (!c.usingMagic) {
-						c.animation(c.getCombat()
-								.getWepAnim(c.getItems().getItemName(c.playerEquipment[c.playerWeapon]).toLowerCase()));
-						/*
-						 * if (Server.npcHandler.getNPCs()[i].attackTimer > 3) {
-						 * if (npcType != 2042 && npcType != 2043 & npcType !=
-						 * 2044 && npcType != 3127) {
-						 * NPCHandler.startAnimation(c.getCombat().
-						 * npcDefenceAnim(i), i); //TODO
-						 * c.sendMessage("We've made it 4"); } }
-						 */
-						if (npc.defenceAnimation > 0 && npc.attackTimer > 3) {
-							npc.doAnimation(npc.defenceAnimation);
+						c.animation(c.getCombat().getWepAnim(ItemAssistant.getItemName(c.playerEquipment[c.playerWeapon]).toLowerCase()));
+						if (Server.npcHandler.getNPCs()[i].attackTimer > 3) {
+							if (npcType != 2042 && npcType != 2043 & npcType != 2044 && npcType != 3127 && npcType != 319) {
+								NPCHandler.npcs[i].animation(c.getCombat().npcDefenceAnim(i), i);
+							}
 						}
 					} else {
-						c.animation(c.MAGIC_SPELLS[c.spellId][2]);
+						c.animation(MagicData.MAGIC_SPELLS[c.spellId][2]);
 					}
 				}
 				c.lastWeaponUsed = c.playerEquipment[c.playerWeapon];
@@ -1363,15 +1707,15 @@ public class AttackNPC {
 					c.castingMagic = true;
 					c.projectileStage = 2;
 					c.stopMovement();
-					if (c.MAGIC_SPELLS[c.spellId][3] > 0) {
+					if (MagicData.MAGIC_SPELLS[c.spellId][3] > 0) {
 						if (c.getCombat().getStartGfxHeight() == 100) {
-							c.gfx100(c.MAGIC_SPELLS[c.spellId][3]);
+							c.gfx100(MagicData.MAGIC_SPELLS[c.spellId][3]);
 						} else {
-							c.gfx0(c.MAGIC_SPELLS[c.spellId][3]);
+							c.gfx0(MagicData.MAGIC_SPELLS[c.spellId][3]);
 						}
 					}
-					if (c.MAGIC_SPELLS[c.spellId][4] > 0) {
-						c.getPA().createPlayersProjectile(pX, pY, offX, offY, 50, 78, c.MAGIC_SPELLS[c.spellId][4],
+					if (MagicData.MAGIC_SPELLS[c.spellId][4] > 0) {
+						c.getPA().createPlayersProjectile(pX, pY, offX, offY, 50, 78, MagicData.MAGIC_SPELLS[c.spellId][4],
 								c.getCombat().getStartHeight(), c.getCombat().getEndHeight(), i + 1, 50);
 					}
 					c.hitDelay = c.getCombat().getHitDelay(i,

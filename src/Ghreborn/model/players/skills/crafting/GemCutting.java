@@ -41,7 +41,7 @@ public class GemCutting extends CraftingData {
 								}
 								c.getItems().deleteItem(itemId, 1);
 								c.getItems().addItem(g.getCut(), 1);	
-								c.getPA().addSkillXP((int) g.getXP()*Config.CRAFTING_EXPERIENCE, 12);
+								c.getPA().addSkillXP((int) g.getXP() * (c.getRights().isIronman() ? Config.Ironman_exp_rate : Config.CRAFTING_EXPERIENCE), 12);
 								c.sendMessage("You cut the "+ c.getItems().getItemName(itemId).toLowerCase() +".");
 								c.animation(g.getAnimation());
 							} else {

@@ -16,7 +16,7 @@ public class FishingData {
 		Pike(4, 25, new int[] { 349 }, 309, 314, 622, 325),
 		Tuna(5, 35, new int[] { 359, 371 }, 311, -1, 618, 350),
 		Lobster(6, 40, new int[] { 377 }, 301, -1, 619, 400),
-		Monkfish(7, 62, new int[] { 7944 }, 303, -1, 620, 480),
+		Monkfish(7, 62, new int[] { 7944 }, 305, -1, 620, 480),
 		Karambwan(8, 65, new int[] { 3142 }, 3159, -1, 620, 510),
 		Shark(9, 76, new int[] { 383 }, 311, -1, 618, 550),
 		Turtle(10, 79, new int[] { 395, 389 }, 305, -1, 620, 600),

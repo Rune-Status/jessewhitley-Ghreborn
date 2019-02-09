@@ -120,7 +120,7 @@ public class LeatherMaking extends CraftingData {
 								c.getItems();
 								c.getItems();
 								c.sendMessage("You make "+ ((c.getItems().getItemName(l.getProduct()).contains("body")) ? "a" : "some") +" "+ c.getItems().getItemName(l.getProduct()) +".");
-								c.getPA().addSkillXP((int) l.getXP()*Config.CRAFTING_EXPERIENCE, 12);
+								c.getPA().addSkillXP((int) l.getXP()*(c.getRights().isIronman() ? Config.Ironman_exp_rate : Config.CRAFTING_EXPERIENCE), 12);
 								c.animation(1249);
 								amount--;
 								if (!c.getItems().playerHasItem(1734)) {

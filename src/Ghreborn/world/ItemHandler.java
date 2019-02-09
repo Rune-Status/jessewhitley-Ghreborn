@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.function.Predicate;
 import java.io.IOException;
@@ -76,7 +78,7 @@ public class ItemHandler {
 		for (int i = 0; i < Config.ITEM_LIMIT; i++) {
 			ItemList[i] = null;
 		}
-		//loadItemList("item.cfg");
+		loadItemList("item_config.cfg");
 		//loadItemPrices("prices.txt");
 	}
 
@@ -354,77 +356,66 @@ public class ItemHandler {
 		return null;
 	}
 
-	public boolean loadItemList(String FileName) {
-		String line = "";
-		String token = "";
-		String token2 = "";
-		String token2_2 = "";
-		String[] token3 = new String[10];
-		boolean EndOfFile = false;
-		BufferedReader characterfile = null;
-		try {
-			characterfile = new BufferedReader(new FileReader("./Data/cfg/"
-					+ FileName));
-		} catch (FileNotFoundException fileex) {
-			Misc.println(FileName + ": file not found.");
-			return false;
-		}
-		try {
-			line = characterfile.readLine();
-		} catch (IOException ioexception) {
-			Misc.println(FileName + ": error loading file.");
-		}
-		while (EndOfFile == false && line != null) {
-			line = line.trim();
-			int spot = line.indexOf("=");
-			if (spot > -1) {
-				token = line.substring(0, spot);
-				token = token.trim();
-				token2 = line.substring(spot + 1);
-				token2 = token2.trim();
-				token2_2 = token2.replaceAll("\t\t", "\t");
-				token2_2 = token2_2.replaceAll("\t\t", "\t");
-				token2_2 = token2_2.replaceAll("\t\t", "\t");
-				token2_2 = token2_2.replaceAll("\t\t", "\t");
-				token2_2 = token2_2.replaceAll("\t\t", "\t");
-				token3 = token2_2.split("\t");
-				if (token.equals("item")) {
-					int[] Bonuses = new int[12];
-					for (int i = 0; i < 12; i++) {
-						if (token3[(6 + i)] != null) {
-							Bonuses[i] = Integer.parseInt(token3[(6 + i)]);
-						} else {
-							break;
+		public boolean loadItemList(String FileName) {
+			String line = "";
+			String token = "";
+			String token2 = "";
+			String token2_2 = "";
+			String[] token3 = new String[10];
+			ItemList = new ItemList[Config.ITEM_LIMIT];
+			for (int i = 0; i < Config.ITEM_LIMIT; i++) {
+				ItemList[i] = null;
+			}
+			try (BufferedReader file = new BufferedReader(new FileReader("./Data/cfg/" + FileName))) {
+				while ((line = file.readLine()) != null && !line.equals("[ENDOFITEMLIST]")) {
+					line = line.trim();
+					int spot = line.indexOf("=");
+					if (spot > -1) {
+						token = line.substring(0, spot);
+						token = token.trim();
+						token2 = line.substring(spot + 1);
+						token2 = token2.trim();
+						token2_2 = token2.replaceAll("\t\t", "\t");
+						token2_2 = token2_2.replaceAll("\t\t", "\t");
+						token2_2 = token2_2.replaceAll("\t\t", "\t");
+						token2_2 = token2_2.replaceAll("\t\t", "\t");
+						token2_2 = token2_2.replaceAll("\t\t", "\t");
+						token3 = token2_2.split("\t");
+						if (token.equals("item")) {
+							int[] Bonuses = new int[12];
+							for (int i = 0; i < 12; i++)
+								if (token3[(6 + i)] != null) {
+									Bonuses[i] = Integer.parseInt(token3[(6 + i)]);
+								} else {
+									break;
+								}
+							newItemList(Integer.parseInt(token3[0]), token3[1].replaceAll("_", " "), token3[2].replaceAll("_", " "), Double.parseDouble(token3[4]),
+									Double.parseDouble(token3[4]), Double.parseDouble(token3[6]), Bonuses);
 						}
 					}
-					newItemList(Integer.parseInt(token3[0]),
-							token3[1].replaceAll("_", " "),
-							token3[2].replaceAll("_", " "),
-							Double.parseDouble(token3[4]),
-							Double.parseDouble(token3[4]),
-							Double.parseDouble(token3[6]), Bonuses);
 				}
-			} else {
-				if (line.equals("[ENDOFITEMLIST]")) {
-					try {
-						characterfile.close();
-					} catch (IOException ioexception) {
-					}
-					return true;
-				}
+			} catch (FileNotFoundException fileex) {
+				Misc.println(FileName + ": file not found.");
+				return false;
+			} catch (IOException ioexception) {
+				Misc.println(FileName + ": error loading file.");
+				return false;
 			}
 			try {
-				line = characterfile.readLine();
-			} catch (IOException ioexception1) {
-				EndOfFile = true;
+				List<String> stackableData = Files.readAllLines(Paths.get("./Data/", "data", "note_ids.dat"));
+				for (String data : stackableData) {
+					int id = Integer.parseInt(data.split("\t")[0]);
+					int counterpart = Integer.parseInt(data.split("\t")[1]);
+					if (ItemList[id] == null) {
+						ItemList[id] = new ItemList(id);
+					}
+					ItemList[id].setCounterpartId(counterpart);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+			return true;
 		}
-		try {
-			characterfile.close();
-		} catch (IOException ioexception) {
-		}
-		return false;
-	}
 
 	public void createGroundItem(Player player, int itemId, int itemX, int itemY, int height, int itemAmount) {
 		if (itemId > 0 && itemAmount > 0) {
@@ -453,5 +444,35 @@ public class ItemHandler {
 	public GroundItem getGroundItem(int itemId, int x, int y, int height) {
 		Optional<GroundItem> item = items.stream().filter(i -> i.getId() == itemId && i.getX() == x && i.getY() == y && i.getHeight() == height).findFirst();
 		return item.orElse(null);
+	}
+
+	/**
+	 * The counterpart of the item whether it is the noted or un noted version
+	 * 
+	 * @param itemId the item id we're finding the counterpart of
+	 * @return the note or unnoted version or -1 if none exists
+	 */
+	public int getCounterpart(int itemId) {
+		if (itemId < 0) {
+			return -1;
+		}
+
+		ItemList unnoted = ItemList[itemId];
+
+		if (unnoted == null) {
+			return -1;
+		}
+
+		int counterpart = unnoted.getCounterpartId();
+
+		if (counterpart == -1) {
+			return -1;
+		}
+
+		if (ItemList[counterpart].getCounterpartId() == itemId) {
+			return counterpart;
+		}
+
+		return -1;
 	}
 }

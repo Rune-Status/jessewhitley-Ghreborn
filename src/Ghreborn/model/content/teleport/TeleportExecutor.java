@@ -5,6 +5,7 @@ import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
 import Ghreborn.model.content.teleport.Teleport.TeleportType;
+import Ghreborn.model.minigames.rfd.DisposeTypes;
 import Ghreborn.model.npcs.boss.instances.InstancedAreaManager;
 import Ghreborn.model.players.Client;
 
@@ -43,6 +44,12 @@ public class TeleportExecutor {
 			player.ARMADYL_CLICKS = 0;
 			player.ARMADYL_MINION = 0;
 		}
+		if (player.getAlchemicalHydra().getInstancedAlchemicalHydra() != null) {
+			InstancedAreaManager.getSingleton().disposeOf(player.getAlchemicalHydra().getInstancedAlchemicalHydra());
+			player.getAlchemicalHydra().stop();
+			player.HYDRA_INSTANCE = false;
+			player.HYDRA_CLICKS = 0;
+		}
 		if (player.getKalphite().getInstancedKalphite() != null) {
 			InstancedAreaManager.getSingleton().disposeOf(player.getKalphite().getInstancedKalphite());
 			player.getKalphite().stop();
@@ -61,6 +68,9 @@ public class TeleportExecutor {
 			InstancedAreaManager.getSingleton().disposeOf(player.getCerberusEvent().getInstancedCerberus());
 			player.getCerberusEvent().stop();
 		}*/
+		if (player.getSkotizo() != null) {
+			player.getSkotizo().end(DisposeTypes.INCOMPLETE);
+		}
 		if (player.getSaradomin().getInstancedSaradomin() != null) {
 			InstancedAreaManager.getSingleton().disposeOf(player.getSaradomin().getInstancedSaradomin());
 			player.getSaradomin().stop();

@@ -10,10 +10,12 @@ import Ghreborn.core.PlayerHandler;
 import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
+import Ghreborn.model.content.PlayerEmotes;
 import Ghreborn.model.content.QuickPrayer;
 import Ghreborn.model.content.Skillcape;
 import Ghreborn.model.content.dailytasks.TaskTypes;
 import Ghreborn.model.content.teleport.Position;
+import Ghreborn.model.content.teleport.Teleport;
 import Ghreborn.model.content.teleport.TeleportExecutor;
 import Ghreborn.model.items.GameItem;
 import Ghreborn.model.items.Item2;
@@ -29,6 +31,9 @@ import Ghreborn.model.players.Player;
 import Ghreborn.model.players.RequestHelp;
 import Ghreborn.model.players.Rights;
 import Ghreborn.model.players.SkillMenu;
+import Ghreborn.model.players.combat.magic.MagicData;
+import Ghreborn.model.players.skills.SkillInterfaces;
+import Ghreborn.model.players.skills.Smelting;
 import Ghreborn.model.players.skills.cooking.Cooking;
 import Ghreborn.model.players.skills.crafting.CraftingData.tanningData;
 import Ghreborn.model.players.skills.crafting.GlassBlowing;
@@ -64,6 +69,7 @@ public class ClickingButtons implements PacketType {
 
 		if (c.getRights().isDeveloper() || (c.getRights().isOwner())) {
 			Misc.println(c.playerName + " - actionbutton: " + actionButtonId);
+			c.sendMessage("actionbutton: " + actionButtonId);
 		}
 		if (c.getDialogue() != null && c.getDialogue().clickButton(actionButtonId)) {
 			return;
@@ -81,30 +87,122 @@ public class ClickingButtons implements PacketType {
 				return;
 			}
 		}
-		if (c.playerFletch) {
-			Fletching.attemptData(c, actionButtonId);
-		}
+
 		NPC npc = null;
+		c.getFletching().select(actionButtonId);
 		GlassBlowing.glassBlowing(c, actionButtonId);
 		c.getMusic().handleMusicButtons(actionButtonId);
 		QuickPrayer.clickButton(c, actionButtonId);
-		/** Drop Manager Buttons **/
-		if (actionButtonId >= 128240 && actionButtonId <= 129113) {
-			Server.getDropList().select(c, actionButtonId);
-			return;
-		}
-
+		PlayerEmotes.performEmote(c, actionButtonId);
 		switch (actionButtonId) {
 		case 55095 :
 			if (c.getDestroyItem() != -1) {
 				c.getItems().deleteItem2(c.getDestroyItem(), c.getItems().getItemAmount(c.getDestroyItem()));
 			}
+			break;
+		case 15147:// Bronze, 1
+			c.getSmelting().startSmelting(c, "bronze", "ONE", "FURNACE");
+			break;
+		case 15146:// Bronze, 5
+			c.getSmelting().startSmelting(c, "bronze", "FIVE", "FURNACE");
+			break;
+		case 10247:// Bronze, 10
+			c.getSmelting().startSmelting(c, "bronze", "TEN", "FURNACE");
+			break;
+		case 9110:// Bronze, 28
+			c.getSmelting().startSmelting(c, "bronze", "ALL", "FURNACE");
+			break;
+		case 15151:// Iron, 1
+			c.getSmelting().startSmelting(c, "iron", "ONE", "FURNACE");
+			break;
+		case 15150:// Iron, 5
+			c.getSmelting().startSmelting(c, "iron", "FIVE", "FURNACE");
+			break;
+		case 15149:// Iron, 10
+			c.getSmelting().startSmelting(c, "iron", "TEN", "FURNACE");
+			break;
+		case 15148:// Iron, 28
+			c.getSmelting().startSmelting(c, "iron", "ALL", "FURNACE");
+			break;
+		case 15155:// silver, 1
+			c.getSmelting().startSmelting(c, "silver", "ONE", "FURNACE");
+			break;
+		case 15154:// silver, 5
+			c.getSmelting().startSmelting(c, "silver", "FIVE", "FURNACE");
+			break;
+		case 15153:// silver, 10
+			c.getSmelting().startSmelting(c, "silver", "TEN", "FURNACE");
+			break;
+		case 15152:// silver, 28
+			c.getSmelting().startSmelting(c, "silver", "ALL", "FURNACE");
+			break;
+		case 15159:// steel, 1
+			c.getSmelting().startSmelting(c, "steel", "ONE", "FURNACE");
+			break;
+		case 15158:// steel, 5
+			c.getSmelting().startSmelting(c, "steel", "FIVE", "FURNACE");
+			break;
+		case 15157:// steel, 10
+			c.getSmelting().startSmelting(c, "steel", "TEN", "FURNACE");
+			break;
+		case 15156:// steel, 28
+			c.getSmelting().startSmelting(c, "steel", "ALL", "FURNACE");
+			break;
+		case 15163:// gold, 1
+			c.getSmelting().startSmelting(c, "gold", "ONE", "FURNACE");
+			break;
+		case 15162:// gold, 5
+			c.getSmelting().startSmelting(c, "gold", "FIVE", "FURNACE");
+			break;
+		case 15161:// gold, 10
+			c.getSmelting().startSmelting(c, "gold", "TEN", "FURNACE");
+			break;
+		case 15160:// gold, 28
+			c.getSmelting().startSmelting(c, "gold", "ALL", "FURNACE");
+			break;
+		case 29017:// mithril, 1
+			c.getSmelting().startSmelting(c, "mithril", "ONE", "FURNACE");
+			break;
+		case 29016:// mithril, 5
+			c.getSmelting().startSmelting(c, "mithril", "FIVE", "FURNACE");
+			break;
+		case 24253:// mithril, 10
+			c.getSmelting().startSmelting(c, "mithril", "TEN", "FURNACE");
+			break;
+		case 16062:// mithril, 28
+			c.getSmelting().startSmelting(c, "mithril", "ALL", "FURNACE");
+			break;
+		case 29022:// addy, 1
+			c.getSmelting().startSmelting(c, "adamant", "ONE", "FURNACE");
+			break;
+		case 29021:// addy, 5
+			c.getSmelting().startSmelting(c, "adamant", "FIVE", "FURNACE");
+			break;
+		case 29019:// addy, 10
+			c.getSmelting().startSmelting(c, "adamant", "TEN", "FURNACE");
+			break;
+		case 29018:// addy, 28
+			c.getSmelting().startSmelting(c, "adamant", "ALL", "FURNACE");
+			break;
+		case 29026:// rune, 1
+			c.getSmelting().startSmelting(c, "rune", "ONE", "FURNACE");
+			break;
+		case 29025:// rune, 5
+			c.getSmelting().startSmelting(c, "rune", "FIVE", "FURNACE");
+			break;
+		case 29024:// rune, 10
+			c.getSmelting().startSmelting(c, "rune", "TEN", "FURNACE");
+			break;
+		case 29023:// rune, 28
+			c.getSmelting().startSmelting(c, "rune", "ALL", "FURNACE");
+			break;
+
 		case 55096 :
 			c.setDestroyItem(-1);
 			c.getPA().closeAllWindows();
 			break;
 		case 106251:
-			SkillMenu.openInterface(c, 0);
+			c.getSkillInterface().menuCompilation(0);
 			break;
 		case 108020:
 			c.sendMessage("This Option has not been added yet.");
@@ -142,6 +240,15 @@ break;
 		case 109114:
 			RequestHelp.callForHelp(c);
 		break;
+		case 130100:
+			TeleportExecutor.teleport(c, new Position(3565, 3312, 0));
+		break;
+		case 130101:
+			TeleportExecutor.teleport(c, new Position(3318, 3234, 0));
+		break;
+		case 130103:
+			TeleportExecutor.teleport(c, new Position(2645, 3442, 0));
+		break;
 		case 130104:
 			if(c.playerLevel[c.playerAttack] >= 65 && c.playerLevel[c.playerStrength] >= 65){
 				TeleportExecutor.teleport(c, new Position(2873, 3546, 0));
@@ -149,6 +256,9 @@ break;
 				c.sendMessage("You need a level of 65 of Attack and Strenght to enter.", 255);
 			}
 			break;
+		case 130105:
+			TeleportExecutor.teleport(c, new Position(2658, 2673, 0));
+		break;
 		case 19136:
 			QuickPrayer.toggle(c);
 			break;
@@ -156,29 +266,11 @@ break;
 			c.setSidebarInterface(5, 17200);
 			break;
 		case 130112:
-			if (c.ZULRAH_CLICKS >= 1) {
-				c.sendMessage("You already have an active instance!");
-				c.getPA().closeAllWindows();
-				return;
-			}
-			if (c.zulrah.getInstancedZulrah() != null) {
-				c.sendMessage("You already have an active instance!");
-				c.getPA().closeAllWindows();
-				return;
-			}
-			if (c.getItems().playerHasItem(12938, 1)) {
-				c.getZulrahEvent().initialize();
-				c.getItems().deleteItem(12938, 1);
-				c.ZULRAH_CLICKS = 1;
-				return;
-			}
-			c.getZulrahEvent().initialize();
-			c.ZULRAH_CLICKS = 1;
+			TeleportExecutor.teleport(c, new Position(2205, 3057, 0));
 			break;
 		case 130114:
-			if (c.wildLevel > 20) {
-				c.sendMessage("You cannot teleport above 20 wilderness.");
-				c.getPA().closeAllWindows();
+			if (c.inWild() && c.wildLevel > Config.NO_TELEPORT_WILD_LEVEL) {
+				c.sendMessage("You can't teleport above level " + Config.NO_TELEPORT_WILD_LEVEL + " in the wilderness.");
 				return;
 			}
 			if (c.KALPHITE_CLICKS >= 1) {
@@ -195,6 +287,10 @@ break;
 			c.KALPHITE_CLICKS = 1;
 			break;
 		case 130079:
+			if (c.inWild() && c.wildLevel > Config.NO_TELEPORT_WILD_LEVEL) {
+				c.sendMessage("You can't teleport above level " + Config.NO_TELEPORT_WILD_LEVEL + " in the wilderness.");
+				return;
+			}
 			//TeleportExecutor.teleport(c, new Position(1310, 1239, 0));
 			if (System.currentTimeMillis() - c.cerbDelay > 5000) {
 				Cerberus cerb = c.createCerberusInstance();
@@ -244,6 +340,10 @@ break;
 			}
 			break;
 		case 130113:
+			if (c.inWild() && c.wildLevel > Config.NO_TELEPORT_WILD_LEVEL) {
+				c.sendMessage("You can't teleport above level " + Config.NO_TELEPORT_WILD_LEVEL + " in the wilderness.");
+				return;
+			}
 			Skotizo skotizo = c.createSkotizoInstance();
 			
 			
@@ -323,9 +423,9 @@ break;
 			}
 			int[] frames = { 8149, 8150, 8151, 8152, 8153, 8154, 8155, 8156, 8157, 8158, 8159, 8160, 8161, 8162, 8163,
 					8164, 8165, 8166, 8167, 8168, 8169, 8170, 8171, 8172, 8173, 8174, 8175 };
-			c.getPA().sendFrame126("<col=8B0000>Boss Kills for <col=0000FF>" + c.playerName + "", 8144);
+			c.getPA().sendFrame126("<shad=000000><col=8B0000>Boss Kills for <col=0000FF>" + c.playerName + "</shad>", 8144);
 			c.getPA().sendFrame126("", 8145);
-			c.getPA().sendFrame126("<col=0000FF>Total Boss kills: <col=DD5C3E>" + c.getNpcDeathTracker().getTotal() + "",
+			c.getPA().sendFrame126("<shad=000000><col=0000FF>Total Boss kills: <col=DD5C3E>" + c.getNpcDeathTracker().getTotal() + "</shad>",
 					8147);
 			c.getPA().sendFrame126("", 8148);
 			int index1 = 0;
@@ -338,9 +438,9 @@ break;
 				}
 				if (entry.getValue() > 0) {
 					c.getPA()
-							.sendFrame126("<col=0000FF>"
+							.sendFrame126("<shad=000000><col=0000FF>"
 									+ WordUtils.capitalize(entry.getKey().name().toLowerCase().replaceAll("_", " "))
-									+ " kills: <col=DD5C3E>" + entry.getValue(), frames[index1]);
+									+ " kills:</shad> <shad=000000><col=DD5C3E>" + entry.getValue()+"</shad>", frames[index1]);
 					index1++;
 				}
 			}
@@ -1020,6 +1120,10 @@ break;
 			break;
 	
 		case 130076:
+			if (c.inWild() && c.wildLevel > Config.NO_TELEPORT_WILD_LEVEL) {
+				c.sendMessage("You can't teleport above level " + Config.NO_TELEPORT_WILD_LEVEL + " in the wilderness.");
+				return;
+			}
 			if (c.KRAKEN_CLICKS >= 1) {
 				c.sendMessage("You already have an active instance!");
 				c.getPA().closeAllWindows();
@@ -1417,53 +1521,11 @@ break;
 
 			break;
 
-		case 15147:
-			if (c.smeltInterface) {
-				c.smeltType = 2349;
-				c.smeltAmount = 1;
-				c.getSmithing().startSmelting(c.smeltType);
-			}
-			break;
 
-		case 15151:
-			if (c.smeltInterface) {
-				c.smeltType = 2351;
-				c.smeltAmount = 1;
-				c.getSmithing().startSmelting(c.smeltType);
-			}
-			break;
 
-		case 15159:
-			if (c.smeltInterface) {
-				c.smeltType = 2353;
-				c.smeltAmount = 1;
-				c.getSmithing().startSmelting(c.smeltType);
-			}
-			break;
 
-		case 29017:
-			if (c.smeltInterface) {
-				c.smeltType = 2359;
-				c.smeltAmount = 1;
-				c.getSmithing().startSmelting(c.smeltType);
-			}
-			break;
 
-		case 29022:
-			if (c.smeltInterface) {
-				c.smeltType = 2361;
-				c.smeltAmount = 1;
-				c.getSmithing().startSmelting(c.smeltType);
-			}
-			break;
 
-		case 29026:
-			if (c.smeltInterface) {
-				c.smeltType = 2363;
-				c.smeltAmount = 1;
-				c.getSmithing().startSmelting(c.smeltType);
-			}
-			break;
 		case 58253:
 			// c.getPA().showInterface(15106);
 			c.getItems().writeBonus();
@@ -1609,6 +1671,10 @@ break;
 			 }
 			break;
 		case 130117:
+			if (c.inWild() && c.wildLevel > Config.NO_TELEPORT_WILD_LEVEL) {
+				c.sendMessage("You can't teleport above level " + Config.NO_TELEPORT_WILD_LEVEL + " in the wilderness.");
+				return;
+			}
 			c.createInfernoInstance();
 			c.getInfernoMinigame().create(1);
 			c.getInfernoMinigame().getPlayer();
@@ -1618,6 +1684,46 @@ break;
 			break;
 		case 130119:
 			TeleportExecutor.teleport(c, new Position(3597, 10291, 0));
+			break;
+		case 130120:
+			TeleportExecutor.teleport(c, new Position(1311, 10189, 0));
+			break;
+		case 130121:
+			TeleportExecutor.teleport(c, new Position(2276, 4037, 0));
+			break;
+		case 130122:
+			TeleportExecutor.teleport(c, new Position(3485, 9509, 2));
+			break;
+		case 130075:
+			TeleportExecutor.teleport(c, new Position(2272, 4681, 0));
+			break;
+		case 130083:
+			TeleportExecutor.teleport(c, new Position(3268, 3847, 0));
+			break;
+		case 130084:
+			TeleportExecutor.teleport(c, new Position(3333, 3740, 0));
+			break;
+		case 130085:
+			TeleportExecutor.teleport(c, new Position(3207, 3778, 0));
+			break;
+		case 130086:
+			TeleportExecutor.teleport(c, new Position(2981, 3713, 0));
+			break;
+		case 130087:
+			TeleportExecutor.teleport(c, new Position(2980, 3842, 0));
+			break;
+		case 130088:
+			TeleportExecutor.teleport(c, new Position(3269, 3910, 0));
+			break;
+		case 130066:
+			TeleportExecutor.teleport(c, new Position(2404, 9416, 0));
+			break;
+		case 101146:
+			c.getPA().closeAllWindows();
+			break;
+		case 226158:
+			c.placeHolders = !c.placeHolders;
+			c.getPA().sendChangeSprite(58014, c.placeHolders ? (byte) 1 : (byte) 0);
 			break;
 		case 9158:
  if (c.dialogueAction == 901) {
@@ -1770,8 +1876,8 @@ break;
 			}
 			c.godSpellDelay = System.currentTimeMillis();
 			c.sendMessage("You feel charged with a magical power!");
-			c.gfx100(c.MAGIC_SPELLS[48][3]);
-			c.animation(c.MAGIC_SPELLS[48][2]);
+			c.gfx100(MagicData.MAGIC_SPELLS[48][3]);
+			c.animation(MagicData.MAGIC_SPELLS[48][2]);
 			c.usingMagic = false;
 			break;
 
@@ -1822,7 +1928,7 @@ break;
 			c.getItems().deleteItem2(563, 1);
 			c.teleDelay = System.currentTimeMillis();
 			TeleportExecutor.teleport(c, new Position(Config.VARROCK_X, Config.VARROCK_Y, 0));
-			c.getPA().addSkillXP(35 * Config.MAGIC_EXP_RATE, c.playerMagic);
+			c.getPA().addSkillXP(35 * (c.getRights().isIronman() ? 4 : Config.MAGIC_EXP_RATE), c.playerMagic);
 			c.getPA().refreshSkill(c.playerMagic);
 			}else{
 				c.sendMessage("You do not have the required runes to cast this spell.");
@@ -1843,7 +1949,7 @@ break;
 			c.getItems().deleteItem2(563, 1);
 			c.teleDelay = System.currentTimeMillis();
 			TeleportExecutor.teleport(c, new Position(Config.LUMBY_X, Config.LUMBY_Y, 0));
-			c.getPA().addSkillXP(41 * Config.MAGIC_EXP_RATE, c.playerMagic);
+			c.getPA().addSkillXP(41 * (c.getRights().isIronman() ? 4 : Config.MAGIC_EXP_RATE), c.playerMagic);
 			c.getPA().refreshSkill(c.playerMagic);
 			}else{
 				c.sendMessage("You do not have the required runes to cast this spell.");
@@ -1864,7 +1970,7 @@ break;
 			c.getItems().deleteItem2(563, 1);
 			c.teleDelay = System.currentTimeMillis();
 			TeleportExecutor.teleport(c, new Position(Config.FALADOR_X, Config.FALADOR_Y, 0));
-			c.getPA().addSkillXP(48 * Config.MAGIC_EXP_RATE, c.playerMagic);
+			c.getPA().addSkillXP(48 * (c.getRights().isIronman() ? 4 : Config.MAGIC_EXP_RATE), c.playerMagic);
 			c.getPA().refreshSkill(c.playerMagic);
 			}else{
 				c.sendMessage("You do not have the required runes to cast this spell.");
@@ -1904,7 +2010,12 @@ break;
 			// c.teleAction = 7;
 			break;
 		case 73245:
-			Skillcape.performEmote(c, actionButtonId);
+			System.out.println("Setting cape: " + c.playerEquipment[c.playerCape]);
+			if (c.playerEquipment[c.playerCape] == -1) {
+				c.sendMessage("You must be wearing a skillcape in order to do this emote.");
+				return;
+			}
+			PlayerEmotes.performSkillcapeAnimation(c, new GameItem(c.playerEquipment[c.playerCape]));
 			break;
 		case 23132: //unmorph
             c.isMorphed = false;
@@ -2119,9 +2230,9 @@ break;
 				c.sendMessage("You are not trading!");
 				return;
 			}
-			//if (System.currentTimeMillis() - c.getTrade().getLastAccept() < 1000) {
-			//	return;
-			//}
+			if (System.currentTimeMillis() - c.getTrade().getLastAccept() < 1000) {
+				return;
+			}
 			c.getTrade().setLastAccept(System.currentTimeMillis());
 			Server.getMultiplayerSessionListener().getMultiplayerSession(c, MultiplayerSessionType.TRADE)
 					.accept(c, MultiplayerSessionStage.OFFER_ITEMS);
@@ -2132,9 +2243,9 @@ break;
 				c.sendMessage("You are not trading!");
 				return;
 			}
-			//if (System.currentTimeMillis() - c.getTrade().getLastAccept() < 1000) {
-				//return;
-			//}
+			if (System.currentTimeMillis() - c.getTrade().getLastAccept() < 1000) {
+				return;
+			}
 			c.getTrade().setLastAccept(System.currentTimeMillis());
 			Server.getMultiplayerSessionListener().getMultiplayerSession(c, MultiplayerSessionType.TRADE)
 					.accept(c, MultiplayerSessionStage.CONFIRM_DECISION);
@@ -2222,7 +2333,7 @@ break;
 			//c.animation(863);
 			break;
 		case 167:
-			TeleportExecutor.teleport(c, new Position(1643, 2849, 1));
+			TeleportExecutor.teleport(c, new Position(1614, 2854, 0));
 			break;
 		case 172:
 			//c.animation(865);
@@ -2242,22 +2353,22 @@ break;
 			}
 			break;
 		case 52050:
-			c.animation(2105);
+			//c.animation(2105);
 			break;
 		case 52051:
-			c.animation(2106);
+			//c.animation(2106);
 			break;
 		case 52052:
-			c.animation(2107);
+			//c.animation(2107);
 			break;
 		case 52053:
-			c.animation(2108);
+			//c.animation(2108);
 			break;
 		case 52054:
-			c.animation(2109);
+			//c.animation(2109);
 			break;
 		case 52055:
-			c.animation(2110);
+			//c.animation(2110);
 			break;
 		case 52056:
 			//c.animation(2111);

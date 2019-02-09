@@ -17,6 +17,7 @@ import Ghreborn.model.players.Boundary;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.PacketType;
 import Ghreborn.model.players.combat.AttackNPC;
+import Ghreborn.model.players.combat.magic.MagicData;
 import Ghreborn.net.Packet;
 
 /**
@@ -32,6 +33,8 @@ public class ClickNPC implements PacketType {
 		c.npcClickIndex = 0;
 		c.playerIndex = 0;
 		c.clickNpcType = 0;
+		if (c.walkingToObject)
+			c.walkingToObject = false;
 		c.getPA().resetFollow();
 		switch (packet.getOpcode()) {
 
@@ -189,8 +192,8 @@ public class ClickNPC implements PacketType {
 					break;
 				}
 
-				for (int i = 0; i < c.MAGIC_SPELLS.length; i++) {
-					if (castingSpellId == c.MAGIC_SPELLS[i][0]) {
+				for (int i = 0; i < MagicData.MAGIC_SPELLS.length; i++) {
+					if (castingSpellId == MagicData.MAGIC_SPELLS[i][0]) {
 						c.spellId = i;
 						c.usingMagic = true;
 						break;

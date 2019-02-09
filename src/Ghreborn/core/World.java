@@ -73,13 +73,6 @@ public class World {
 		backgroundLoader.submit(new Callable<Object>() {
 			@Override
 			public Object call() throws Exception {
-				Item.load();
-				return null;
-			}
-		});
-		backgroundLoader.submit(new Callable<Object>() {
-			@Override
-			public Object call() throws Exception {
 				Connection.initialize();
 				return null;
 			}

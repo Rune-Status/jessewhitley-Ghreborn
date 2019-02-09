@@ -11,8 +11,10 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
+import Ghreborn.Server;
 import Ghreborn.clip.Region;
 import Ghreborn.core.PlayerHandler;
+import Ghreborn.model.players.Client;
 import Ghreborn.model.players.Player;
 
 /**
@@ -39,7 +41,7 @@ public class GlobalObjects {
 	 */
 	public void add(GlobalObject object) {
 		updateObject(object, object.getObjectId());
-		Region.addWorldObject(object.getObjectId(), object.getX(), object.getY(), object.getHeight(), object.getHeight());
+		//Region.addWorldObject(object.getObjectId(), object.getX(), object.getY(), object.getHeight(), object.getHeight());
 		objects.add(object);
 	}
 
@@ -76,7 +78,7 @@ public class GlobalObjects {
 			return;
 		}
 		updateObject(object, -1);
-		Region.addWorldObject(-1, object.getX(), object.getY(), object.getHeight(), object.getHeight());
+		//Region.addWorldObject(-1, object.getX(), object.getY(), object.getHeight(), object.getHeight());
 		remove.add(object);
 	}
 
@@ -150,8 +152,17 @@ public class GlobalObjects {
 			object.removeTick();
 			if (object.getTicksRemaining() == 0) {
 				updateObject(object, object.getRestoreId());
+				   if (object.getObjectId() == 5249) {
+					   for (final Player player : PlayerHandler.players) {
+					   if (player != null) {
+					   final Client c = (Client)player;
+					   Server.itemHandler.createGroundItem(c, 592, object.getX(), object.getY(), 1, c.index); 
+					   }   
+					   } 
+					   }
 			} else {
 				updated.add(object);
+				
 			}
 		}
 		objects.addAll(updated);

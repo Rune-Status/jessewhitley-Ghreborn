@@ -6,6 +6,7 @@ import java.awt.Point;
 
 import Ghreborn.Config;
 import Ghreborn.clip.Region;
+import Ghreborn.core.PlayerHandler;
 import Ghreborn.definitions.NPCCacheDefinition;
 import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
@@ -33,7 +34,7 @@ import Ghreborn.util.Stream;
 public class NPC extends Entity {
 	public int npcType;
 	public int summonedBy;
-	public int makeX, makeY, maxHit, defence, attack, moveX, moveY, direction, walkingType;
+	public int makeX, makeY, maxHit, defence, attack, moveX, animNumber, moveY, direction, walkingType;
 	public int resetTimer;
 	public int spawnX, spawnY;
 	public int viewX, viewY;
@@ -74,7 +75,7 @@ public class NPC extends Entity {
 
 	public boolean spawnedMinions;
 
-	public int attackType, projectileId, endGfx, spawnedBy, hitDelayTimer, HP, maximumHealth, actionTimer, enemyX, enemyY;
+	public int attackType, spawnedBy, hitDelayTimer, HP, maximumHealth, actionTimer, enemyX, enemyY;
 	public boolean applyDead, needRespawn, respawns;
 	public boolean walkingHome, underAttack;
 	public int freezeTimer, attackTimer, killerId, killedBy, oldIndex, underAttackBy;
@@ -222,7 +223,78 @@ public class NPC extends Entity {
 			maxHit = definition.getMaxHit();
 		}
 	}
-	
+	public int followerMax() {
+		if (npcType == 9)
+			return 2;
+		else
+			return 1;
+	}
+
+	public int followerRange() {
+		if (npcType == 9)
+			return 2;
+		else
+			return 1;
+	}
+
+	public boolean AttackNPC() {// NPC VS NPC
+		if (NPCHandler.npcs[index] == null)
+			return false;
+		int EnemyX = NPCHandler.npcs[index].absX;
+		int EnemyY = NPCHandler.npcs[index].absY;
+		int EnemyHP = NPCHandler.npcs[index].hp;
+
+		int hitDiff = 0;
+		turnNpc(EnemyX, EnemyY);
+		hitDiff = Misc.random(followerMax());
+		int hitTimer = 4000;
+		int Player = 0;
+		Player plr = (Player) PlayerHandler.players[Player];
+
+		if (plr.goodDistance(EnemyX, EnemyY, absX, absY, followerRange()) == true) {
+			if (System.currentTimeMillis() - lastHit > nextHit) {
+				if (NPCHandler.npcs[index].isDead == true || NPCHandler.npcs[index].hp <= 0 || EnemyHP <= 0) {
+					ResetAttackNPC();
+				} else {
+					if ((EnemyHP - hitDiff) < 0) {
+						hitDiff = EnemyHP;
+					}
+					if (npcType == 9) {
+						animNumber = 386;
+						hitTimer = 2000;
+					} else {
+						hitTimer = 3500;
+					}
+					nextHit = hitTimer;
+					lastHit = System.currentTimeMillis();
+					animUpdateRequired = true;
+					updateRequired = true;
+					NPCHandler.npcs[index].hitDiff = hitDiff;
+					NPCHandler.npcs[index].hp -= hitDiff;
+					// Server.npcHandler.npcs[index].attackNpc = npcId;
+					NPCHandler.npcs[index].updateRequired = true;
+					NPCHandler.npcs[index].hitUpdateRequired = true;
+					actionTimer = 7;
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean ResetAttackNPC() {
+		// isUnderAttackNpc = false;
+		// isAttackingNPC = false;
+		// attacknpc = -1;
+		randomWalk = true;
+		updateRequired = true;
+		return true;
+	}
+
+	public long lastHit;
+	public int nextHit;
+		public long lastRandomlySelectedPlayer = System.currentTimeMillis();
+
 	public void doAnimation(int id) {
 		animId = animId;
 		animUpdateRequired = true;
@@ -513,6 +585,9 @@ public class NPC extends Entity {
 	public NpcDefinition definition() {
 		return NpcDefinition.DEFINITIONS[npcType];
 	}
+	public NPCCacheDefinition NpcCachedefinition() {
+		return NPCCacheDefinition.definitions[npcType];
+	}
 	@Override
 	public void reset() {
 		transformUpdateRequired = false;
@@ -658,6 +733,46 @@ public class NPC extends Entity {
 		// TODO Auto-generated method stub
 		return HP;
 	}
+	public boolean getCorrectStandPosition(Position pos, int size) {
+		int x = getPosition().getX();
+		int y = getPosition().getY();
+		int h = getPosition().getZ();
+		switch(face) {
+			case 2 :
+				return pos.equals(new Position(x, y + size, h));
+			case 3 :
+				return pos.equals(new Position(x, y - size, h));
+			case 4 :
+				return pos.equals(new Position(x + size, y, h));
+			case 5 :
+				return pos.equals(new Position(x - size, y, h));
+		}
+		return Misc.goodDistance(getPosition(), pos, 1);
+	}
+
+	public Position getCorrectStandPosition(int size) {
+		int x = getPosition().getX();
+		int y = getPosition().getY();
+		int h = getPosition().getZ();
+		switch(face) {
+			case 2 :
+				return new Position(x, y + size, h);
+			case 3 :
+				return new Position(x, y - size, h);
+			case 4 :
+				return new Position(x + size, y, h);
+			case 5 :
+				return new Position(x - size, y, h);
+		}
+		return new Position(x, y + size, h);
+	}
+
+	public boolean isBoothBanker() {
+		if (face == 1) {
+			return false;
+		}
+		return getNpcId() == 394 || getNpcId() == 395;
+	}
 	public long getLastRandomWalk() {
 		return lastRandomWalk;
 	}
@@ -681,7 +796,14 @@ public class NPC extends Entity {
 	public void setLastRandomWalk(long lastRandomWalk) {
 		this.lastRandomWalk = lastRandomWalk;
 	}
-
+	/**
+	 * Gets the NPC ID.
+	 * 
+	 * @return the npcId
+	 */
+	public int getNpcId() {
+		return index;
+	}
 	public long getRandomWalkDelay() {
 		return randomWalkDelay;
 	}
@@ -729,6 +851,7 @@ public class NPC extends Entity {
 				//player.setStopPacket(false);
 			}
 		}, 4);
+		
 	}
 
 	public void setVisible(boolean isVisible) {

@@ -36,7 +36,7 @@ public class MagicMaxHit {
 	}
 
 	public static int magiMaxHit(Client c) {
-		double damage = c.MAGIC_SPELLS[c.oldSpellId][6];
+		double damage = MagicData.MAGIC_SPELLS[c.oldSpellId][6];
 		double damageMultiplier = 1;
 
 		if (c.playerLevel[c.playerMagic] > c.getLevelForXP(c.playerXP[6]) && c.getLevelForXP(c.playerXP[6]) >= 95) {
@@ -49,7 +49,7 @@ public class MagicMaxHit {
 				damageMultiplier += .10;
 				break;
 		}
-		switch (c.MAGIC_SPELLS[c.oldSpellId][0]) {
+		switch (MagicData.MAGIC_SPELLS[c.oldSpellId][0]) {
 			case 12037:
 				damage += c.playerLevel[6]/10;
 				break;

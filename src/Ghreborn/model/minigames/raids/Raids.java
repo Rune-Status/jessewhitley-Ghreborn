@@ -122,7 +122,7 @@ public class Raids {
 	 * @return the height
 	 */
 	public int getHeight(Player player) {
-		return 0;
+		return raidLeader.getIndex()*4;
 	}
 
 	/**

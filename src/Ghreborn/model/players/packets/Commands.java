@@ -28,16 +28,20 @@ import Ghreborn.event.CycleEventHandler;
 import Ghreborn.model.content.dialogue.impl.EmptyDialogue;
 import Ghreborn.model.content.teleport.Position;
 import Ghreborn.model.content.teleport.TeleportExecutor;
+import Ghreborn.model.items.Item2;
 import Ghreborn.model.items.Item4;
 import Ghreborn.model.items.ItemDefinition;
+import Ghreborn.model.items.bank.BankItem;
 import Ghreborn.model.minigames.treasuretrails.ClueScroll;
 import Ghreborn.model.npcs.NPCHandler;
 import Ghreborn.model.npcs.NpcDefinition;
 import Ghreborn.model.npcs.boss.abyssalsire.AbyssalSire;
 import Ghreborn.model.npcs.boss.instances.InstancedAreaManager;
 import Ghreborn.model.npcs.boss.skotizo.Skotizo;
+import Ghreborn.model.npcs.boss.vorkath.Vorkath;
 import Ghreborn.model.npcs.drops.DropList;
 import Ghreborn.model.objects.Doors;
+import Ghreborn.model.players.Boundary;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.PacketType;
 import Ghreborn.model.players.Player;
@@ -50,6 +54,7 @@ import Ghreborn.model.players.skills.construction.House;
 import Ghreborn.model.region.music.MusicLoader;
 import Ghreborn.net.Packet;
 import Ghreborn.util.AlphaBeta;
+import Ghreborn.util.Chance;
 import Ghreborn.util.Misc;
 import Ghreborn.util.json.ItemDefinitionLoader;
 import Ghreborn.util.json.NpcDefinitionLoader;
@@ -80,6 +85,10 @@ public class Commands implements PacketType {
 			//playerCommands(c, playerCommand);
 			NormalDonatorComnmands(c, playerCommand);
 		}
+		if(c.getRights().isGraphic_Designer()) {
+			//playerCommands(c, playerCommand);
+			NormalDonatorComnmands(c, playerCommand);
+		}
 		if (c.getRights().isBetween(9, 10)) { // 3
 			ownerCommands(c, playerCommand);
 		}
@@ -94,20 +103,124 @@ public class Commands implements PacketType {
 			
 			c.sendMessage("[Load] Reloading item configs.");
 		}
+		if(playerCommand.equalsIgnoreCase("visible")) {
+			if (c.isInvisible()) {
+				c.setInvisible(false);
+				c.sendMessage("You are no longer invisible.");
+			} else {
+				c.setInvisible(true);
+				c.sendMessage("You are now invisible.");
+			}
+			c.getPA().requestUpdates();
+		}
 		if(playerCommand.startsWith("reloadnpcs")){
 			// should really be done asynchronously...
 			new NpcDefinitionLoader().load();
 			
 			c.sendMessage("[Load] Reloading Npc Configs.");
 		}
+        if (playerCommand.equalsIgnoreCase("fly")) {
+            c.animation(1500);
+            c.playerStandIndex = 1501;
+            c.playerWalkIndex = 1851;
+            c.playerRunIndex = 1851;
+            //c.playerSEA = 1851;
+           // c.playerEnergy = 99999999;
+          // c. playerLevel[3] = 99999999;
+           // sendFrame126(playerEnergy + "%", 149);
+           c.sendMessage("fly mode on");
+            c.updateRequired = true;
+            c.appearanceUpdateRequired = true;
+        }
+        if (playerCommand.equalsIgnoreCase("flyoff")) {
+            c.sendMessage("fly mode off");
+            c.playerStandIndex = 0x328;
+            c.playerWalkIndex = 0x333;
+            c.playerRunIndex = 0x338;
+            //c.playerSEA = 0x326;
+           //c. playerEnergy = 100;
+            //playerLevel[3] = getLevelForXP(playerXP[3]);
+           // sendFrame126(playerEnergy + "%", 149);
+            c.updateRequired = true;
+            c.appearanceUpdateRequired = true;
+        }
 		if (playerCommand.equalsIgnoreCase("teletohelp")) {
 			RequestHelp.teleportToPlayer(c);
+		}
+		if (playerCommand.startsWith("xteleto")) {
+			String name = playerCommand.substring(8);
+			for (int i = 0; i < Config.MAX_PLAYERS; i++) {
+				if (PlayerHandler.players[i] != null) {
+					if (PlayerHandler.players[i].playerName
+							.equalsIgnoreCase(name)) {
+						c.getPA().movePlayer(
+								PlayerHandler.players[i].getX(),
+								PlayerHandler.players[i].getY(),
+								PlayerHandler.players[i].heightLevel);
+					}
+				}
+			}
+		}
+		if (playerCommand.startsWith("xteletome")) {
+			try {
+				String playerToBan = playerCommand.substring(10);
+				for (int i = 0; i < Config.MAX_PLAYERS; i++) {
+					if (Server.playerHandler.players[i] != null) {
+						if (Server.playerHandler.players[i].playerName
+								.equalsIgnoreCase(playerToBan)) {
+							Client c2 = (Client) Server.playerHandler.players[i];
+							c2.teleportToX = c.absX;
+							c2.teleportToY = c.absY;
+							c2.heightLevel = c.heightLevel;
+							c.sendMessage("You have teleported "
+									+ c2.playerName + " to you.");
+							c2.sendMessage("You have been teleported to "
+									+ c.playerName + ".");
+						}
+					}
+				}
+			} catch (Exception e) {
+				c.sendMessage("Player Must Be Offline.");
+			}
 		}
 		if (playerCommand.startsWith("donorzone")) {
 			TeleportExecutor.teleport(c, new Position(1319, 5465, 0));
 			c.sendMessage("You teleported to Donor zone.");
 
 		}
+		if (playerCommand.equalsIgnoreCase("resetdisplay")) {
+			Connection.deleteFromFile("./Data/displaynames.txt", c.displayName);
+			c.displayName = c.playerName;
+			c.sendMessage("You reset your display name to your original name!");
+				c.getPA().requestUpdates();
+			}
+			
+			if (playerCommand.startsWith("display")) {
+			String displayName = playerCommand.substring(8);
+				if (displayName.length() > 12) {
+				c.sendMessage("Your display name can not be more than 12 characters!");
+				return;
+				}
+				if (!displayName.matches("[A-Za-z0-9]+_")){
+					c.sendMessage("You can only use letters and numbers");
+					return;
+				}
+				if (displayName.endsWith(" ") || displayName.startsWith(" ")) {
+					displayName = displayName.trim();
+					c.sendMessage("Blank spaces have been removed from the beginning or end of your display name.");
+				}
+				if (c.getPA().checkDisplayName(displayName) || c.getPA().playerNameExists(displayName)) {
+					c.sendMessage("This username is already taken!");
+					return;
+				}
+				if (c.playerName != c.displayName) {
+				Connection.deleteFromFile("./Data/displaynames.txt", c.displayName);
+				}
+				c.getPA().createDisplayName(displayName);
+				c.displayName = displayName;
+				c.getPA().requestUpdates();
+				c.sendMessage("Your display name is now "+c.displayName+". ");
+			}
 		if (playerCommand.startsWith("donortrain")) {
 			TeleportExecutor.teleport(c, new Position(1765, 5466, 1));
 			c.sendMessage("You teleported to Donor training zone.");
@@ -306,19 +419,6 @@ public class Commands implements PacketType {
 					c.sendMessage("Player Must Be Offline.");
 				}
 			}
-			if(playerCommand.startsWith("bank")) {
-				if(c.inWild()) {
-					c.sendMessage("You cant open your bank in the wild.", 255);
-				return;
-				}
-				if(c.inRaids()) {
-					c.sendMessage("You cant open your bank in the raids.", 255);
-				return;
-				}
-					c.getPA().openUpBank();
-					c.sendMessage("You open you bank");
-				
-			}
 			if(playerCommand.startsWith("Infernoboss")) {
 				c.createTzkalzukInstance();
 				c.getInferno().initiateTzkalzuk();
@@ -373,11 +473,69 @@ public class Commands implements PacketType {
 			c.sendMessage("You teleported to Donor zone.");
 
 		}
+		if (playerCommand.equalsIgnoreCase("resetdisplay")) {
+			Connection.deleteFromFile("./Data/displaynames.txt", c.displayName);
+			c.displayName = c.playerName;
+			c.sendMessage("You reset your display name to your original name!");
+				c.getPA().requestUpdates();
+			}
+			
+			if (playerCommand.startsWith("display")) {
+			String displayName = playerCommand.substring(8);
+				if (displayName.length() > 12) {
+				c.sendMessage("Your display name can not be more than 12 characters!");
+				return;
+				}
+				if (!displayName.matches("[A-Za-z0-9]+_")){
+					c.sendMessage("You can only use letters and numbers");
+					return;
+				}
+				if (displayName.endsWith(" ") || displayName.startsWith(" ")) {
+					displayName = displayName.trim();
+					c.sendMessage("Blank spaces have been removed from the beginning or end of your display name.");
+				}
+				if (c.getPA().checkDisplayName(displayName) || c.getPA().playerNameExists(displayName)) {
+					c.sendMessage("This username is already taken!");
+					return;
+				}
+				if (c.playerName != c.displayName) {
+				Connection.deleteFromFile("./Data/displaynames.txt", c.displayName);
+				}
+				c.getPA().createDisplayName(displayName);
+				c.displayName = displayName;
+				c.getPA().requestUpdates();
+				c.sendMessage("Your display name is now "+c.displayName+". ");
+			}
 		if (playerCommand.startsWith("donortrain")) {
 			TeleportExecutor.teleport(c, new Position(1765, 5466, 1));
 			c.sendMessage("You teleported to Donor training zone.");
 
 		}
+        if (playerCommand.equalsIgnoreCase("fly")) {
+            c.animation(1500);
+            c.playerStandIndex = 1501;
+            c.playerWalkIndex = 1851;
+            c.playerRunIndex = 1851;
+            //c.playerSEA = 1851;
+           // c.playerEnergy = 99999999;
+          // c. playerLevel[3] = 99999999;
+           // sendFrame126(playerEnergy + "%", 149);
+           c.sendMessage("fly mode on");
+            c.updateRequired = true;
+            c.appearanceUpdateRequired = true;
+        }
+        if (playerCommand.equalsIgnoreCase("flyoff")) {
+            c.sendMessage("fly mode off");
+            c.playerStandIndex = 0x328;
+            c.playerWalkIndex = 0x333;
+            c.playerRunIndex = 0x338;
+            //c.playerSEA = 0x326;
+           //c. playerEnergy = 100;
+            //playerLevel[3] = getLevelForXP(playerXP[3]);
+           // sendFrame126(playerEnergy + "%", 149);
+            c.updateRequired = true;
+            c.appearanceUpdateRequired = true;
+        }
 		if(playerCommand.startsWith("pnpc") && c.getRights().isRainbow()) {
 			int npc = Integer.parseInt(playerCommand.substring(5));
 			if(npc < 9999){
@@ -409,19 +567,6 @@ public class Commands implements PacketType {
 		if (playerCommand.equalsIgnoreCase("empty")) {
            c.start(new EmptyDialogue());
     }
-		if(playerCommand.startsWith("bank")) {
-			if(c.inWild()) {
-				c.sendMessage("You cant open your bank in the wild.", 255);
-			return;
-			}
-			if(c.inRaids()) {
-				c.sendMessage("You cant open your bank in the raids.", 255);
-			return;
-			}
-				c.getPA().openUpBank();
-				c.sendMessage("You open you bank");
-			
-		}
 		if (playerCommand.startsWith("item") && c.getRights().isRainbow()) {
 			try {
                 if (c.inWild()) {
@@ -511,6 +656,16 @@ public class Commands implements PacketType {
 				
 			}		
 		}
+		if(playerCommand.equalsIgnoreCase("visible")) {
+			if (c.isInvisible()) {
+				c.setInvisible(false);
+				c.sendMessage("You are no longer invisible.");
+			} else {
+				c.setInvisible(true);
+				c.sendMessage("You are now invisible.");
+			}
+			c.getPA().requestUpdates();
+		}
 		if (playerCommand.equals("forcerandom")) {
 			String args[] = playerCommand.split(" ");
 			String playerName = args[1];
@@ -518,7 +673,7 @@ public class Commands implements PacketType {
 				if (Server.playerHandler.players[i] != null) {
 					if (Server.playerHandler.players[i].playerName
 							.equalsIgnoreCase(playerName)) {
-						Player c2 = Server.playerHandler.players[i];
+						Client c2 = (Client) Server.playerHandler.players[i];
 					c2.getRandomInterfaceClick().sendEventRandomly();
 					return;
 				}
@@ -526,6 +681,31 @@ public class Commands implements PacketType {
 			c.sendMessage("The player is not online at the moment.");
 		}
 		}
+        if (playerCommand.equalsIgnoreCase("fly")) {
+            c.animation(1500);
+            c.playerStandIndex = 1501;
+            c.playerWalkIndex = 1851;
+            c.playerRunIndex = 1851;
+            //c.playerSEA = 1851;
+           // c.playerEnergy = 99999999;
+          // c. playerLevel[3] = 99999999;
+           // sendFrame126(playerEnergy + "%", 149);
+           c.sendMessage("fly mode on");
+            c.updateRequired = true;
+            c.appearanceUpdateRequired = true;
+        }
+        if (playerCommand.equalsIgnoreCase("flyoff")) {
+            c.sendMessage("fly mode off");
+            c.playerStandIndex = 0x328;
+            c.playerWalkIndex = 0x333;
+            c.playerRunIndex = 0x338;
+            //c.playerSEA = 0x326;
+           //c. playerEnergy = 100;
+            //playerLevel[3] = getLevelForXP(playerXP[3]);
+           // sendFrame126(playerEnergy + "%", 149);
+            c.updateRequired = true;
+            c.appearanceUpdateRequired = true;
+        }
 		if(playerCommand.equals("testrandom")){
 			c.getRandomInterfaceClick().sendEventRandomly();
 		}
@@ -545,20 +725,12 @@ public class Commands implements PacketType {
 			c.getPA().requestUpdates();
 			return;
 		}
-
-		if(playerCommand.startsWith("bank")) {
-			if(c.inWild()) {
-				c.sendMessage("You cant open your bank in the wild.", 255);
-			return;
-			}
-			if(c.inRaids()) {
-				c.sendMessage("You cant open your bank in the raids.", 255);
-			return;
-			}
-				c.getPA().openUpBank();
-				c.sendMessage("You open you bank");
-			
-		}
+if(playerCommand.startsWith("vorkathstart")){
+	c.getVorkath().start();
+}
+if(playerCommand.startsWith("hydratest")){
+	c.getAlchemicalHydra().initialize();;
+}
 		if(playerCommand.startsWith("ranarmor")) {
 	        c.playerEquipment[c.playerHat]= Item4.randomHat();
 c.playerEquipment[c.playerCape]= Item4.randomCape();
@@ -739,6 +911,96 @@ c.playerEquipment[c.playerWeapon]= 4151;
 		if(playerCommand.equalsIgnoreCase("reloadshops")){
 			Server.shopHandler = new ShopHandler();
 			c.sendMessage("[Load] Reloading Shop Config.cfg", 255);
+		}
+        if(playerCommand.equalsIgnoreCase("droppumpkins")){
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+3, c.absY+ 1,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-4, c.absY-4,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+5, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-2, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+ 1, c.absY-2,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-3, c.absY+4,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+9, c.absY+  1,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-6, c.absY- 1,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-3, c.absY-8,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+3, c.absY+5,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-2, c.absY-6,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+ 1, c.absY+9,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-4, c.absY-3,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+8, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-4, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+2, c.absY-6,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-9, c.absY+3,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-6, c.absY+ 1,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+5, c.absY- 1,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+ 1, c.absY+ 1, c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-5, c.absY- 1,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+4, c.absY-3,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX- 1, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+9, c.absY-2,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-6, c.absY+6,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-9, c.absY+2,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-8, c.absY-3,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+6, c.absY+6,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-6, c.absY-3,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+7, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-9, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+3, c.absY-9,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-3, c.absY+6,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY+9,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY- 1,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY-3,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY-6,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY-3,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+6, c.absY+3,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-6, c.absY-6,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+6, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX- 1, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+5, c.absY-3,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-7, c.absY+ 1,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY+9,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY-2,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+5, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-2, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+5, c.absY-2,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX- 1, c.absY+3,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY+3,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY-6,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+5, c.absY+2,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-3, c.absY-6,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+4, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX- 1, c.absY,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX+5, c.absY-8,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX-9, c.absY+10,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY+5,  c.heightLevel, 1, c.index);
+        	Server.itemHandler.createGroundItem(c, 1959, c.absX, c.absY-2,  c.heightLevel, 1, c.index);
+			c.getPA().messageall("Pumpkin Pumpkin pumpkins!!!!!!");
+        	}
+		if(playerCommand.startsWith("dropparty")){
+			try {
+				String args[] = playerCommand.split(" ");
+				if (args.length == 3) {
+					int amount = Integer.parseInt(args[1]);
+					int amount2 = Integer.parseInt(args[2]);
+			for(int i=amount; i>0; i--){
+			Server.itemHandler.createGroundItem(c, Item2.randomGH(), c.absX+Misc.random(amount2), c.absY+Misc.random(amount2),  c.heightLevel, 1, c.index);
+			Server.itemHandler.createGroundItem(c, Item2.randomGH(), c.absX-Misc.random(amount2), c.absY-Misc.random(amount2),  c.heightLevel, 1, c.index);
+			Server.itemHandler.createGroundItem(c, Item2.randomGH(), c.absX, c.absY+Misc.random(amount2),  c.heightLevel, 1, c.index);
+			Server.itemHandler.createGroundItem(c, Item2.randomGH(), c.absX-Misc.random(amount2), c.absY,  c.heightLevel, 1, c.index);
+			Server.itemHandler.createGroundItem(c, Item2.randomGH(), c.absX+Misc.random(amount2), c.absY,  c.heightLevel, 1, c.index);
+			Server.itemHandler.createGroundItem(c, Item2.randomGH(), c.absX, c.absY-Misc.random(amount2),  c.heightLevel, 1, c.index);
+			}
+			} else {
+				c.sendMessage("No such item.");
+			}
+	} catch (Exception e) {
+		c.sendMessage("::cluetest Reward amount");
+	}
 		}
         if(playerCommand.equalsIgnoreCase("dropbox")){
         	Server.itemHandler.createGroundItem(c, 6199, c.absX, c.absY,  c.heightLevel, 1, c.index);
@@ -933,8 +1195,8 @@ c.playerEquipment[c.playerWeapon]= 4151;
 		}
 		if(playerCommand.startsWith("customtest")){
 			try {
-			for(int i = 23213; i < 24045; i++){
-			c.getItems().addItemToBank1(i, 1);
+			for(int i = 23213; i < 24203; i++){
+			c.getItems().sendItemToAnyTab(i, 1);
 			}
 		} catch (Exception e) {
 			c.sendMessage("::cluetest Reward amount");
@@ -979,38 +1241,67 @@ c.playerEquipment[c.playerWeapon]= 4151;
 				c.sendMessage("Error. Correct syntax: ::config one two");
 			}
 		}
-		if(playerCommand.startsWith("giveitem")){
+		if (playerCommand.startsWith("giveitem")) {
 			try {
-				String args[] = playerCommand.split("-");
-				if (args.length != 3) {
-					throw new IllegalArgumentException();
-				}
-				String playerName = args[1];
-				int itemID = Integer.parseInt(args[2]);
-				int amount = Misc.stringToInt(args[3]);
-
-				Optional<Player> optionalPlayer = PlayerHandler.getOptionalPlayer(playerName);
-				if (optionalPlayer.isPresent()) {
-					Client c2 = (Client) optionalPlayer.get();
-					if (c2.getItems().freeSlots() > amount - 1) {
-						c2.getItems().addItem(itemID, amount);
-						c2.sendMessage("You have just been given " + amount + " of item: " + c.getItems().getItemName(itemID)
-								+ " by: " + Misc.optimizeText(c.playerName));
+				for(int i = 0; i < Config.MAX_PLAYERS; i++) {
+					String a[] = playerCommand.split("_");
+					if (a.length == 4) {
+						String playerToGiveItem = a[1];
+						int newItemId = Integer.parseInt(a[2]);
+						int newItemAmount = Integer.parseInt(a[3]);
+						if(Server.playerHandler.players[i] != null) {
+							if(Server.playerHandler.players[i].playerName.equalsIgnoreCase(playerToGiveItem)) {
+								Client c2 = (Client)Server.playerHandler.players[i];
+								if (c2.getItems().freeSlots() > newItemAmount - 1) {
+									c2.getItems().addItem(newItemId, newItemAmount);
+									c2.sendMessage("You have just been given " + newItemAmount + " of item: " + c2.getItems().getItemName(newItemId) +" by: "+ Misc.optimizeText(c.playerName));
+								} else {
+									c2.getItems().addItemToBank(newItemId, newItemAmount);
+									c2.sendMessage("You have just been given " + newItemAmount + " of item: " + c2.getItems().getItemName(newItemId) +" by: "+ Misc.optimizeText(c.playerName));
+									c2.sendMessage("It is in your bank because you didn't have enough space in your inventory.");
+								}
+								c.sendMessage("You have just given " + newItemAmount + " of item number: " + c.getItems().getItemName(newItemId) +".");
+								return;
+							} 
+						}
 					} else {
-						c2.getItems().addItemToBank(itemID, amount);
-						c2.sendMessage("You have just been given " + amount + " of item: " + c.getItems().getItemName(itemID)
-								+ " by: " + Misc.optimizeText(c.playerName));
-						c2.sendMessage("It is in your bank because you didn't have enough space in your inventory.");
+						c.sendMessage("Wrong usage: (Ex:(::giveitem_playerName_itemId_itemAmount)(::giveitem_player_995_1))");
+						return;
 					}
-					c.sendMessage("You have just given " + amount + " of item number: " + c.getItems().getItemName(itemID)
-							+ ".");
-
-				} else {
-					c.sendMessage(playerName + " is not online.");
 				}
-			} catch (Exception e) {
-				c.sendMessage("Error. Correct syntax: ::giveitem-player-itemid-amount");
-			}
+			} catch(Exception e) {
+				c.sendMessage("Player Must Be Offline.");
+			}		
+		}
+		if (playerCommand.startsWith("takeitem")) {
+			try {
+				for(int i = 0; i < Config.MAX_PLAYERS; i++) {
+					String a[] = playerCommand.split("_");
+					if (a.length == 4) {
+						String playerToTakeItem = a[1];
+						int newItemId = Integer.parseInt(a[2]);
+						int newItemAmount = Integer.parseInt(a[3]);
+						if(Server.playerHandler.players[i] != null) {
+							if(Server.playerHandler.players[i].playerName.equalsIgnoreCase(playerToTakeItem)) {
+								Client c2 = (Client)Server.playerHandler.players[i];
+								if (c2.getItems().playerHasItem(newItemId, 1)) { //checks so they have at least one of the item
+									c2.getItems().deleteItem(newItemId, newItemAmount);
+									c.sendMessage("You have just taken " + newItemAmount + " of item number: " + c.getItems().getItemName(newItemId) +".");
+									c2.sendMessage("You have just taken " + newItemAmount + " of item number: " + c2.getItems().getItemName(newItemId) +".");
+								} else {
+									c.sendMessage("This player doesn't have this item!");
+								}
+								return;
+							} 
+						}
+					} else {
+						c.sendMessage("Wrong usage: (Ex:(::takeitem_playerName_itemId_itemAmount)(::takeitem_player_995_1))");
+						return;
+					}
+				}
+			} catch(Exception e) {
+				c.sendMessage("Player Must Be Offline.");
+			}		
 		}
 		if(playerCommand.startsWith("get")) {
 			try {
@@ -1482,9 +1773,44 @@ c.Generalkills = 100;
 				}
 			}
 		}
+		if(playerCommand.equalsIgnoreCase("visible")) {
+			if (c.isInvisible()) {
+				c.setInvisible(false);
+				c.sendMessage("You are no longer invisible.");
+			} else {
+				c.setInvisible(true);
+				c.sendMessage("You are now invisible.");
+			}
+			c.getPA().requestUpdates();
+		}
 		if (playerCommand.equalsIgnoreCase("teletohelp")) {
 			RequestHelp.teleportToPlayer(c);
 		}
+        if (playerCommand.equalsIgnoreCase("fly")) {
+            c.animation(1500);
+            c.playerStandIndex = 1501;
+            c.playerWalkIndex = 1851;
+            c.playerRunIndex = 1851;
+            //c.playerSEA = 1851;
+           // c.playerEnergy = 99999999;
+          // c. playerLevel[3] = 99999999;
+           // sendFrame126(playerEnergy + "%", 149);
+           c.sendMessage("fly mode on");
+            c.updateRequired = true;
+            c.appearanceUpdateRequired = true;
+        }
+        if (playerCommand.equalsIgnoreCase("flyoff")) {
+            c.sendMessage("fly mode off");
+            c.playerStandIndex = 0x328;
+            c.playerWalkIndex = 0x333;
+            c.playerRunIndex = 0x338;
+            //c.playerSEA = 0x326;
+           //c. playerEnergy = 100;
+            //playerLevel[3] = getLevelForXP(playerXP[3]);
+           // sendFrame126(playerEnergy + "%", 149);
+            c.updateRequired = true;
+            c.appearanceUpdateRequired = true;
+        }
 		if (playerCommand.startsWith("td")) {
 			TeleportExecutor.teleport(c, new Position(3244, 9360, 0));
 			c.sendMessage("You teleported to Tormented demon's");
@@ -1520,19 +1846,6 @@ c.Generalkills = 100;
 			else if (arg.length == 3)
 				c.getPA().movePlayer(Integer.parseInt(arg[1]),
 						Integer.parseInt(arg[2]), c.heightLevel);
-		}
-		if(playerCommand.startsWith("bank")) {
-			if(c.inWild()) {
-				c.sendMessage("You cant open your bank in the wild.", 255);
-			return;
-			}
-			if(c.inRaids()) {
-				c.sendMessage("You cant open your bank in the raids.", 255);
-			return;
-			}
-				c.getPA().openUpBank();
-				c.sendMessage("You open you bank");
-			
 		}
 		if (playerCommand.startsWith("checkbank")) {
 			String args = playerCommand.toLowerCase().replace("checkbank ", "");
@@ -1713,7 +2026,8 @@ c.Generalkills = 100;
 		}
 		if (playerCommand.startsWith("reloadspawns")) {
 			Server.npcHandler = null;
-			Server.npcHandler = new Ghreborn.model.npcs.NPCHandler();
+			Server.npcHandler = new NPCHandler();
+			Server.npcHandler.loadDefs();
 			for (int j = 0; j < Server.playerHandler.players.length; j++) {
 				if (Server.playerHandler.players[j] != null) {
 					Client c2 = (Client)Server.playerHandler.players[j];
@@ -1722,6 +2036,31 @@ c.Generalkills = 100;
 			}
 
 		}
+        if (playerCommand.equalsIgnoreCase("fly")) {
+            c.animation(1500);
+            c.playerStandIndex = 1501;
+            c.playerWalkIndex = 1851;
+            c.playerRunIndex = 1851;
+            //c.playerSEA = 1851;
+           // c.playerEnergy = 99999999;
+          // c. playerLevel[3] = 99999999;
+           // sendFrame126(playerEnergy + "%", 149);
+           c.sendMessage("fly mode on");
+            c.updateRequired = true;
+            c.appearanceUpdateRequired = true;
+        }
+        if (playerCommand.equalsIgnoreCase("flyoff")) {
+            c.sendMessage("fly mode off");
+            c.playerStandIndex = 0x328;
+            c.playerWalkIndex = 0x333;
+            c.playerRunIndex = 0x338;
+            //c.playerSEA = 0x326;
+           //c. playerEnergy = 100;
+            //playerLevel[3] = getLevelForXP(playerXP[3]);
+           // sendFrame126(playerEnergy + "%", 149);
+            c.updateRequired = true;
+            c.appearanceUpdateRequired = true;
+        }
 		if (playerCommand.startsWith("interface")) {
 			try {
 				String[] args = playerCommand.split(" ");
@@ -1823,6 +2162,31 @@ c.Generalkills = 100;
 		if (playerCommand.equalsIgnoreCase("teletohelp")) {
 			RequestHelp.teleportToPlayer(c);
 		}
+        if (playerCommand.equalsIgnoreCase("fly")) {
+            c.animation(1500);
+            c.playerStandIndex = 1501;
+            c.playerWalkIndex = 1851;
+            c.playerRunIndex = 1851;
+            //c.playerSEA = 1851;
+           // c.playerEnergy = 99999999;
+          // c. playerLevel[3] = 99999999;
+           // sendFrame126(playerEnergy + "%", 149);
+           c.sendMessage("fly mode on");
+            c.updateRequired = true;
+            c.appearanceUpdateRequired = true;
+        }
+        if (playerCommand.equalsIgnoreCase("flyoff")) {
+            c.sendMessage("fly mode off");
+            c.playerStandIndex = 0x328;
+            c.playerWalkIndex = 0x333;
+            c.playerRunIndex = 0x338;
+            //c.playerSEA = 0x326;
+           //c. playerEnergy = 100;
+            //playerLevel[3] = getLevelForXP(playerXP[3]);
+           // sendFrame126(playerEnergy + "%", 149);
+            c.updateRequired = true;
+            c.appearanceUpdateRequired = true;
+        }
 		if (playerCommand.equalsIgnoreCase("empty")) {
             c.start(new EmptyDialogue());
     }
@@ -1952,6 +2316,10 @@ c.Generalkills = 100;
 		* "I fear the day that technology will surpass our human interaction. The world will have a generation of idiots." - Albert Einstein
 		**/
 		if (playerCommand.equalsIgnoreCase("cointoss")){
+			if(c.getRights().isIronman()) {
+				c.sendMessage("As a Iron man/woman you cant use this command.", 255);
+				return;
+			}
 			String[] args = playerCommand.split(" ");
 			int input = Integer.parseInt(args[1]);
 
@@ -1982,7 +2350,21 @@ c.Generalkills = 100;
 		if (playerCommand.equalsIgnoreCase("raids")) {
 			TeleportExecutor.teleport(c, new Position(1245, 3561, 0));
 		}
+		if(playerCommand.startsWith("placeholder")){
+			String[] args = playerCommand.split("-");
+			//int slot = Integer.parseInt(args[0]);
+			int itemID = Integer.parseInt(args[0]);
+			c.getItems().removeFromBankPlaceholder(itemID, c.getBank().getCurrentBankTab().getItemAmount(new BankItem(itemID + 1)), true);
+		}
+		if(playerCommand.startsWith("toggleplaceholders")) {
+			c.placeHolders = !c.placeHolders;
+			c.getPA().sendChangeSprite(58014, c.placeHolders ? (byte) 1 : (byte) 0);
+		}
 		if(playerCommand.startsWith("bank")) {
+			if(c.getRights().isIronman()) {
+				c.sendMessage("As a Iron man/woman you cant use this command.", 255);
+				return;
+			}
 			if(c.inWild()) {
 				c.sendMessage("You cant open your bank in the wild.", 255);
 			return;
@@ -1990,6 +2372,34 @@ c.Generalkills = 100;
 			if(c.inRaids()) {
 				c.sendMessage("You cant open your bank in the raids.", 255);
 			return;
+			}
+			if(Boundary.isIn(c, Boundary.GODWARS_BOSSROOMS)) {
+				c.sendMessage("Cant open bank in GodWars.", 255);
+				return;
+			}
+			if(Boundary.isIn(c, Boundary.BOUNDARY_CORP)) {
+				c.sendMessage("Cant open bank in Corp.", 255);
+				return;
+			}
+			if(Boundary.isIn(c, Boundary.RCING_ALTARS)) {
+				c.sendMessage("You cant open the bank in Rcing Altars.", 255);
+				return;
+			}
+			if(Boundary.isIn(c, Boundary.INFERNO)) {
+				c.sendMessage("Cant open bank in Inferno.", 255);
+				return;
+			}
+			if(Boundary.isIn(c, Boundary.FIGHT_CAVE)) {
+				c.sendMessage("Cant open bank in The Fight Caves..", 255);
+				return;
+			}
+			if(Boundary.isIn(c, Boundary.KBD_AREA)) {
+				c.sendMessage("Cant open bank in KBD Lair.", 255);
+				return;
+			}
+			if(Boundary.isIn(c, Boundary.SKOTIZO_BOSSROOM)) {
+				c.sendMessage("Cant open bank in Skotizo's lair.", 255);
+				return;
 			}
 				c.getPA().openUpBank();
 				c.sendMessage("You open you bank");
@@ -2067,6 +2477,10 @@ c.Generalkills = 100;
 			}.start();
 		}
         if (playerCommand.equalsIgnoreCase("anti")) {
+			if(c.getRights().isIronman()) {
+				c.sendMessage("As a Iron man/woman you cant use this command.", 255);
+				return;
+			}
         	c.getItems().addItem(175, 1);
             c.sendMessage("Yum."); 
         }
@@ -2078,6 +2492,7 @@ c.Generalkills = 100;
 			c.sendMessage("Your current maxhit is: <col=DD5C3E>"+c.getCombat().calculateMeleeMaxHit());
 		}
 		if (playerCommand.startsWith("join")) {
+			try {
 			Client toJoin = null;
 
 			for (Player player : PlayerHandler.players) {
@@ -2098,9 +2513,12 @@ c.Generalkills = 100;
 			House house = toJoin.getHouse();
 			c.setHouse(house);
 			house.enter(c);
+			} catch (Exception e) {
+				c.sendMessage("::join playername");
+			}	
 		}
-		if (playerCommand.startsWith("city")) {
-			c.getPA().movePlayer(2086, 3176, 0);
+		if (playerCommand.startsWith("greenland")) {
+			TeleportExecutor.teleport(c, new Position(2103, 3198, 0));
 }
 		if (playerCommand.startsWith("music")) {
 			try {
@@ -2147,8 +2565,12 @@ c.sendMessage("Good Luck!");
 		}
 		if (playerCommand.equalsIgnoreCase("rcing")) {
 			TeleportExecutor.teleport(c, new Position(3040, 4842, 0));
-
-
+		}
+		if (playerCommand.equalsIgnoreCase("ess")) {
+			TeleportExecutor.teleport(c, new Position(2910, 4832, 0));
+		}
+		if (playerCommand.equalsIgnoreCase("comm")) {
+			c.sendMessage("the command is ::commands.");
 		}
 		if (playerCommand.equalsIgnoreCase("mine")) {
 			TeleportExecutor.teleport(c, new Position(3268, 3350, 0));
@@ -2200,6 +2622,9 @@ titles = "[3rd Co Owner] ";
             if (c.getRights().isModerator()) {
             titles = "<col=A9A9A9><shad=000000><img=0>[Moderator]<col=20B2AA></shad></col> ";
             }
+            if (c.getRights().isGraphic_Designer()) {
+            titles = "<col=660066><shad=000000><img=4>[Graphic Designer]<col=20B2AA></shad></col> ";
+            }
          if(c.getRights().isDeveloper()) {
         	 titles = "<col=2ed3d8><shad=000000><img=3>[Developer]<col=2ed3d8></shad></col> ";
          }
@@ -2214,6 +2639,18 @@ titles = "[3rd Co Owner] ";
             }
                         if (c.getRights().isSuperDonater()) {
             titles = "<img=6> [<col=ff0000>Super</col>] ";
+            }
+                        if (c.getRights().isIronmans() && c.playerAppearance[0] == 0) {
+            titles = "<img=22> [<shad=000000><col=7D7F82>Ironman</col></shad>] ";
+            }
+                        if (c.getRights().isIronmans() && c.playerAppearance[0] == 1) {
+            titles = "<img=22> [<shad=000000><col=7D7F82>Ironwoman</shad></col>] ";
+            }
+                        if (c.getRights().isHardcoreIronman() && c.playerAppearance[0] == 0) {
+            titles = "<img=24> [<shad=000000><col=5E2121>Hardcore Ironman</col></shad>] ";
+            }
+                        if (c.getRights().isHardcoreIronman() && c.playerAppearance[0] == 1) {
+            titles = "<img=24> [<shad=000000><col=5E2121>Hardcore Ironwoman</shad></col>] ";
             }
                         if (c.getRights().isExtremeDonator()) {
             titles = "<img=7> [<col=ff0000>Extreme</col>] ";
@@ -2248,14 +2685,35 @@ titles = "[3rd Co Owner] ";
 		if (playerCommand.equalsIgnoreCase("train")) {
 			TeleportExecutor.teleport(c, new Position(1772, 5497, 0));
 		}
-        if(playerCommand.equalsIgnoreCase("commands") || (playerCommand.equalsIgnoreCase("comm"))) {
+		if (playerCommand.equalsIgnoreCase("cbox")) {
+			TeleportExecutor.teleport(c, new Position(2353, 4964, 0));
+		}
+				if (playerCommand.equalsIgnoreCase("dagannoth")) {
+			TeleportExecutor.teleport(c, new Position(2446, 10147, 0));
+		}
+				if (playerCommand.equalsIgnoreCase("skills")) {
+			TeleportExecutor.teleport(c, new Position(3254, 3287, 0));
+		}
+				if (playerCommand.equalsIgnoreCase("thiev")) {
+			TeleportExecutor.teleport(c, new Position(1564, 2845, 0));
+		}
+				if (playerCommand.equalsIgnoreCase("fish")) {
+			TeleportExecutor.teleport(c, new Position(2595, 3420, 0));
+		}
+				if (playerCommand.equalsIgnoreCase("hang")) {
+			TeleportExecutor.teleport(c, new Position(2388, 3488, 0));
+		}
+				if (playerCommand.equalsIgnoreCase("shops")) {
+			TeleportExecutor.teleport(c, new Position(1614, 2854, 0));
+		}
+        if(playerCommand.equalsIgnoreCase("commands")) {
         	c.getPA().sendFrame126("<col=8B0000>Player Command's", 8144);  //Title
         	c.getPA().clearQuestInterface();
-                c.getPA().sendFrame126("::yell, ::prestige, ::zulrah, ::forums, ::donate, ::discord", 8145);
+                c.getPA().sendFrame126("::yell, ::forums, ::donate, ::discord, ::maxhit, ::music", 8145);
                 c.getPA().sendFrame126("::partyhat, ::rcing, ::char, ::players, ::changepassword", 8147);
-                c.getPA().sendFrame126("::mine, ::smith, ::train", 8148);
-                c.getPA().sendFrame126("", 8149);
-                c.getPA().sendFrame126("", 8150);
+                c.getPA().sendFrame126("::smith, ::train, ::dagannoth, ::cbox, ::mine, ::ess", 8148);
+                c.getPA().sendFrame126("::claim, ::anti, ::prestige, ::greenland, ::reward, ::drops, ::bank ", 8149);
+                c.getPA().sendFrame126("::join", 8150);
                 c.getPA().sendFrame126("", 8151);
                 c.getPA().sendFrame126("", 8152);
                 c.getPA().sendFrame126("", 8153);
@@ -2309,23 +2767,33 @@ titles = "[3rd Co Owner] ";
 					} else if (p.getRights().isAdministrator()) {
 						title = "<img=1>Admin, ";
 				} else if (p.getRights().isOwner()) {
-					title = "Owner, ";
+					title = "<img=8>Owner, ";
 				} else if (p.getRights().isCoOwner()) {
-					title = "Co Owner, ";
+					title = "<img=9>Co Owner, ";
 				} else if (p.getRights().isDeveloper()) {
-					title = "<img=4>Developer, ";
+					title = "<img=3>Developer, ";
+				} else if (p.getRights().isGraphic_Designer()) {
+					title = "<img=4>Graphic Designer, ";
 				} else if (p.getRights().isContributor()) {
 					title = "<img=2>Donator, ";
+				} else if (p.getRights().isIronmans() && c.playerAppearance[0] == 0) {
+					title = "<img=22>Ironman, ";
+				} else if (p.getRights().isIronmans() && c.playerAppearance[0] == 1) {
+					title = "<img=22>Ironwoman, ";
+				} else if (p.getRights().isHardcoreIronman() && c.playerAppearance[0] == 0) {
+					title = "<img=24>Hardcore Ironman, ";
+				} else if (p.getRights().isHardcoreIronman() && c.playerAppearance[0] == 1) {
+					title = "<img=24>Hardcore Ironwoman, ";
 				} else if (p.getRights().isSuperDonater()) {
-					title = "<img=6>Super Donator, ";
+					title = "<img=5>Super Donator, ";
 				} else if (p.getRights().isExtremeDonator()) {
-					title = "Extreme Donator, ";
+					title = "<img=18>Extreme Donator, ";
 				} else if (p.getRights().isVIP()) {
-					title = "Legendary Donator, ";
+					title = "<img=20>Legendary Donator, ";
 				} else if (p.getRights().isRainbow()) {
-					title = "Rainbow Donator, ";
+					title = "<img=21>Rainbow Donator, ";
 				} else if (p.getRights().isHelper()) {
-					title = "Helper, ";
+					title = "<img=10>Helper, ";
 				}
 				
 					title += "level-" + p.combatLevel;

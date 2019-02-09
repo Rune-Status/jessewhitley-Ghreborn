@@ -18,9 +18,6 @@ public class AttackPlayer implements PacketType {
 	public void processPacket(Client client, Packet packet) {
 		client.playerIndex = 0;
 		client.npcIndex = 0;
-		if (client.isMorphed) {
-			return;
-			}
 		switch (packet.getOpcode()) {
 
 		/**
@@ -32,10 +29,12 @@ public class AttackPlayer implements PacketType {
 			if (!client.canUsePackets) {
 				return;
 			}
-
 			if (client.playerIndex >= PlayerHandler.players.length || client.playerIndex < 0) {
 				return;
 			}
+			if (client.isMorphed) {
+				return;
+				}
 			if (PlayerHandler.players[client.playerIndex] == null) {
 				break;
 			}
@@ -147,7 +146,9 @@ public class AttackPlayer implements PacketType {
 			if (!client.canUsePackets) {
 				return;
 			}
-
+			if (client.isMorphed) {
+				return;
+				}
 			if (!client.mageAllowed) {
 				client.mageAllowed = true;
 				break;

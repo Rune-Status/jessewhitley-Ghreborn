@@ -1486,6 +1486,25 @@ case 23489:
 case 4151:
 case 23964:
 	return 100;
+case 1037:
+return 200;
+case 23550:
+case 23551:
+case 23552:
+case 23553:
+case 23554:
+case 23555:
+case 23556:
+return 400;
+case 23686:
+return 500;
+case 23710:
+return 700;
+case 23860:
+return 400;
+case 23889:
+return 400;
+
 }
 return 21470000;
 }
@@ -1633,6 +1652,16 @@ return 21470000;
 						fromSlot));
 				if (c.getItems().freeSlots() > 0
 						|| c.getItems().playerHasItem(995)) {
+					if (Item.itemStackable[itemID] && c.getItems().playerHasItem(itemID, amount)) {
+						c.getItems().addItem(995, TotPrice2*amount);
+						c.getItems().deleteItem(itemID,c.getItems().getItemSlot(itemID),amount);
+						addShopItem(itemID, amount);
+						Server.shopHandler.ShopItemsDelay[c.myShopId][fromSlot] = 0;
+						c.getItems().resetItems(3823);
+						resetShop(c.myShopId);
+						updatePlayerShop();
+						return false;
+					}
 					if (!ItemDefinition.forId(itemID).isNoted()) {
 						c.getItems().deleteItem(itemID, c.getItems().getItemSlot(itemID), 1);
 					} else {
@@ -1778,6 +1807,30 @@ return 21470000;
 				if (c.myShopId != 197 & c.myShopId != 196 && c.myShopId != 198 && c.myShopId != 250 && c.myShopId != 251 && c.myShopId != 252&& c.myShopId != 253&& c.myShopId != 254&& c.myShopId != 255) {
 					if (c.playerItemsN[Slot] >= TotPrice2) {
 						if (c.getItems().freeSlots() > 0) {
+							if (Item.itemStackable[itemID] && c.getItems().playerHasItem(995, TotPrice2*amount)) {
+								if (Server.shopHandler.ShopItemsN[c.myShopId][fromSlot] < amount) {
+									amount = Server.shopHandler.ShopItemsN[c.myShopId][fromSlot];
+								}
+								c.getItems().deleteItem(995, c.getItems().getItemSlot(995), TotPrice2*amount);
+								c.getItems().addItem(itemID, amount);
+								Server.shopHandler.ShopItemsN[c.myShopId][fromSlot] -= amount;
+								Server.shopHandler.ShopItemsDelay[c.myShopId][fromSlot] = 0;
+								c.getItems().resetItems(3823);
+								resetShop(c.myShopId);
+								updatePlayerShop();
+								return false;
+							}
+							if (Item.itemStackable[itemID] && !c.getItems().playerHasItem(995, TotPrice2*amount)) {
+								int itemAmount = c.playerItemsN[c.getItems().getItemSlot(995)]/TotPrice2;
+								c.getItems().deleteItem(995, c.getItems().getItemSlot(995), TotPrice2*itemAmount);
+								c.getItems().addItem(itemID, itemAmount);
+								Server.shopHandler.ShopItemsN[c.myShopId][fromSlot] -= itemAmount;
+								Server.shopHandler.ShopItemsDelay[c.myShopId][fromSlot] = 0;
+								c.getItems().resetItems(3823);
+								resetShop(c.myShopId);
+								updatePlayerShop();
+								return false;
+							}
 							c.getItems().deleteItem(995, c.getItems().getItemSlot(995),
 									TotPrice2);
 							c.getItems().addItem(itemID, 1);
@@ -1998,7 +2051,7 @@ return 21470000;
 	 * 2712},{18,2719,4355,2721},{19,2737,4331,2739},{20,2698,4333,2700}};
 	 */
 	public int[] skillCapes = { 9747, 9753, 9750, 9768, 9756, 9759, 9762, 9801, 9807, 9783, 9798, 9804, 9780, 9795,
-			9792, 9774, 9771, 9777, 9786, 9810, 9765, 9789, 9948 };
+			9792, 9774, 9771, 9777, 9786, 9810, 9765, 9789, 9948, 9813, 19476 };
 
 	public int get99Count() {
 		int count = 0;

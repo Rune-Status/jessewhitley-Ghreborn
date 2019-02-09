@@ -3,7 +3,9 @@ package Ghreborn.model.players.combat;
 
 import java.util.Random;
 
+import Ghreborn.Server;
 import Ghreborn.model.items.ItemAssistant;
+import Ghreborn.model.npcs.NPC;
 import Ghreborn.model.npcs.NPCHandler;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.combat.magic.MagicData;
@@ -502,6 +504,50 @@ public class CombatAssistant {
 		}
 		return;
 	}
+	public static final int[][] MUTAGEN_HELMETS = { { 12931, 12929 }, { 13199, 13198 }, { 13197, 13196 } };
+
+	public boolean properJavelins() {
+		return usingJavelins(c.playerEquipment[c.playerArrows]);
+	}
+
+	public boolean usingJavelins(int i) {
+		return (i >= 825 && i <= 830) || i == 19484 || i == 21318;
+	}
+/*	public void degradeVenemousItems(Client killer) {
+		for (int[] helmets : MUTAGEN_HELMETS) {
+			int charged = helmets[0];
+			int uncharged = helmets[1];
+			if (c.getItems().isWearingItem(charged, c.playerHat) || c.getItems().playerHasItem(charged)) {
+				if (c.getSerpentineHelmCharge() > 0) {
+					Client owner = killer == null || killer instanceof NPC ? c : (Client) killer;
+					Server.itemHandler.createGroundItem(owner, 12934, c.getX(), c.getY(), c.heightLevel, c.getSerpentineHelmCharge(), owner.getIndex());
+				}
+				if (c.getItems().isWearingItem(charged, c.playerHat)) {
+					c.getItems().wearItem(uncharged, 1, c.playerHat);
+				} else if (c.getItems().playerHasItem(charged)) {
+					c.getItems().deleteItem2(charged, 1);
+					c.getItems().addItem(uncharged, 1);
+				}
+				c.sendMessage("The " + ItemCacheDefinition.forId(charged).getName() + " has been dropped on the floor.");
+				c.setSerpentineHelmCharge(0);
+			}
+		}
+		
+		if (c.getItems().isWearingItem(12904, c.playerWeapon) || c.getItems().playerHasItem(12904)) {
+			if (c.getToxicStaffOfTheDeadCharge() > 0) {
+				if (c.getItems().isWearingItem(12904, c.playerWeapon)) {
+					c.getItems().wearItem(12902, 1, c.playerWeapon);
+				} else if (c.getItems().playerHasItem(12904)) {
+					c.getItems().deleteItem2(12904, 1);
+					c.getItems().addItem(12902, 1);
+				}
+				Player owner = killer == null || killer instanceof NPC ? c : (Player) killer;
+				Server.itemHandler.createGroundItem(owner, 12934, c.getX(), c.getY(), c.heightLevel, c.getToxicStaffOfTheDeadCharge(), owner.getIndex());
+				c.setToxicStaffOfTheDeadCharge(0);
+				c.sendMessage("Your toxic staff of the dead has lost all charge, the scales are on the floor.");
+			}
+		}
+	}*/
 	
 	
 }

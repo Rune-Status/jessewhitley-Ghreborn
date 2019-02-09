@@ -7,6 +7,7 @@ import Ghreborn.event.CycleEventHandler;
 import Ghreborn.model.items.Item;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.PacketType;
+import Ghreborn.model.players.combat.magic.MagicData;
 import Ghreborn.net.Packet;
 
 /**
@@ -46,11 +47,11 @@ public class MagicOnFloorItems implements PacketType {
 				c.teleGrabItem = itemId;
 				c.turnPlayerTo(itemX, itemY);
 				c.teleGrabDelay = System.currentTimeMillis();
-				c.animation(c.MAGIC_SPELLS[51][2]);
-				c.gfx100(c.MAGIC_SPELLS[51][3]);
+				c.animation(MagicData.MAGIC_SPELLS[51][2]);
+				c.gfx100(MagicData.MAGIC_SPELLS[51][3]);
 				c.getPA().createPlayersStillGfx(144, itemX, itemY, 0, 72);
-				c.getPA().createPlayersProjectile(c.getX(), c.getY(), offX, offY, 50, 70, c.MAGIC_SPELLS[51][4], 50, 10, 0, 50);
-				c.getPA().addSkillXP(c.MAGIC_SPELLS[51][7], 6);
+				c.getPA().createPlayersProjectile(c.getX(), c.getY(), offX, offY, 50, 70, MagicData.MAGIC_SPELLS[51][4], 50, 10, 0, 50);
+				c.getPA().addSkillXP(MagicData.MAGIC_SPELLS[51][7], 6);
 				c.getPA().refreshSkill(6);
 				c.stopMovement();
 				CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {

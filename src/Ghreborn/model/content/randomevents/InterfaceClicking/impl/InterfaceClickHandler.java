@@ -14,9 +14,9 @@ import Ghreborn.util.Misc;
 
 public class InterfaceClickHandler {
 
-	private Player player;
+	private Client player;
 
-	public InterfaceClickHandler(Player player) {
+	public InterfaceClickHandler(Client player) {
 		this.player = player;
 	}
 

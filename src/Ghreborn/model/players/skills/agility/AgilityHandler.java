@@ -3,92 +3,89 @@ package Ghreborn.model.players.skills.agility;
 import Ghreborn.event.CycleEvent;
 import Ghreborn.event.CycleEventContainer;
 import Ghreborn.event.CycleEventHandler;
+import Ghreborn.model.items.Item;
 import Ghreborn.model.players.Client;
-import Ghreborn.model.players.Player;
+import Ghreborn.model.players.combat.Hitmark;
+import Ghreborn.model.players.Client;
+import Ghreborn.model.players.skills.agility.impl.BarbarianAgility;
 import Ghreborn.model.players.skills.agility.impl.GnomeAgility;
+import Ghreborn.model.players.skills.agility.impl.Lighthouse;
+import Ghreborn.model.players.skills.agility.impl.Shortcuts;
 import Ghreborn.model.players.skills.agility.impl.WildernessAgility;
-
-/**
- * AgilityHandler
- * @author Andrew (I'm A Boss on Rune-Server and Mr Extremez on Mopar & Runelocus)
- */
+import Ghreborn.util.Misc;
 
 public class AgilityHandler {
 
-	public boolean[] agilityProgress = new boolean[6];
+	public boolean[] agilityProgress = new boolean[8];
 	public int lapBonus = 0;
 
-	public static final int LOG_EMOTE = 762, PIPES_EMOTE = 844,
-			CLIMB_UP_EMOTE = 828, CLIMB_DOWN_EMOTE = 827,
-			CLIMB_UP_MONKEY_EMOTE = 3487, WALL_EMOTE = 840;
-	
-	public int steppingStone, steppingStoneTimer = 0, agilityTimer = -1,
-			moveHeight = -1, tropicalTreeUpdate = -1, zipLine = -1;
-	
+	public static final int LOG_EMOTE = 762, 
+							PIPES_EMOTE = 844, 
+							CLIMB_UP_EMOTE = 828, 
+							CLIMB_DOWN_EMOTE = 827, 
+							CLIMB_UP_MONKEY_EMOTE = 3487, 
+							WALL_EMOTE = 840, 
+							JUMP_EMOTE = 3067,
+							FAIL_EMOTE = 770,
+							CRAWL_EMOTE = 844;
+
+	public int jumping, jumpingTimer = 0, agilityTimer = -1, moveHeight = -1, tropicalTreeUpdate = -1, zipLine = -1;
+
+	public boolean barbarianRope = false, barbarianLog = false, barbarianNet = false, barbarianStairs = false, barbarianWallOne = false, barbarianWallTwo = false,
+			barbarianWallThree = false;
+
 	private int moveX, moveY, moveH;
 
 	public void resetAgilityProgress() {
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 8; i++) {
 			agilityProgress[i] = false;
 		}
 		lapBonus = 0;
 	}
-	
+
 	/**
 	 * sets a specific emote to walk to point x
 	 */
-	private void walkToEmote(Player c, int id) {
+	public void walkToEmote(Client c, int id) {
 		c.isRunning2 = false;
 		c.playerWalkIndex = id;
-		c.getPA().requestUpdates(); // this was needed to make the
-													// agility work
+		c.getPA().requestUpdates();
 	}
 
 	/**
 	 * resets the player animation
 	 */
-	private void stopEmote(Player c) {
-			c.isRunning2 = true;
-			c.getPA().sendFrame36(173, 1);
-			c.playerWalkIndex = 0x333;
-			c.getPA().requestUpdates();
-	}
-
-	/**
-	 * Walks to a specified location, animating the player in the process.
-	 * @param c
-	 * @param EndX
-	 * @param EndY
-	 * @param Emote
-	 * @param endingAnimation
-	 */
-	public void walk(Player c, int EndX, int EndY, int Emote, int endingAnimation) {
-		//c.getPlayerAction().setAction(true);
-		//c.getPlayerAction().canWalk(false);
-		//walkToEmote(c, Emote);
-		//c.getPA().walkTo5(EndX, EndY);
-		//destinationReached(c, EndX, EndY, endingAnimation);
-		c.isRunning2 = false;
-		c.getPA().sendFrame36(173, 0);
-		c.playerWalkIndex = Emote;
+	public void stopEmote(Client c) {
+		c.getPlayerAction().setAction(false);
+		c.getPlayerAction().canWalk(true);
 		c.getPA().requestUpdates();
+		c.isRunning2 = true;
+	}
+
+	public void move(Client c, int EndX, int EndY, int Emote, int endingAnimation) {
+		if (c.getItems().isWearingItem(4084)) {
+			c.sendMessage("It would seem to be dangerous doing this.. on a sled.. right?");
+			return;
+		}
+		c.getPlayerAction().setAction(true);
+		c.getPlayerAction().canWalk(false);
+		walkToEmote(c, Emote);
 		c.getPA().walkTo5(EndX, EndY);
+		destinationReached(c, EndX, EndY, endingAnimation);
 	}
 
 	/**
-	 * when a player reaches he's point the stopEmote() method gets called this
-	 * method calculates when the player reached he's point
+	 * when a player reaches he's point the stopEmote() method gets called this method calculates when the player reached he's point
 	 */
-
-	public void destinationReached(final Player c, int x2, int y2, final int endingEmote) {
+	public void destinationReached(final Client c, int x2, int y2, final int endingEmote) {
 		if (x2 >= 0 && y2 >= 0 && x2 != y2) {
-			  CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-		            @Override
-		            public void execute(CycleEventContainer container) {
-						if(c == null || c.disconnected || c.isDead) {
-							container.stop();
-							return;
-						}
+			CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
+				@Override
+				public void execute(CycleEventContainer container) {
+					if (c.disconnected) {
+						container.stop();
+						return;
+					}
 					if (moveHeight >= 0) {
 						c.getPA().movePlayer(c.getX(), c.getY(), moveHeight);
 						moveHeight = -1;
@@ -98,18 +95,30 @@ public class AgilityHandler {
 					container.stop();
 				}
 				@Override
-					public void stop() {
-						
+				public void stop() {
+					if (c != null && !c.disconnected) {
+						if (c.playerEquipment[c.playerWeapon] == -1) {
+							c.playerStandIndex = 0x328;
+							c.playerTurnIndex = 0x337;
+							c.playerWalkIndex = 0x333;
+							c.playerTurn180Index = 0x334;
+							c.playerTurn90CWIndex = 0x335;
+							c.playerTurn90CCWIndex = 0x336;
+							c.playerRunIndex = 0x338;
+						} else {
+							c.getCombat().getPlayerAnimIndex(Item.getItemName(c.playerEquipment[c.playerWeapon]).toLowerCase());
+						}
 					}
+				}
 			}, x2 + y2);
 		} else if (x2 == y2) {
-			  CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-		            @Override
-		            public void execute(CycleEventContainer container) {
-						if(c == null || c.disconnected || c.isDead) {
-							container.stop();
-							return;
-						}
+			CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
+				@Override
+				public void execute(CycleEventContainer container) {
+					if (c.disconnected) {
+						container.stop();
+						return;
+					}
 					if (moveHeight >= 0) {
 						c.getPA().movePlayer(c.getX(), c.getY(), moveHeight);
 						moveHeight = -1;
@@ -118,19 +127,32 @@ public class AgilityHandler {
 					c.animation(endingEmote);
 					container.stop();
 				}
-					@Override
-					public void stop() {
-						
+
+				@Override
+				public void stop() {
+					if (c != null && !c.disconnected) {
+						if (c.playerEquipment[c.playerWeapon] == -1) {
+							c.playerStandIndex = 0x328;
+							c.playerTurnIndex = 0x337;
+							c.playerWalkIndex = 0x333;
+							c.playerTurn180Index = 0x334;
+							c.playerTurn90CWIndex = 0x335;
+							c.playerTurn90CCWIndex = 0x336;
+							c.playerRunIndex = 0x338;
+						} else {
+							c.getCombat().getPlayerAnimIndex(Item.getItemName(c.playerEquipment[c.playerWeapon]).toLowerCase());
+						}
 					}
+				}
 			}, x2);
 		} else if (x2 < 0) {
-			  CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-		            @Override
-		            public void execute(CycleEventContainer container) {
-						if(c == null || c.disconnected || c.isDead) {
-							container.stop();
-							return;
-						}
+			CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
+				@Override
+				public void execute(CycleEventContainer container) {
+					if (c.disconnected) {
+						container.stop();
+						return;
+					}
 					if (moveHeight >= 0) {
 						c.getPA().movePlayer(c.getX(), c.getY(), moveHeight);
 						moveHeight = -1;
@@ -140,19 +162,32 @@ public class AgilityHandler {
 					c.animation(endingEmote);
 					container.stop();
 				}
+
 				@Override
-					public void stop() {
-						
+				public void stop() {
+					if (c != null && !c.disconnected) {
+						if (c.playerEquipment[c.playerWeapon] == -1) {
+							c.playerStandIndex = 0x328;
+							c.playerTurnIndex = 0x337;
+							c.playerWalkIndex = 0x333;
+							c.playerTurn180Index = 0x334;
+							c.playerTurn90CWIndex = 0x335;
+							c.playerTurn90CCWIndex = 0x336;
+							c.playerRunIndex = 0x338;
+						} else {
+							c.getCombat().getPlayerAnimIndex(Item.getItemName(c.playerEquipment[c.playerWeapon]).toLowerCase());
+						}
 					}
+				}
 			}, -x2 + y2);
 		} else if (y2 < 0) {
-			  CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-		            @Override
-		            public void execute(CycleEventContainer container) {
-						if(c == null || c.disconnected || c.isDead) {
-							container.stop();
-							return;
-						}
+			CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
+				@Override
+				public void execute(CycleEventContainer container) {
+					if (c.disconnected) {
+						container.stop();
+						return;
+					}
 					if (moveHeight >= 0) {
 						c.getPA().movePlayer(c.getX(), c.getY(), moveHeight);
 						moveHeight = -1;
@@ -162,22 +197,34 @@ public class AgilityHandler {
 					c.animation(endingEmote);
 					container.stop();
 				}
+
 				@Override
-					public void stop() {
-						
+				public void stop() {
+					if (c != null && !c.disconnected) {
+						if (c.playerEquipment[c.playerWeapon] == -1) {
+							c.playerStandIndex = 0x328;
+							c.playerTurnIndex = 0x337;
+							c.playerWalkIndex = 0x333;
+							c.playerTurn180Index = 0x334;
+							c.playerTurn90CWIndex = 0x335;
+							c.playerTurn90CCWIndex = 0x336;
+							c.playerRunIndex = 0x338;
+						} else {
+							c.getCombat().getPlayerAnimIndex(Item.getItemName(c.playerEquipment[c.playerWeapon]).toLowerCase());
+						}
 					}
+				}
 			}, x2 - y2);
 		}
 	}
 
 	/**
-	 * @param objectId
-	 *            : the objectId to know how much exp a player receives
+	 * @param objectId : the objectId to know how much exp a player receives
 	 */
 
 	public double getXp(int objectId) {
 		switch (objectId) {
-/*		case GnomeAgility.TREE_OBJECT:
+		case GnomeAgility.TREE_OBJECT:
 		case GnomeAgility.TREE_BRANCH_OBJECT:
 			return 5;
 		case GnomeAgility.LOG_OBJECT:
@@ -186,7 +233,16 @@ public class AgilityHandler {
 		case GnomeAgility.NET2_OBJECT:
 		case GnomeAgility.NET1_OBJECT:
 		case GnomeAgility.ROPE_OBJECT:
-			return 7.5;*/
+			return 7.5;
+
+		case BarbarianAgility.BARBARIAN_SWING_ROPE_OBJECT:
+		case BarbarianAgility.BARBARIAN_LOG_BALANCE_OBJECT:
+		case BarbarianAgility.BARBARIAN_NET_OBJECT:
+		case BarbarianAgility.BARBARIAN_LEDGE_OBJECT:
+		case BarbarianAgility.BARBARIAN_LADDER_OBJECT:
+		case BarbarianAgility.BARBARIAN_WALL_OBJECT:
+			return 14;
+
 		case WildernessAgility.WILDERNESS_PIPE_OBJECT:
 			return 12;
 		case WildernessAgility.WILDERNESS_SWING_ROPE_OBJECT:
@@ -200,32 +256,64 @@ public class AgilityHandler {
 	}
 
 	/**
-	 * @param objectId
-	 *            : the objectId to fit with the right agility level required
+	 * @param objectId : the objectId to fit with the right agility level required
 	 */
 
 	private int getLevelRequired(int objectId) {
 		switch (objectId) {
+
 		case WildernessAgility.WILDERNESS_PIPE_OBJECT:
 		case WildernessAgility.WILDERNESS_SWING_ROPE_OBJECT:
 		case WildernessAgility.WILDERNESS_STEPPING_STONE_OBJECT:
 		case WildernessAgility.WILDERNESS_ROCKS_OBJECT:
 		case WildernessAgility.WILDERNESS_LOG_BALANCE_OBJECT:
 			return 52;
+
+		case Lighthouse.BASALT_ROCK:
+			return 40;
+
+		case BarbarianAgility.BARBARIAN_SWING_ROPE_OBJECT:
+		case BarbarianAgility.BARBARIAN_LOG_BALANCE_OBJECT:
+		case BarbarianAgility.BARBARIAN_NET_OBJECT:
+		case BarbarianAgility.BARBARIAN_LEDGE_OBJECT:
+		case BarbarianAgility.BARBARIAN_LADDER_OBJECT:
+		case BarbarianAgility.BARBARIAN_WALL_OBJECT:
+			return 35;
+
+/*		case RooftopSeers.WALL:
+			return 60;
+
+		case RooftopVarrock.ROUGH_WALL:
+			return 30;
+			
+		case RooftopArdougne.WOODEN_BEAMS:
+			return 90;
+*/
+		case Shortcuts.SLAYER_TOWER_CHAIN_UP:
+			return 61;
+			
+		case Shortcuts.RELLEKKA_STRANGE_FLOOR:
+			return 81;
+			
+		case Shortcuts.RELLEKKA_CREVICE:
+			return 62;
+			
+		case Shortcuts.STEPPING_STONE:
+			return 90;
 		}
 		return -1;
 	}
 
 	/**
-	 * @param objectId
-	 *            : the objectId to fit with the right animation played
+	 * @param objectId : the objectId to fit with the right animation played
 	 */
 
 	public int getAnimation(int objectId) {
 		switch (objectId) {
-/*		case GnomeAgility.LOG_OBJECT:
+		case GnomeAgility.LOG_OBJECT:
 		case WildernessAgility.WILDERNESS_LOG_BALANCE_OBJECT:
-		case GnomeAgility.ROPE_OBJECT:*/
+		case BarbarianAgility.BARBARIAN_LOG_BALANCE_OBJECT:
+		case GnomeAgility.ROPE_OBJECT:
 		case 2332:
 			return LOG_EMOTE;
 		case 154:
@@ -236,95 +324,241 @@ public class AgilityHandler {
 		case WildernessAgility.WILDERNESS_PIPE_OBJECT:
 			return PIPES_EMOTE;
 		case WildernessAgility.WILDERNESS_SWING_ROPE_OBJECT:
+		case BarbarianAgility.BARBARIAN_SWING_ROPE_OBJECT:
 			return 3067;
 		case WildernessAgility.WILDERNESS_STEPPING_STONE_OBJECT:
 			return 1604; // 2588
 		case WildernessAgility.WILDERNESS_ROCKS_OBJECT:
 			return 1148;
+		case BarbarianAgility.BARBARIAN_LEDGE_OBJECT:
+			return 756;
+		case BarbarianAgility.BARBARIAN_WALL_OBJECT:
+			return 839;
 		}
 		return -1;
 	}
+	
+	public static void delayFade(final Client c, String emote, final int moveX, final int moveY, final int moveH, String message, String endMessage, int time) {
+		if (emote == "CLIMB_DOWN")
+			c.animation(CLIMB_DOWN_EMOTE);
+		if (emote == "CLIMB_UP")
+			c.animation(CLIMB_UP_EMOTE);
+		if (emote == "JUMP")
+			c.animation(JUMP_EMOTE);
+		if (emote == "FAIL")
+			c.animation(FAIL_EMOTE);
+		if (emote == "CRAWL")
+			c.animation(CRAWL_EMOTE);
+		if (emote == "NONE") {
+			
+		}
 
-	/**
-	 * climbUp a ladder or anything. small delay before getting teleported to
-	 * destination
-	 */
-
-	public void climbUp(final Player c, final int moveX, final int moveY, final int moveH) {
-		c.animation(CLIMB_UP_EMOTE);
+		c.getPA().sendScreenFade(message, 1, time);
 		c.getPlayerAction().setAction(true);
 		c.getPlayerAction().canWalk(false);
-		  CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-	            @Override
-	            public void execute(CycleEventContainer container) {
-					if(c == null || c.disconnected || c.isDead) {
-						container.stop();
-						return;
-					}
+		c.sendMessage(message);
+		CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
+			@Override
+			public void execute(CycleEventContainer container) {
+				if (c.disconnected) {
+					stop();
+					return;
+				}
 				c.getPlayerAction().setAction(false);
 				c.getPlayerAction().canWalk(true);
 				c.getPA().movePlayer(moveX, moveY, moveH);
+				c.sendMessage("..."+ endMessage);
 				container.stop();
 			}
+
 			@Override
-				public void stop() {
-					
-				}
-		}, 1);
+			public void stop() {
+			}
+		}, time + 2);
+	}
+	
+	public static boolean failedObstacle = false;
+	public static boolean failObstacle(final Client c, int x, int y, int z) {
+		c.lastObstacleFail = System.currentTimeMillis();
+		failedObstacle = false;
+		int chance = 10 + c.playerLevel[c.playerAgility] / 13;
+		if (Misc.random(chance) == 1) {
+			failedObstacle = true;
+			AgilityHandler.delayEmote(c, "FAIL", x, y, z, 2);
+			c.appendDamage(5, Hitmark.HIT);
+			c.sendMessage("You slipped and hurt yourself.");
+			c.getAgilityHandler().resetAgilityProgress();
+			return true;
+		}
+		return false;
 	}
 
 	/**
-	 * climbDown a ladder or anything. small delay before getting teleported to
-	 * destination
+	 * climbDown a ladder or anything. small delay before getting teleported to destination
 	 */
 
-	public void climbDown(final Player c, final int moveX, final int moveY, final int moveH) {
-		c.animation(CLIMB_DOWN_EMOTE);
+	public static void delayEmote(final Client c, String emote, final int moveX, final int moveY, final int moveH, int time) {
+		switch (emote) {
+		case "CLIMB_DOWN":
+			c.animation(CLIMB_DOWN_EMOTE);
+			break;
+		case "CLIMB_UP":
+			c.animation(CLIMB_UP_EMOTE);
+			break;
+		case "FAIL":
+			c.animation(FAIL_EMOTE);
+			break;
+		case "JUMP":
+			c.animation(JUMP_EMOTE);
+			break;
+		case "JUMP_GRAB":
+			c.animation(5039);
+			break;
+		case "BALANCE":
+			c.animation(756);
+			break;
+		case "HANG":
+			c.animation(3060);
+			break;
+		case "JUMP_DOWN":
+			c.animation(2586);
+			break;
+		case "CLIMB_UP_WALL":
+			c.animation(737);
+			break;
+		case "HANG_ON_POST":
+			c.animation(1118);
+			break;
+		case "CRAWL":
+			c.animation(CRAWL_EMOTE);
+			break;
+		}
+
 		c.getPlayerAction().setAction(true);
 		c.getPlayerAction().canWalk(false);
-		  CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
-	            @Override
-	            public void execute(CycleEventContainer container) {
-					if(c == null || c.disconnected || c.isDead) {
-						container.stop();
-						return;
-					}
+		CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
+			@Override
+			public void execute(CycleEventContainer container) {
+				if (c.disconnected) {
+					stop();
+					return;
+				}
 				c.getPlayerAction().setAction(false);
 				c.getPlayerAction().canWalk(true);
 				c.getPA().movePlayer(moveX, moveY, moveH);
+				c.getAgilityHandler().stopEmote(c);
+				c.animation(-1);
 				container.stop();
 			}
+
 			@Override
-				public void stop() {
-					
+			public void stop() {
+				if (c != null && !c.disconnected) {
+					if (c.playerEquipment[c.playerWeapon] == -1) {
+						c.playerStandIndex = 0x328;
+						c.playerTurnIndex = 0x337;
+						c.playerWalkIndex = 0x333;
+						c.playerTurn180Index = 0x334;
+						c.playerTurn90CWIndex = 0x335;
+						c.playerTurn90CCWIndex = 0x336;
+						c.playerRunIndex = 0x338;
+					} else {
+						c.getCombat().getPlayerAnimIndex(Item.getItemName(c.playerEquipment[c.playerWeapon]).toLowerCase());
+					}
 				}
-		}, 1);
+			}
+		}, time);
+	}
+	
+	/**
+	 * climbDown a ladder or anything. small delay before getting teleported to destination
+	 */
+
+	public static void delayEmote(final Client c, int emote, final int moveX, final int moveY, final int moveH, int time) {
+		c.animation(emote);
+		c.getPlayerAction().setAction(true);
+		c.getPlayerAction().canWalk(false);
+		CycleEventHandler.getSingleton().addEvent(c, new CycleEvent() {
+			@Override
+			public void execute(CycleEventContainer container) {
+				if (c.disconnected) {
+					stop();
+					return;
+				}
+				c.getPlayerAction().setAction(false);
+				c.getPlayerAction().canWalk(true);
+				c.getPA().movePlayer(moveX, moveY, moveH);
+				c.getAgilityHandler().stopEmote(c);
+				c.animation(-1);
+				container.stop();
+			}
+
+			@Override
+			public void stop() {
+				if (c != null && !c.disconnected) {
+					if (c.playerEquipment[c.playerWeapon] == -1) {
+						c.playerStandIndex = 0x328;
+						c.playerTurnIndex = 0x337;
+						c.playerWalkIndex = 0x333;
+						c.playerTurn180Index = 0x334;
+						c.playerTurn90CWIndex = 0x335;
+						c.playerTurn90CCWIndex = 0x336;
+						c.playerRunIndex = 0x338;
+					} else {
+						c.getCombat().getPlayerAnimIndex(Item.getItemName(c.playerEquipment[c.playerWeapon]).toLowerCase());
+					}
+				}
+			}
+		}, time);
 	}
 
 	/**
-	 * a specific position the player has to stand on before the action is set
-	 * to true
+	 * a specific position the player has to stand on before the action is set to true
 	 */
 
-	public boolean hotSpot(Player c, int hotX, int hotY) {
+	public boolean hotSpot(Client c, int hotX, int hotY) {
 		if (c.getX() == hotX && c.getY() == hotY) {
 			return true;
 		}
 		return false;
 	}
 
-	public void lapFinished2(Player c) {
-		if (agilityProgress[5]) {
-			//c.sendMessage("You received some bonus XP and Coins for completing the track!");
-                        //Achievements.increase(c, AchievementType.AGILITY, 1);
-			resetAgilityProgress();
+	public void lapProgress(Client c, int progress, int obj) {
+		if(agilityProgress[progress]) {
+			double exp = getXp(obj) * 5;
+			c.getPA().addSkillXP((int)exp, 16);
 		}
 	}
-	public void lapFinished(Player c) {
-		if (agilityProgress[5]) {
-			//c.sendMessage("You received some bonus XP and Coins for completing the track!");
-                      //  Achievements.increase(c, AchievementType.AGILITY, 1);
+
+	public void lapFinished(Client c, int progress, int experience, int petChance) {
+		if (agilityProgress[progress]) {
 			resetAgilityProgress();
+			c.sendMessage("You received some XP for completing the track!");
+			c.getPA().addSkillXP(experience, 16);
+			//Achievements.increase(c, AchievementType.AGIL, 1);
+			 if (Misc.random(petChance) == 20 && c.getItems().getItemCount(20659) == 0 && c.summonId != 20659) {
+				 c.getPA().messageall("[<col=CC0000>News</col>] @cr20@ <col=255>" + c.playerName + "</col> is apperantly agile like a <col=CC0000>Squirrel</col> pet!");
+				 c.getItems().addItemUnderAnyCircumstance(20659, 1);
+			 }
+		} else {
+			c.sendMessage("You must complete the full course to gain experience.");
+			return;
+		}
+	}
+
+	public void roofTopFinished(Client c, int progress, int experience, int petChance) {
+		if (agilityProgress[progress]) {
+			resetAgilityProgress();
+			c.sendMessage("You received some XP for completing the track!");
+		//	c.getPA().addSkillXP(experience, 16);
+			//Achievements.increase(c, AchievementType.ROOFTOP, 1);
+			 if (Misc.random(petChance) == 20 && c.getItems().getItemCount(20659) == 0 && c.summonId != 20659) {
+				 c.getPA().messageall("[<col=CC0000>News</col>] @cr20@ <col=255>" + c.playerName + "</col> is apperantly agile like a <col=CC0000>Squirrel</col> pet!");
+				 c.getItems().addItemUnderAnyCircumstance(20659, 1);
+			 }
+		} else {
+			c.sendMessage("You must complete the full course to gain experience.");
+			return;
 		}
 	}
 
@@ -332,104 +566,39 @@ public class AgilityHandler {
 	 * 600 ms process for some agility actions
 	 */
 
-	public void agilityProcess(Player c) {
-		if (steppingStone > 0 && steppingStoneTimer == 0) {
-			walk(c, -1, 0, getAnimation(WildernessAgility.WILDERNESS_STEPPING_STONE_OBJECT), -1);
-			steppingStone--;
-			steppingStoneTimer = 2;
+	public void agilityProcess(Client c) {
+		if (jumping > 0 && jumpingTimer == 0) {
+			move(c, -1, 0, getAnimation(WildernessAgility.WILDERNESS_STEPPING_STONE_OBJECT), -1);
+			jumping--;
+			jumpingTimer = 2;
 		}
 
-		if (steppingStoneTimer > 0) {
-			steppingStoneTimer--;
+		if (jumpingTimer > 0) {
+			jumpingTimer--;
 		}
 
-		if (hotSpot(c, 3363, 2851)) {
-			moveX = 3368;
-			moveY = 2851;
-			moveH = 1;
-			walk(c, 1, 0, 2753, -1);
-			c.getPA().addSkillXP(14, c.playerAgility);
-			agilityTimer = 2;
-		}
+//		if (hotSpot(c, 3190, 3414) || hotSpot(c, 3190, 3413) || hotSpot(c, 3190, 3412) || hotSpot(c, 3190, 3411)) {
+//			move(c, 0, -1, 1122, -1);
+//		}
 
-		if (hotSpot(c, 3372, 2832)) {
-			moveX = 3367;
-			moveY = 2832;
-			moveH = 1;
-			walk(c, -1, 0, 2753, -1);
-			c.getPA().addSkillXP(14, c.playerAgility);
-			agilityTimer = 2;
-		}
+//		if (hotSpot(c, 3190, 3410)) {
+//			c.getPA().movePlayer(3190, 3409, 1);
+//		}
+//
+//		if (hotSpot(c, 3190, 3410) || hotSpot(c, 3190, 3409) || hotSpot(c, 3190, 3408) || hotSpot(c, 3190, 3407) || hotSpot(c, 3190, 3406)) {
+//			move(c, 0, -1, 756, -1);
+//		}
 
-		if (hotSpot(c, 3364, 2832)) {
-			moveX = 3359;
-			moveY = 2832;
-			moveH = 1;
-			walk(c, -1, 0, 2753, -1);
-			c.getPA().addSkillXP(14, c.playerAgility);
-			agilityTimer = 2;
-		}
+//		if (hotSpot(c, 3190, 3405)) {
+//			delayEmote(c, "JUMP", 3192, 3405, 3, 2);
+//		}
 
-		if (hotSpot(c, 3357, 2836)) {
-			moveX = 3357;
-			moveY = 2841;
-			moveH = 2;
-			walk(c, 0, 1, 2753, -1);
-			c.getPA().addSkillXP(14, c.playerAgility);
-			agilityTimer = 2;
+		if (hotSpot(c, 3215, 3399)) {
+			delayEmote(c, "JUMP", 3218, 3399, 3, 2);
 		}
-
-		if (hotSpot(c, 3357, 2846)) {
-			moveX = 3357;
-			moveY = 2849;
-			moveH = 2;
-			walk(c, 0, 1, 2753, -1);
-			c.getPA().addSkillXP(14, c.playerAgility);
-			agilityTimer = 2;
-		}
-
-		if (hotSpot(c, 3359, 2849)) {
-			moveX = 3366;
-			moveY = 2849;
-			moveH = 2;
-			walk(c, 1, 0, 2753, -1);
-			c.getPA().addSkillXP(14, c.playerAgility);
-			agilityTimer = 2;
-		}
-
-		if (hotSpot(c, 3372, 2841)) {
-			moveX = 3372;
-			moveY = 2836;
-			moveH = 2;
-			walk(c, 0, -1, 2753, -1);
-			c.getPA().addSkillXP(14, c.playerAgility);
-			agilityTimer = 2;
-		}
-
-		if (hotSpot(c, 3366, 2834)) {
-			moveX = 3363;
-			moveY = 2834;
-			moveH = 2;
-			walk(c, -1, 0, 2753, -1);
-			c.getPA().addSkillXP(14, c.playerAgility);
-			agilityTimer = 2;
-		}
-
-		if (hotSpot(c, 3359, 2842)) {
-			moveX = 3359;
-			moveY = 2847;
-			moveH = 3;
-			walk(c, 0, 1, 2753, -1);
-			c.getPA().addSkillXP(14, c.playerAgility);
-			agilityTimer = 2;
-		}
-
-		if (hotSpot(c, 3370, 2843)) {
-			moveX = 3370;
-			moveY = 2840;
-			moveH = 3;
-			walk(c, 0, -1, 2753, -1);
-			c.getPA().addSkillXP(14, c.playerAgility);
+		
+		if (hotSpot(c, 3253, 3180)) {
+			delayEmote(c, "JUMP", 3259, 3179, 0, 2);
 		}
 
 		if (agilityTimer > 0) {
@@ -446,9 +615,9 @@ public class AgilityHandler {
 
 	}
 
-	public boolean checkLevel(Player c, int objectId) {
+	public boolean checkLevel(Client c, int objectId) {
 		if (getLevelRequired(objectId) > c.playerLevel[c.playerAgility]) {
-			//c.sendMessage("You need atleast " + getLevelRequired(objectId) + " agility to do this.");
+			c.sendMessage("You need an agility level of atleast " + getLevelRequired(objectId) + " to do this.");
 			return true;
 		}
 		return false;
@@ -458,16 +627,5 @@ public class AgilityHandler {
 	static int rndChance;
 	static int newObjectX, newObjectY;
 
-	public void move(Client c, int EndX, int EndY, int Emote, int endingAnimation) {
-		if (c.getItems().isWearingItem(4084)) {
-			c.sendMessage("It would seem to be dangerous doing this.. on a sled.. right?");
-			return;
-		}
-		c.getPlayerAction().setAction(true);
-		c.getPlayerAction().canWalk(false);
-		walkToEmote(c, Emote);
-		c.getPA().walkTo2(EndX, EndY);
-		destinationReached(c, EndX, EndY, endingAnimation);
-	}
-
 }
+

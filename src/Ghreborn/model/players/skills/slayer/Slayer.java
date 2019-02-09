@@ -15,7 +15,9 @@ import Ghreborn.model.content.dialogue.DialogueManager;
 import Ghreborn.model.content.dialogue.Emotion;
 import Ghreborn.model.items.ItemAssistant;
 import Ghreborn.model.npcs.NPC;
+import Ghreborn.model.npcs.NPCHandler;
 import Ghreborn.model.players.Boundary;
+import Ghreborn.model.players.Client;
 import Ghreborn.model.players.Client;
 import Ghreborn.model.players.Rights;
 import Ghreborn.model.players.skills.Skill;
@@ -64,7 +66,6 @@ public class Slayer {
 	 * The player that will be referenced in slayer related operations
 	 */
 	private final Client player;
-
 	/**
 	 * Determines if this player can create the slayer helm
 	 */
@@ -177,7 +178,24 @@ public class Slayer {
 				
 				master.ifPresent(m -> {
 					switch (m.getId()) {
-
+					case 401:
+					case 402:
+					case 405:
+					case 6797:
+						taskAmount--;
+						if(player.getSlayer().getTask().isPresent()) {
+		    			player.getPA().sendFrame126("<col=FF7F00>Slayer Monster:</col> <col=ffffff>"+player.getSlayer().getTask().get().getPrimaryName(),
+		    					29169);
+						} else if(!player.getSlayer().getTask().isPresent()) {
+			    			player.getPA().sendFrame126("<col=FF7F00>Slayer Monster:</col> <col=ffffff> None.",
+			    					29169);
+						}
+		    			player.getPA().sendFrame126("<col=FF7F00>Task Amount:</col> <col=ffffff>"+player.getSlayer().getTaskAmount(),
+		    					29170);
+						player.getPA().addSkillXP(Boundary.isIn(player, Boundary.SLAYER_TOWER_BOUNDARY) ? (int) (task.getExperience() * 1.10) * (player.getRights().isIronman() ? Config.Ironman_exp_rate : Config.SLAYER_EXPERIENCE)
+						: task.getExperience() * (Config.SLAYER_EXPERIENCE),
+									Skill.SLAYER.getId());
+						break;
 					}
 					if (biggerAndBadder &&Config.superiorSlayerActivated) {
 						handleSuperiorSpawn(npc);
@@ -616,7 +634,7 @@ public class Slayer {
 				return true;
 			}
 			if (biggerBossTasks) {
-				player.getDH().sendDialogues(75, 6797);
+				//player.getDH().sendDialogues(75, 6797);
 				return true;
 			}
 			if (points < 100) {
@@ -641,7 +659,7 @@ public class Slayer {
 			}
 			helmetCreatable = true;
 			points -= 350;
-			player.getDH().sendDialogues(667, 402);
+			//player.getDH().sendDialogues(667, 402);
 			updatePoints();
 			return true;
 
@@ -660,7 +678,7 @@ public class Slayer {
 			}
 			helmetImbuedCreatable = true;
 			points -= 150;
-			player.getDH().sendDialogues(668, 402);
+			//player.getDH().sendDialogues(668, 402);
 			updatePoints();
 			return true;
 			

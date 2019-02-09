@@ -10,6 +10,8 @@ public abstract class Entity {
 	public int index = -1;
 	public static int index1 = -1;
 	public int absX, absY, heightLevel;
+	public int mapRegionX, mapRegionY;
+	public int currentX, currentY;
 
 	public boolean updateRequired; // might have to be 'true' for players
 	public boolean animUpdateRequired;
@@ -28,7 +30,7 @@ public abstract class Entity {
 	public int hitDiff;
 	public int hitDiff2;
 	public int animId;
-	public int animDelay;
+	public int animDelay, projectileId, endGfx;
 	public int gfxVar1;
 	public int gfxVar2;
 	public int face;
@@ -131,6 +133,32 @@ public abstract class Entity {
 		return heightLevel; 
 	}
 	
+	public int getMapRegionX() {
+		return mapRegionX;
+	}
+
+	public int getRegionX() {
+		return (absX >> 6);
+	}
+
+	public int getRegionY() {
+		return (absY >> 6);
+	}
+	public int getLocalX() {
+		return getX() - 8 * getMapRegionX();
+	}
+
+	public int getLocalY() {
+		return getY() - 8 * getMapRegionY();
+	}
+	public int getRegionID() {
+		return ((getLocalX() << 8) + getLocalY());
+	}
+
+	public int getMapRegionY() {
+		return mapRegionY;
+	}
+
 	public int getRegionId() {
 	    int regionX = absX >> 3;
 	    int regionY = absY >> 3;

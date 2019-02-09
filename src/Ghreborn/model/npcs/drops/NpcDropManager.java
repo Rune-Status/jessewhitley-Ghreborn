@@ -60,16 +60,16 @@ public final class NpcDropManager {
 				if (drop == null)
 					continue;
 				if (drops) {
-					//killer.ifPresent(p -> Server.npcHandler.handleLootShare(p, drop.getId(), drop.getAmount()));
+					killer.ifPresent(p -> Server.npcHandler.handleLootShare(p, drop.getId(), drop.getAmount()));
 					killer.ifPresent(p -> Server.itemHandler.createGroundItem(p, drop.getId(), p.absX, p.absY,
 							p.heightLevel, drop.getAmount(), p.index));
-					//killer.ifPresent(p -> Server.npcHandler.rareDrops(p, drop.getId(), drop.getAmount()));
+					killer.ifPresent(p -> Server.npcHandler.rareDrops(p, drop.getId(), drop.getAmount()));
 					// System.out.println("Zulrah/Kraken Drops");
 				} else if (!drops) {
 					//killer.ifPresent(p -> Server.npcHandler.handleLootShare(p, drop.getId(), drop.getAmount()));
 					killer.ifPresent(p -> Server.itemHandler.createGroundItem(p, drop.getId(), victim.absX, victim.absY,
 							victim.heightLevel, drop.getAmount(), p.index));
-					//killer.ifPresent(p -> Server.npcHandler.rareDrops(p, drop.getId(), drop.getAmount()));
+					killer.ifPresent(p -> Server.npcHandler.rareDrops(p, drop.getId(), drop.getAmount()));
 					// System.out.println("Normal Player Drops");
 				}
 			}

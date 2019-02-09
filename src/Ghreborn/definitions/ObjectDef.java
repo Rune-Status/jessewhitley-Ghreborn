@@ -12,23 +12,23 @@ public final class ObjectDef
 {
 
     public static ObjectDef getObjectDef(int id){
-		if (id > totalObjects667 || id > streamIndices667.length - 1) {
-			id = 0;
+		if (id > streamIndices.length) {
+			id = streamIndices.length - 1;
 		}
+		
         for(int j = 0; j < 20; j++)
             if(cache[j].id == id)
                 return cache[j];
 
         cacheIndex = (cacheIndex + 1) % 20;
         ObjectDef class46 = cache[cacheIndex];
-        dataBuffer667.currentOffset = streamIndices667[id];
+		if (id > streamIndices.length - 1 || id < 0) {
+			return null;
+		}
+        dataBuffer.currentOffset = streamIndices[id];
         class46.id = id;
         class46.setDefaults();
-		try {
-		class46.readValues(dataBuffer667);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		class46.readValues(dataBuffer);
  	   switch (id) {
  	   case 16891:
  		  class46.name = "Ckey/Rare Key Chest";
@@ -39,6 +39,11 @@ public final class ObjectDef
  		 class46.interactive = true;
  		class46.actions = new String[] { "Teleport", null, null, null, null };
  		   break;
+	   case 7235:
+	   class46.name = "Wall safe";
+	   class46.interactive = true;
+	   class46.actions = new String[] { "Crack", null, null, null, null };
+	   break;
  	   }
 		if(id == 6552) {
 			class46.name = "Ancient Altar";
@@ -84,29 +89,30 @@ public final class ObjectDef
 		anInt749 = -1;
 		childrenIDs = null;
     }
-	private static ByteStreamExt dataBuffer667;
+	private static ByteStreamExt dataBuffer;
 	
-	public static int totalObjects667;
+	public static int totalObjects;
 	
     public static void loadConfig()
     {
-		dataBuffer667 = new ByteStreamExt(getBuffer("loc.dat"));
-		ByteStreamExt idxBuffer667 = new ByteStreamExt(getBuffer("loc.idx"));
+		dataBuffer = new ByteStreamExt(getBuffer("loc.dat"));
+		ByteStreamExt idxBuffer = new ByteStreamExt(getBuffer("loc.idx"));
 		
-		totalObjects667 = idxBuffer667.readUnsignedShort();
+		totalObjects = idxBuffer.readUnsignedShort();
 		
-		streamIndices667 = new int[totalObjects667];
+		streamIndices = new int[totalObjects];
 		
 		int i = 2;
-		for (int j = 0; j < totalObjects667; j++) {
-			streamIndices667[j] = i;
-			i += idxBuffer667.readUnsignedShort();
+		for (int j = 0; j < totalObjects; j++) {
+			streamIndices[j] = i;
+			i += idxBuffer.readUnsignedShort();
 		}
 		
 		cache = new ObjectDef[20];
 		for (int k = 0; k < 20; k++) {
 			cache[k] = new ObjectDef();
 		}
+		System.out.println(totalObjects + " Object definitions loaded.");
     }
 
 	public static byte[] getBuffer(String s)
@@ -335,7 +341,7 @@ public final class ObjectDef
 	public static boolean lowMem;
 	public int id;
 	public static int[] streamIndices525;
-	public static int[] streamIndices667;
+	public static int[] streamIndices;
 	public boolean impenetrable;
 	public int anInt758;
 	public int childrenIDs[];

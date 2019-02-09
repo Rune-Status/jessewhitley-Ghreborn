@@ -135,7 +135,7 @@ public class MeleeSpecial {
 			c.oldPlayerIndex = i;
 			PlayerHandler.players[i].underAttackBy = c.index;
 			PlayerHandler.players[i].logoutDelay.reset();
-			PlayerHandler.players[i].singleCombatDelay.reset();
+			PlayerHandler.players[i].singleCombatDelay = System.currentTimeMillis();
 			PlayerHandler.players[i].killerId = c.index;
 		}
 		if(c.playerIndex > 0) {

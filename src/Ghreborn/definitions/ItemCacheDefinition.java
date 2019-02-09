@@ -54,7 +54,6 @@ public class ItemCacheDefinition {
                 return cache[j];
             }
         }
-
         cacheIndex = (cacheIndex + 1) % 10;
         ItemCacheDefinition ItemDef = cache[cacheIndex] = new ItemCacheDefinition();
        		npcData.currentOffset = streamIndices[i];
@@ -257,13 +256,14 @@ public class ItemCacheDefinition {
                     originalModelColors[i] = buffer.readUnsignedWord();
                     modifiedModelColors[i] = buffer.readUnsignedWord();
                 }
-            } else if (opcode == 41) {
-                int len = buffer.readUnsignedByte();
-                originalTexture = new short[len];
-                modifiedTexture = new short[len];
-                for (int i = 0; i < len; i++) {
-                    originalTexture[i] = (short) buffer.readUnsignedWord();
-                    modifiedTexture[i] = (short) buffer.readUnsignedWord();
+            } else if(opcode == 41) {
+                int var3 = buffer.readUnsignedByte();
+                this.textureToReplace = new short[var3];
+                this.textToReplaceWith = new short[var3];
+
+                for(int var4 = 0; var4 < var3; ++var4) {
+                   this.textureToReplace[var4] = (short)buffer.readUnsignedWord();
+                   this.textToReplaceWith[var4] = (short)buffer.readUnsignedWord();
                 }
             } else if (opcode == 42) {
                 shiftClickIndex = buffer.readUnsignedByte();
@@ -359,6 +359,8 @@ public class ItemCacheDefinition {
         description = "";
         modifiedModelColors = null;
         originalModelColors = null;
+        this.textToReplaceWith = null;
+        this.textureToReplace = null;
         spriteScale = 2000;
         spritePitch = 0;
         spriteCameraRoll = 0;
@@ -485,6 +487,7 @@ public class ItemCacheDefinition {
 	      ItemCacheDefinition class8 = cache[cacheIndex];
 	      class8.itemActions = new String[5];
 	      class8.itemActions[1] = s2;
+	      class8.itemActions[4] = "Drop";
 	      class8.name = s;
 	      class8.description = s1;
 	   }
@@ -522,6 +525,7 @@ public class ItemCacheDefinition {
 	      ItemCacheDefinition class8 = cache[cacheIndex];
 	      class8.itemActions = new String[5];
 	      class8.itemActions[1] = "Wear";
+	      class8.itemActions[4] = "Drop";
 	      class8.name = s;
 	      class8.description = s1;
 	   }
@@ -582,6 +586,11 @@ public class ItemCacheDefinition {
     private int groundScaleZ;
     private int groundScaleY;
     private int groundScaleX;
+    //@Export("textureToReplace")
+    public short[] textureToReplace;
+   // @ObfuscatedName("v")
+   // @Export("textToReplaceWith")
+    public short[] textToReplaceWith;
     private int secondaryFemaleHeadPiece;
     private int shiftClickIndex = -2;
     private boolean stockMarket;
